@@ -37,7 +37,7 @@ COPY backend-reservas/scripts ./backend-reservas/scripts
 COPY database ./database
 
 COPY --from=frontend-builder /build/noctua/public ./noctua/public
-COPY --from=frontend-builder /build/noctua/.next/standalone/noctua ./noctua
+COPY --from=frontend-builder /build/noctua/.next/standalone ./noctua
 COPY --from=frontend-builder /build/noctua/.next/static ./noctua/.next/static
 COPY scripts/start-all.mjs ./scripts/start-all.mjs
 
