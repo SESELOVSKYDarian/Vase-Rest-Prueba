@@ -5,10 +5,17 @@ import { pool } from "../config/database.js";
 const secret = () => process.env.JWT_SECRET || "noctua-local-development-secret";
 
 export async function seedLocalAdmin() {
-  const hash = await bcrypt.hash(process.env.INITIAL_ADMIN_PASSWORD || "1234", 12);
+  const initialPassword = process.env.INITIAL_ADMIN_PASSWORD || "1234";
+  const hash = await bcrypt.hash(initialPassword, 12);
   await pool.query(`insert into usuarios (nombre, username, email, rol, activo, password_hash)
     values ('Administrador','admin','admin@noctua.local','admin',true,$1)
-    on conflict (username) do update set password_hash = coalesce(usuarios.password_hash, excluded.password_hash)`, [hash]);
+    on conflict (username) do update set
+      nombre = excluded.nombre,
+      email = excluded.email,
+      rol = excluded.rol,
+      activo = true,
+      password_hash = excluded.password_hash,
+      actualizado_en = now()`, [hash]);
 }
 
 export async function login(req, res) {
