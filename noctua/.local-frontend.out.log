@@ -1,0 +1,18 @@
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.88.40:3000
+- Environments: .env.local
+✓ Ready in 1759ms
+Creating turbopack project {
+  dir: 'D:\\Descargas\\Proyecto-Restaurante-cambios-moli\\Proyecto-Restaurante-cambios-moli\\noctua',
+  testMode: true
+}
+○ Compiling middleware ...
+- Experiments (use with caution):
+  ⨯ serverSourceMaps
+
+○ Compiling /login ...
+ GET /login 200 in 65ms (next.js: 6ms, application-code: 59ms)
+ GET /login 200 in 74ms (next.js: 8ms, application-code: 66ms)
+ GET /login?from=%2Fdashboard%2Fmesas 200 in 39ms (next.js: 7ms, application-code: 32ms)
+[?25h

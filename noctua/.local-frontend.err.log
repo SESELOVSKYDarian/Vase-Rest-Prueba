@@ -1,0 +1,117 @@
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of D:\Descargas\Proyecto-Restaurante-cambios-moli\Proyecto-Restaurante-cambios-moli\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * D:\Descargas\Proyecto-Restaurante-cambios-moli\Proyecto-Restaurante-cambios-moli\noctua\package-lock.json
+
+⚠ Slow filesystem detected. The benchmark took 256ms. If D:\Descargas\Proyecto-Restaurante-cambios-moli\Proyecto-Restaurante-cambios-moli\noctua/.next/dev is a network drive, consider moving it to a local folder.
+See more: https://nextjs.org/docs/app/guides/local-development
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/login" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head headCacheNode={{rsc:{...}, ...}}>
+                    <__next_viewport_boundary__>
+                    <MetadataWrapper>
+                      <div
+                        hidden={true}
+-                       bis_skin_checked="1"
+                      >
+                  ...
+                    <link>
+                    <script>
+                    <script>
+                    <script>
+                    <script>
+                    <script>
+                    <script>
+                    <script>
+                    <RootLayout>
+                      <html lang="es">
+                        <head>
+                        <body suppressHydrationWarning={true}>
+                          <Providers>
+                            <QueryClientProvider client={{}}>
+                              <ThemeApplier>
+                              ...
+                                <ClientPageRoot Component={function LoginPage} serverProvidedParams={{...}}>
+                                  <LoginPage params={Promise} searchParams={Promise}>
+                                    <main className="min-h-scre...">
+                                      <div
+                                        className="absolute inset-0 opacity-[0.03]"
+                                        style={{backgroundImage:"linear-gra...",backgroundSize:"40px 40px"}}
+                                        aria-hidden="true"
+-                                       bis_skin_checked="1"
+                                      >
+                                      <div
+                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-..."
+                                        aria-hidden="true"
+-                                       bis_skin_checked="1"
+                                      >
+                                      <div
+                                        className="relative w-full max-w-sm"
+-                                       bis_skin_checked="1"
+                                      >
+                                        <motion.div initial={{opacity:0,y:-20}} animate={{opacity:1,y:0}} ...>
+                                          <div
+                                            className="text-center mb-10"
+                                            style={{opacity:0,transform:"translateY..."}}
+                                            ref={function useMotionRef.useCallback}
+-                                           bis_skin_checked="1"
+                                          >
+                                        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} ...>
+                                          <div
+                                            className="bg-[#0a0a0a] border border-[#1e1e1e] rounded-xl p-8"
+                                            style={{opacity:0,transform:"translateY..."}}
+                                            ref={function useMotionRef.useCallback}
+-                                           bis_skin_checked="1"
+                                          >
+                                            <form onSubmit={function handleSubmit} noValidate={true} ...>
+                                              <div
+                                                className="space-y-1.5"
+-                                               bis_skin_checked="1"
+                                              >
+                                                <label>
+                                                <div
+                                                  className="relative"
+-                                                 bis_skin_checked="1"
+                                                >
+                                              <div
+                                                className="space-y-1.5"
+-                                               bis_skin_checked="1"
+                                              >
+                                                <label>
+                                                <div
+                                                  className="relative"
+-                                                 bis_skin_checked="1"
+                                                >
+                                              ...
+                                            ...
+                              <ToastContainer>
+                                <div
+                                  className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"
+                                  aria-live="polite"
+                                  aria-label="Notificaciones"
+-                                 bis_skin_checked="1"
+                                >
+                  ...
+ 

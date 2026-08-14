@@ -1,0 +1,30 @@
+.dashboard {
+  min-height: 100vh;
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+.main {
+  margin-left: 80px;
+  min-height: 100vh;
+}
+
+.content {
+  padding: 128px 56px 64px;
+}
+
+.content > * {
+  width: min(100%, 1720px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 768px) {
+  .main {
+    margin-left: 0;
+  }
+
+  .content {
+    padding: 104px 20px 32px;
+  }
+}
