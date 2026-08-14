@@ -4,6 +4,8 @@ const root = '/app';
 const backend = `${root}/backend-reservas`;
 const prisma = `${backend}/node_modules/.bin/prisma`;
 const schema = `${backend}/prisma/schema.prisma`;
+const backendPort = process.env.BACKEND_PORT || '3001';
+const frontendPort = process.env.FRONTEND_PORT || '3000';
 
 function run(command, args, label) {
   console.log(`[inicio] ${label}`);
@@ -23,10 +25,14 @@ for (const migration of [
 }
 
 const children = [
-  spawn('node', ['src/server.js'], { cwd: backend, env: process.env, stdio: 'inherit' }),
+  spawn('node', ['src/server.js'], {
+    cwd: backend,
+    env: { ...process.env, PORT: backendPort },
+    stdio: 'inherit',
+  }),
   spawn('node', ['server.js'], {
     cwd: `${root}/noctua`,
-    env: { ...process.env, PORT: process.env.FRONTEND_PORT || '3000', HOSTNAME: '0.0.0.0' },
+    env: { ...process.env, PORT: frontendPort, HOSTNAME: '0.0.0.0' },
     stdio: 'inherit',
   }),
 ];

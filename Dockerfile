@@ -20,7 +20,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
-    PORT=3001 \
+    BACKEND_PORT=3001 \
     FRONTEND_PORT=3000 \
     INTERNAL_API_URL=http://127.0.0.1:3001/api \
     NEXT_PUBLIC_API_URL=/backend-api \
