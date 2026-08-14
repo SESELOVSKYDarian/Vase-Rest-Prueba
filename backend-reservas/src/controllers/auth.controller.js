@@ -16,6 +16,31 @@ export async function seedLocalAdmin() {
       activo = true,
       password_hash = excluded.password_hash,
       actualizado_en = now()`, [hash]);
+
+  const roleUsers = [
+    ["encargado", "encargado", "Encargado", "encargado123"],
+    ["mozo", "mozo", "Mozo", "mozo123"],
+    ["cocina", "cocina", "Cocina", "cocina123"],
+    ["cajero", "cajero", "Cajero", "cajero123"],
+    ["soporte", "soporte", "Soporte", "soporte123"],
+    ["stock", "stock", "Stock", "stock123"],
+    ["delivery", "delivery", "Delivery", "delivery123"],
+    ["desarrollador", "desarrollador", "Desarrollador", "desarrollador123"],
+  ];
+
+  for (const [role, username, name, fallbackPassword] of roleUsers) {
+    const envName = `INITIAL_${String(role).toUpperCase()}_PASSWORD`;
+    const password = process.env[envName] || fallbackPassword;
+    const roleHash = await bcrypt.hash(password, 12);
+    await pool.query(`insert into usuarios (nombre, username, email, rol, activo, password_hash)
+      values ($1, $2, $3, $4, true, $5)
+      on conflict (username) do update set
+        password_hash = coalesce(usuarios.password_hash, excluded.password_hash),
+        activo = true,
+        rol = excluded.rol,
+        actualizado_en = now()`,
+      [name, username, `${username}@noctua.local`, role, roleHash]);
+  }
 }
 
 export async function login(req, res) {
