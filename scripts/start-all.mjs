@@ -20,6 +20,7 @@ for (const migration of [
   '001_schema.sql',
   '002_application_extensions.sql',
   '003_seed.sql',
+  '004_salon_layouts.sql',
 ]) {
   run(prisma, ['db', 'execute', '--schema', schema, '--file', `${root}/database/init/${migration}`], `Aplicando ${migration}`);
 }

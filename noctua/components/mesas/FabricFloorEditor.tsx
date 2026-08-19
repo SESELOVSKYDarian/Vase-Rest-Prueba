@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Canvas, Circle, Rect, Textbox, Group, FabricObject, Point, FabricImage, ActiveSelection, util } from 'fabric';
 import { Hand, MousePointer2, Save, Trash2, ZoomIn, ZoomOut, Square, Undo2, Redo2, Shapes, X, ImagePlus, Pencil, Eye, Layers3, Plus, Copy, ClipboardPaste, Link2, Unlink } from 'lucide-react';
 import type { Mesa } from '@/types/mesa';
+import { database } from '@/hooks/lib/databaseClient';
 
 interface FabricFloorEditorProps {
   mesas: Mesa[];
@@ -11,6 +12,7 @@ interface FabricFloorEditorProps {
   onCreateMesa: (numero?: number, capacidad?: number) => void;
   onUpdateMesaCapacity: (id: string, capacity: number) => void;
   onPreviewTableClick?: (id: string, x: number, y: number) => void;
+  onSaveMesaPosition?: (id: string, posicion: { x: number; y: number }) => Promise<void>;
 }
 
 type Tool = 'select' | 'hand';
@@ -94,7 +96,7 @@ function refreshFurnitureDesign(canvas: Canvas) {
   });
 }
 
-export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaCapacity, onPreviewTableClick }: FabricFloorEditorProps) {
+export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaCapacity, onPreviewTableClick, onSaveMesaPosition }: FabricFloorEditorProps) {
   const canvasElement = useRef<HTMLCanvasElement>(null);
   const canvasRef = useRef<Canvas | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -182,9 +184,17 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
     const observer = new ResizeObserver(resize);
     if (wrapperRef.current) observer.observe(wrapperRef.current);
 
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (saved) canvas.loadFromJSON(JSON.parse(saved)).then(() => { refreshFurnitureDesign(canvas); canvas.requestRenderAll(); hydratedRef.current = true; pushHistorySnapshot(); setCanvasReady(true); setStatus('Guardado'); });
-    else { hydratedRef.current = true; setCanvasReady(true); }
+    const hydrate = async () => {
+      const remote = await database.from('salon_layouts').select('payload').eq('id', 'default').maybeSingle();
+      const savedPayload = remote.data?.payload ?? (() => {
+        const local = window.localStorage.getItem(STORAGE_KEY);
+        return local ? JSON.parse(local) : null;
+      })();
+      if (savedPayload) await canvas.loadFromJSON(savedPayload);
+      refreshFurnitureDesign(canvas);
+      canvas.requestRenderAll(); hydratedRef.current = true; pushHistorySnapshot(); setCanvasReady(true); setStatus(savedPayload ? 'Guardado' : 'Sin cambios');
+    };
+    void hydrate();
     historyRef.current = [JSON.stringify((canvas.toJSON as unknown as (properties?: string[]) => unknown)(['data']))];
     historyIndexRef.current = 0;
 
@@ -392,6 +402,16 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(serialized));
     window.localStorage.setItem(`${STORAGE_KEY}:section:${activeSection}`, JSON.stringify(serialized));
     window.localStorage.setItem(`${STORAGE_KEY}:sections`, JSON.stringify(sections));
+    const tableSaves = canvas.getObjects()
+      .filter((object) => getData(object).kind === 'tableGroup')
+      .map((object) => {
+        const data = getData(object);
+        const mesaId = data.mesaId ? String(data.mesaId) : mesasRef.current.find((mesa) => mesa.numero === Number(data.mesaNumero))?.id;
+        return mesaId && onSaveMesaPosition ? onSaveMesaPosition(mesaId, { x: object.left ?? 0, y: object.top ?? 0 }) : Promise.resolve();
+      });
+    await Promise.all(tableSaves);
+    const remote = await database.from('salon_layouts').upsert({ id: 'default', payload: serialized, updated_at: new Date().toISOString() });
+    if (remote.error) { setStatus('Error al guardar'); return; }
     setStatus('Guardado');
   };
 
