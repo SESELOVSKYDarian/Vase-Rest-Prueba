@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Canvas, Circle, Rect, Textbox, Group, FabricObject, Point, FabricImage, ActiveSelection, util } from 'fabric';
 import { Hand, MousePointer2, Save, Trash2, ZoomIn, ZoomOut, Square, Undo2, Redo2, Shapes, X, ImagePlus, Pencil, Eye, Layers3, Plus, Copy, ClipboardPaste, Link2, Unlink } from 'lucide-react';
 import type { Mesa } from '@/types/mesa';
@@ -94,6 +95,7 @@ function refreshFurnitureDesign(canvas: Canvas) {
 }
 
 export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaCapacity }: FabricFloorEditorProps) {
+  const router = useRouter();
   const canvasElement = useRef<HTMLCanvasElement>(null);
   const canvasRef = useRef<Canvas | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -250,7 +252,14 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
       }
       if (editorModeRef.current === 'preview' && pointer.button === 0) {
         const data = event.target ? getData(event.target) : {};
-        if (data.kind === 'tableGroup') setPreviewInfo({ numero: Number(data.mesaNumero), capacidad: Number(data.capacidad ?? 0), x: pointer.offsetX, y: pointer.offsetY });
+        if (data.kind === 'tableGroup') {
+          const mesaId = data.mesaId ? String(data.mesaId) : mesasRef.current.find((mesa) => mesa.numero === Number(data.mesaNumero))?.id;
+          if (mesaId) {
+            router.push(`/dashboard/pedido?mesa=${encodeURIComponent(mesaId)}`);
+            return;
+          }
+          setPreviewInfo({ numero: Number(data.mesaNumero), capacidad: Number(data.capacidad ?? 0), x: pointer.offsetX, y: pointer.offsetY });
+        }
         else setPreviewInfo(null);
         return;
       }
