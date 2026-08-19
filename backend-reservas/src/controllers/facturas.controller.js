@@ -2,6 +2,7 @@ import { postgresClient } from "../config/postgresClient.js";
 import { getIntegration } from "../services/integraciones.service.js";
 import { solicitarCAE } from "../services/arca.service.js";
 import { generarExcelMovimientosCaja } from "../services/excel.service.js";
+import { imprimirTicketPagoInternoNoFiscal } from "../services/ticketPrinter.service.js";
 import {
   buscarMovimientoPorIdempotency,
   crearDebitoFacturaCuentaCorriente,
@@ -737,13 +738,33 @@ export const registrarPagoInternoNoFiscal = async (req, res) => {
     }
 
     const cierre = await cerrarPedidoYLiberarMesa(pedidoRaw);
+    const movimientoMapeado = mapMovimientoCaja(movimiento);
+
+    try {
+      await imprimirTicketPagoInternoNoFiscal({
+        comercio: process.env.COMANDERA_TICKET_COMERCIO || "NOCTUA POS",
+        pedidoId: pedido.id,
+        mesa: pedido?.mesa?.numero ? `#${pedido.mesa.numero}` : null,
+        recibidoPor: creadoPor,
+        motivo: motivoNormalizado,
+        observacion: observacionTexto,
+        total: montoNumero,
+        items: pedido.items,
+        creadoEn: movimientoMapeado.creadoEn,
+      });
+    } catch (printError) {
+      console.error("No se pudo imprimir ticket no fiscal en comandera:", {
+        pedidoId: pedido.id,
+        mensaje: printError?.message,
+      });
+    }
 
     return res.status(201).json({
       mensaje: MENSAJE_PAGO_INTERNO_NO_FISCAL,
       pedidoId: pedido.id,
       pedidoCerrado: true,
       mesaLiberada: cierre.mesaLiberada,
-      movimiento: mapMovimientoCaja(movimiento),
+      movimiento: movimientoMapeado,
       noFiscal: true,
     });
   } catch (error) {
