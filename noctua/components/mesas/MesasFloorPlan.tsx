@@ -270,7 +270,7 @@ export const MesasFloorPlan = memo(function MesasFloorPlan({
           onDelete={onDelete}
           onCreateMesa={onCreateMesa}
           onToggleSelectionMode={handleToggleSelectionMode}
-        /> : <FabricFloorEditor mesas={mesas} onDelete={onDelete} onCreateMesa={onCreateMesa} onUpdateMesaCapacity={(id, capacity) => { const mesa = mesas.find((item) => item.id === id); if (mesa) void editarMesa(id, { numero: mesa.numero, capacidad: capacity }); }} />}
+        /> : <FabricFloorEditor mesas={mesas} onDelete={onDelete} onCreateMesa={onCreateMesa} onPreviewTableClick={handleTap} onUpdateMesaCapacity={(id, capacity) => { const mesa = mesas.find((item) => item.id === id); if (mesa) void editarMesa(id, { numero: mesa.numero, capacidad: capacity }); }} />}
 
       {/* Leyenda de estados */}
       <MesaStatusLegend />

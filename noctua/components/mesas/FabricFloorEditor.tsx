@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Canvas, Circle, Rect, Textbox, Group, FabricObject, Point, FabricImage, ActiveSelection, util } from 'fabric';
 import { Hand, MousePointer2, Save, Trash2, ZoomIn, ZoomOut, Square, Undo2, Redo2, Shapes, X, ImagePlus, Pencil, Eye, Layers3, Plus, Copy, ClipboardPaste, Link2, Unlink } from 'lucide-react';
 import type { Mesa } from '@/types/mesa';
@@ -11,6 +10,7 @@ interface FabricFloorEditorProps {
   onDelete: (id: string) => void;
   onCreateMesa: (numero?: number, capacidad?: number) => void;
   onUpdateMesaCapacity: (id: string, capacity: number) => void;
+  onPreviewTableClick?: (id: string, x: number, y: number) => void;
 }
 
 type Tool = 'select' | 'hand';
@@ -94,8 +94,7 @@ function refreshFurnitureDesign(canvas: Canvas) {
   });
 }
 
-export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaCapacity }: FabricFloorEditorProps) {
-  const router = useRouter();
+export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaCapacity, onPreviewTableClick }: FabricFloorEditorProps) {
   const canvasElement = useRef<HTMLCanvasElement>(null);
   const canvasRef = useRef<Canvas | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -255,7 +254,7 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
         if (data.kind === 'tableGroup') {
           const mesaId = data.mesaId ? String(data.mesaId) : mesasRef.current.find((mesa) => mesa.numero === Number(data.mesaNumero))?.id;
           if (mesaId) {
-            router.push(`/dashboard/pedido?mesa=${encodeURIComponent(mesaId)}`);
+            onPreviewTableClick?.(mesaId, pointer.clientX, pointer.clientY);
             return;
           }
           setPreviewInfo({ numero: Number(data.mesaNumero), capacidad: Number(data.capacidad ?? 0), x: pointer.offsetX, y: pointer.offsetY });
