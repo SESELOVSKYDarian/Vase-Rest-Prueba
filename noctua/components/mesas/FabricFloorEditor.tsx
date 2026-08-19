@@ -132,6 +132,7 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
   const updateCapacityRef = useRef(onUpdateMesaCapacity);
   const clipboardRef = useRef<FabricObject[]>([]);
   const pendingDropPointRef = useRef<Point | null>(null);
+  const previewTableClickRef = useRef(onPreviewTableClick);
 
   const pushHistorySnapshot = () => {
     const canvas = canvasRef.current;
@@ -147,6 +148,7 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
   useEffect(() => { editorModeRef.current = editorMode; }, [editorMode]);
   useEffect(() => { mesasRef.current = mesas; }, [mesas]);
   useEffect(() => { updateCapacityRef.current = onUpdateMesaCapacity; }, [onUpdateMesaCapacity]);
+  useEffect(() => { previewTableClickRef.current = onPreviewTableClick; }, [onPreviewTableClick]);
 
   useEffect(() => {
     const savedSections = window.localStorage.getItem(`${STORAGE_KEY}:sections`);
@@ -264,7 +266,7 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
         if (data.kind === 'tableGroup') {
           const mesaId = data.mesaId ? String(data.mesaId) : mesasRef.current.find((mesa) => mesa.numero === Number(data.mesaNumero))?.id;
           if (mesaId) {
-            onPreviewTableClick?.(mesaId, pointer.clientX, pointer.clientY);
+            previewTableClickRef.current?.(mesaId, pointer.clientX, pointer.clientY);
             return;
           }
           setPreviewInfo({ numero: Number(data.mesaNumero), capacidad: Number(data.capacidad ?? 0), x: pointer.offsetX, y: pointer.offsetY });
