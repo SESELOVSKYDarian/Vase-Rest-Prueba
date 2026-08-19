@@ -4,7 +4,7 @@ import { pool } from "../config/database.js";
 import { requireAuth } from "../controllers/auth.controller.js";
 
 const router = Router();
-const TABLES = new Set(["usuarios","mesas","categorias","productos","clientes","reservas","pedidos","pedido_items","ingredientes","producto_ingredientes","movimientos_stock","facturas","pagos","movimientos_caja","mozos","promociones","promocion_productos","tickets_soporte","cuentas_corrientes","pagos_cuenta_corriente","movimientos_cuenta_corriente","integraciones"]);
+const TABLES = new Set(["usuarios","mesas","categorias","productos","clientes","reservas","pedidos","pedido_items","ingredientes","producto_ingredientes","movimientos_stock","facturas","pagos","movimientos_caja","mozos","promociones","promocion_productos","tickets_soporte","cuentas_corrientes","pagos_cuenta_corriente","movimientos_cuenta_corriente","integraciones","salon_layouts"]);
 const FILTERS = new Set(["eq","neq","like","ilike","gt","gte","lt","lte","is","in","or"]);
 router.use(requireAuth);
 
@@ -13,7 +13,7 @@ router.post("/query", async (req, res) => {
   if (!TABLES.has(table)) return res.status(400).json({ error: "Tabla no permitida" });
   try {
     let query = postgresClient.from(table);
-    if (operation === "insert") query = query.insert(payload);
+    if (operation === "insert" || operation === "upsert") query = operation === "upsert" ? query.upsert(payload) : query.insert(payload);
     else if (operation === "update") query = query.update(payload);
     else if (operation === "delete") query = query.delete();
     query = query.select(selection);

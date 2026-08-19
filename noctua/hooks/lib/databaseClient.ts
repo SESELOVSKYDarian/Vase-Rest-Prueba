@@ -14,7 +14,7 @@ class DatabaseQuery implements PromiseLike<{ data: any; error: { message: string
   constructor(private table: string) {}
   select(columns = '*') { this.selection = columns; return this; }
   insert(value: unknown) { this.operation = 'insert'; this.payload = value; return this; }
-  upsert(value: unknown) { this.operation = 'insert'; this.payload = value; return this; }
+  upsert(value: unknown) { this.operation = 'upsert'; this.payload = value; return this; }
   update(value: unknown) { this.operation = 'update'; this.payload = value; return this; }
   delete() { this.operation = 'delete'; return this; }
   private filter(method: string, column: string, value: unknown) { this.filters.push({ method, column, value }); return this; }

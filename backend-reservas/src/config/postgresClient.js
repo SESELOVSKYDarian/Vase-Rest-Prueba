@@ -37,6 +37,7 @@ class PostgresQuery {
   constructor(table) { this.table = table; this.operation = "select"; this.payload = null; this.filters = []; this.orders = []; this.selection = "*"; this.max = null; this.offset = null; this.one = false; this.optional = false; }
   select(columns = "*") { this.selection = columns; return this; }
   insert(value) { this.operation = "insert"; this.payload = value; return this; }
+  upsert(value) { this.operation = "upsert"; this.payload = value; return this; }
   update(value) { this.operation = "update"; this.payload = value; return this; }
   delete() { this.operation = "delete"; return this; }
   eq(column, value) { return this.add(column, "=", value); }
@@ -73,11 +74,11 @@ class PostgresQuery {
   async execute() {
     try {
       let sql; let values = [];
-      if (this.operation === "insert") {
+      if (this.operation === "insert" || this.operation === "upsert") {
         const rows = Array.isArray(this.payload) ? this.payload : [this.payload];
         const columns = Object.keys(rows[0] || {});
         const groups = rows.map((row) => `(${columns.map((column) => { values.push(row[column]); return `$${values.length}`; }).join(",")})`);
-        sql = `insert into ${ident(this.table)} (${columns.map(ident).join(",")}) values ${groups.join(",")} returning *`;
+        sql = `insert into ${ident(this.table)} (${columns.map(ident).join(",")}) values ${groups.join(",")}${this.operation === "upsert" ? ` on conflict ("id") do update set ${columns.filter((column) => column !== "id").map((column) => `${ident(column)}=excluded.${ident(column)}`).join(",")}` : ""} returning *`;
       } else if (this.operation === "update") {
         const entries = Object.entries(this.payload); values = entries.map(([, value]) => value);
         const where = this.buildWhere(values.length + 1); values.push(...where.values);
