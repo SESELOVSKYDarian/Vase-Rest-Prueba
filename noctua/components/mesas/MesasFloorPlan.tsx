@@ -27,7 +27,7 @@ interface MesasFloorPlanProps {
   onSingleClick:      (id: string) => void;
   onDoubleClick:      (mesa: Mesa) => void;
   onDelete:           (id: string) => void;
-  onCreateMesa:       () => void;
+  onCreateMesa:       (numero?: number, capacidad?: number, forma?: Mesa['forma']) => void;
   editorMode?:        'edit' | 'preview';
   onEditorModeChange?: (mode: 'edit' | 'preview') => void;
   visibleMesaIds?:    Set<string> | null;

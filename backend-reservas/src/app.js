@@ -27,7 +27,9 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json());
+// El plano de mesas (salon_layouts) embebe la imagen de fondo como data URL en el
+// payload JSON; el límite por defecto de express (100kb) la rechaza con 413.
+app.use(express.json({ limit: "12mb" }));
 
 app.get("/health", async (_req, res) => {
   try {

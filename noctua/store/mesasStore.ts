@@ -27,6 +27,7 @@ interface MesasState {
     numero: number;
     capacidad: number;
     ubicacion: string;
+    forma?: Mesa["forma"];
   }) => Promise<void>;
   eliminarMesaDesdePanel: (id: string) => Promise<void>;
 
@@ -43,7 +44,7 @@ interface MesasState {
   cambiarEstadoMesa: (id: string, estado: EstadoMesa) => Promise<void>;
 
   moverMesa: (id: string, posicion: { x: number; y: number }) => Promise<void>;
-  editarMesa: (id: string, data: { numero: number; capacidad: number }) => Promise<void>;
+  editarMesa: (id: string, data: { numero?: number; capacidad?: number; forma?: Mesa["forma"] }) => Promise<void>;
 
   unirMesas: (ids: string[]) => void;
   dividirMesas: (id: string) => void;

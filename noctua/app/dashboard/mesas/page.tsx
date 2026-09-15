@@ -105,9 +105,11 @@ export default function MesasPage() {
     setMesaAEliminar(null);
   };
 
-  const crearMesaDesdeEditor = useCallback(async (numeroElegido?: number, capacidadElegida?: number) => {
+  const crearMesaDesdeEditor = useCallback(async (numeroElegido?: number, capacidadElegida?: number, forma?: Mesa["forma"]) => {
     const siguienteNumero = numeroElegido || mesas.reduce((maximo, mesa) => Math.max(maximo, mesa.numero), 0) + 1;
-    await crearMesaDesdePanel({ numero: siguienteNumero, capacidad: capacidadElegida ?? 0, ubicacion: UBICACION_POR_DEFECTO });
+    // La base exige capacidad > 0; una mesa recién creada en el editor todavía no tiene
+    // sillas asignadas, así que se arranca con una capacidad razonable por defecto.
+    await crearMesaDesdePanel({ numero: siguienteNumero, capacidad: capacidadElegida ?? 4, ubicacion: UBICACION_POR_DEFECTO, forma });
     await cargarMesas();
   }, [mesas, crearMesaDesdePanel, cargarMesas]);
 

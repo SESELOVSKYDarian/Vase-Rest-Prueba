@@ -9,6 +9,7 @@ interface MesaBackend {
   zona?: string | null;
   disponible?: boolean;
   estado?: string;
+  forma?: string | null;
 
   estadoActual?: string;
   estadoPedido?: string | null;
@@ -20,6 +21,13 @@ interface MesaBackend {
   personas?: number | null;
   pedido_id?: number | null;
   creada_en?: string | null;
+}
+
+/** La columna `forma` es texto libre en la base (default legacy 'redonda'); acá se normaliza al vocabulario real usado por el editor. */
+function normalizarForma(forma?: string | null): Mesa["forma"] {
+  if (forma === "cuadrada") return "cuadrada";
+  if (forma === "rectangular") return "rectangular";
+  return "circular"; // cubre 'circular', el legacy 'redonda' y cualquier valor vacío/desconocido
 }
 
 function mapEstadoMesa(mesa: MesaBackend): EstadoMesa {
@@ -50,7 +58,7 @@ function mapEstadoMesa(mesa: MesaBackend): EstadoMesa {
 export async function obtenerMesas(): Promise<Mesa[]> {
   const { data, error } = await database
     .from("mesas")
-    .select("id, numero, capacidad, zona, disponible, estado, pos_x, pos_y, creada_en");
+    .select("id, numero, capacidad, zona, disponible, estado, forma, pos_x, pos_y, creada_en");
 
   if (error) {
     console.error("Error al obtener mesas de PostgreSQL:", error);
@@ -63,6 +71,7 @@ export async function obtenerMesas(): Promise<Mesa[]> {
     zona: mesa.zona || mesa.ubicacion || "SALÓN PRINCIPAL",
     estado: mapEstadoMesa(mesa),
     capacidad: mesa.capacidad ?? 0,
+    forma: normalizarForma(mesa.forma),
     posicion: {
       x: mesa.pos_x || 0,
       y: mesa.pos_y || 0,
@@ -78,6 +87,7 @@ export async function crearMesa(data: {
   numero: number;
   capacidad: number;
   ubicacion: string;
+  forma?: Mesa["forma"];
 }) {
   const { data: newMesa, error } = await database
     .from("mesas")
@@ -89,11 +99,11 @@ export async function crearMesa(data: {
         estado: "libre",
         pos_x: 0,
         pos_y: 0,
-        forma: "cuadrada",
+        forma: data.forma ?? "circular",
         piso: "baja",
       },
     ])
-    .select("id, numero, capacidad, zona, disponible, estado, pos_x, pos_y, creada_en")
+    .select("id, numero, capacidad, zona, disponible, estado, forma, pos_x, pos_y, creada_en")
     .single();
 
   if (error) {
@@ -109,6 +119,7 @@ export async function crearMesa(data: {
       zona: newMesa.zona || "SALÓN PRINCIPAL",
       estado: mapEstadoMesa(newMesa),
       capacidad: newMesa.capacidad ?? 0,
+      forma: normalizarForma(newMesa.forma),
       posicion: {
         x: newMesa.pos_x || 0,
         y: newMesa.pos_y || 0,
@@ -125,6 +136,7 @@ export async function actualizarMesa(
     capacidad: number;
     ubicacion: string;
     zona: string;
+    forma: Mesa["forma"];
     posicion: { x: number; y: number };
     personas: number | null;
   }>
@@ -137,6 +149,7 @@ export async function actualizarMesa(
   if (data.ubicacion !== undefined || data.zona !== undefined) {
     cambios.zona = data.zona || data.ubicacion;
   }
+  if (data.forma !== undefined) cambios.forma = data.forma;
   if (data.posicion !== undefined) {
     cambios.pos_x = data.posicion.x;
     cambios.pos_y = data.posicion.y;
@@ -147,7 +160,7 @@ export async function actualizarMesa(
     .from("mesas")
     .update(cambios)
     .eq("id", queryId)
-    .select("id, numero, capacidad, zona, disponible, estado, pos_x, pos_y, creada_en")
+    .select("id, numero, capacidad, zona, disponible, estado, forma, pos_x, pos_y, creada_en")
     .single();
 
   if (error) {
@@ -163,6 +176,7 @@ export async function actualizarMesa(
       zona: mesaActualizada.zona || "SALÓN PRINCIPAL",
       estado: mapEstadoMesa(mesaActualizada),
       capacidad: mesaActualizada.capacidad ?? 0,
+      forma: normalizarForma(mesaActualizada.forma),
       posicion: {
         x: mesaActualizada.pos_x || 0,
         y: mesaActualizada.pos_y || 0,
