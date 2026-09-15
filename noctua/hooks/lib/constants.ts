@@ -2,13 +2,13 @@ import type { EstadoMesa } from "@/types/mesa";
 import type { EstadoCocina } from "@/types/pedido";
 
 export const COLORES_ESTADO_MESA: Record<EstadoMesa, string> = {
-  libre: "bg-gray-600",
-  ocupada: "bg-orange-500",
-  esperando_pedido: "bg-yellow-400",
-  pedido_listo: "bg-green-500",
-  esperando_pago: "bg-blue-500",
-  problema: "bg-red-500",
-  para_cobrar: "bg-amber-600",
+  libre: "bg-green-500",
+  ocupada: "bg-red-500",
+  esperando_pedido: "bg-blue-500",
+  pedido_listo: "bg-orange-500",
+  esperando_pago: "bg-yellow-400",
+  problema: "bg-pink-600",
+  para_cobrar: "bg-purple-500",
 };
 
 export const TEXTO_ESTADO_MESA: Record<EstadoMesa, string> = {

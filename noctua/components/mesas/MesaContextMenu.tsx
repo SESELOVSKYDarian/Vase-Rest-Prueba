@@ -4,20 +4,12 @@
 import { useEffect, useRef, useState, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
-import { TEXTO_ESTADO_MESA } from '@/hooks/lib/constants';
+import { TEXTO_ESTADO_MESA, COLORES_ESTADO_MESA } from '@/hooks/lib/constants';
 import type { Mesa, EstadoMesa, ContextMenuAction } from '@/types/mesa';
 
 const ESTADOS_CAMBIO: EstadoMesa[] = ['libre', 'ocupada', 'esperando_pedido', 'esperando_pago', 'problema'];
 
-const COLOR_ESTADO: Record<EstadoMesa, string> = {
-  libre:            'bg-gray-500',
-  ocupada:          'bg-orange-500',
-  esperando_pedido: 'bg-yellow-400',
-  pedido_listo:     'bg-green-500',
-  esperando_pago:   'bg-blue-500',
-  problema:         'bg-red-500',
-  para_cobrar:      'bg-amber-600',
-};
+const COLOR_ESTADO = COLORES_ESTADO_MESA;
 
 const MENU_W = 240;
 const MENU_H = 360; // estimado

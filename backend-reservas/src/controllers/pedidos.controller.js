@@ -1,4 +1,7 @@
 import { postgresClient } from "../config/postgresClient.js";
+import { obtenerUsuarioRequest } from "../utils/authz.js";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function mapProducto(producto) {
   if (!producto) return null;
@@ -49,6 +52,8 @@ function mapPedido(pedido) {
     mesa: mapMesa(pedido.mesas),
     items: (pedido.pedido_items || []).map(mapItem),
     detalles: (pedido.pedido_items || []).map(mapItem),
+    mozoId: pedido.usuario_id || null,
+    mozoNombre: pedido.usuarios?.nombre || null,
   };
 }
 
@@ -58,6 +63,7 @@ async function obtenerPedidoCompleto(id) {
     .select(`
       *,
       mesas(*),
+      usuarios(nombre),
       pedido_items(
         *,
         productos(*)
@@ -185,10 +191,14 @@ export const abrirPedido = async (req, res) => {
       });
     }
 
+    const solicitante = obtenerUsuarioRequest(req);
+    const usuarioId = UUID_RE.test(solicitante.id) ? solicitante.id : null;
+
     const { data, error } = await postgresClient
       .from("pedidos")
       .insert({
         mesa_id: mesaId,
+        usuario_id: usuarioId,
         estado: "pendiente",
         comensales: comensalesNum,
         subtotal: 0,
@@ -228,6 +238,7 @@ export const obtenerPedidos = async (req, res) => {
       .select(`
         *,
         mesas(*),
+        usuarios(nombre),
         pedido_items(
           *,
           productos(*)

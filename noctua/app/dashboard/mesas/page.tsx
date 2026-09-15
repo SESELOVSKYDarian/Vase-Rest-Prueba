@@ -1,32 +1,33 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Users } from "lucide-react";
 import { useMesasStore } from "@/store/mesasStore";
 import { useMozosStore } from "@/store/mozosStore";
-import { MesaModal } from "@/components/mesas/MesaModal";
+import { usePedidosStore } from "@/store/pedidosStore";
+import { setComensales } from "@/services/comensalesService";
 import { MesasFloorPlan } from "@/components/mesas/MesasFloorPlan";
+import { MesasPageHeader, type MesaFiltro } from "@/components/mesas/MesasPageHeader";
 import { Button } from "@/components/ui/Button";
 import type { Mesa } from "@/types/mesa";
 
-
+const UBICACION_POR_DEFECTO = "SALÓN PRINCIPAL";
+const REFRESH_PEDIDOS_MS = 20_000; // 20 segundos, igual que /dashboard/cocina
 
 export default function MesasPage() {
+  const router = useRouter();
+  const iniciarPedido = usePedidosStore((s) => s.iniciarPedido);
   const mesas = useMesasStore((s) => s.mesas);
   const mesasSeleccionadas = useMesasStore((s) => s.mesasSeleccionadas);
   const toggleSeleccionMesa = useMesasStore((s) => s.toggleSeleccionMesa);
   const limpiarSeleccion = useMesasStore((s) => s.limpiarSeleccion);
-  
-  // Select reactive values from mozos store
-  const lastUpdated = useMozosStore((s) => s.lastUpdated);
-  const dailyOverrides = useMozosStore((s) => s.dailyOverrides);
-  const getTurnoActual = useMozosStore((s) => s.getTurnoActual);
-  const getAsignacionesTurnoActual = useMozosStore((s) => s.getAsignacionesTurnoActual);
+
   const fetchMozos = useMozosStore((s) => s.fetchMozos);
   const suscribirCambiosMozos = useMozosStore((s) => s.suscribirCambiosMozos);
   const desuscribirCambiosMozos = useMozosStore((s) => s.desuscribirCambiosMozos);
 
+  const cargarPedidosActivos = usePedidosStore((s) => s.cargarPedidosActivos);
   const cargarMesas = useMesasStore((s) => s.cargarMesas);
   const suscribirCambiosMesas = useMesasStore((s) => s.suscribirCambiosMesas);
   const crearMesaDesdePanel = useMesasStore((s) => s.crearMesaDesdePanel);
@@ -34,67 +35,71 @@ export default function MesasPage() {
   const isLoading = useMesasStore((s) => s.isLoading);
   const error = useMesasStore((s) => s.error);
 
-  const [modalMesa, setModalMesa] = useState<Mesa | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
   const [mesaAEliminar, setMesaAEliminar] = useState<Mesa | null>(null);
 
-  const [numeroMesa, setNumeroMesa] = useState("");
-  const [capacidadMesa, setCapacidadMesa] = useState("");
-  const [ubicacionMesa, setUbicacionMesa] = useState("SALÓN PRINCIPAL");
+  const [search, setSearch] = useState("");
+  const [activeFilter, setActiveFilter] = useState<MesaFiltro>("todas");
+  const [editorMode, setEditorMode] = useState<"edit" | "preview">("preview");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const floorWrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     cargarMesas();
+    cargarPedidosActivos();
     fetchMozos();
     const unsubscribeMesas = suscribirCambiosMesas();
     suscribirCambiosMozos();
+    // Los pedidos (items, total, mozo real) no tienen suscripción propia como
+    // mesas/mozos: se refrescan por polling, igual que en /dashboard/cocina.
+    const pedidosInterval = setInterval(cargarPedidosActivos, REFRESH_PEDIDOS_MS);
     return () => {
       unsubscribeMesas();
       desuscribirCambiosMozos();
+      clearInterval(pedidosInterval);
     };
-  }, [cargarMesas, suscribirCambiosMesas, fetchMozos, suscribirCambiosMozos, desuscribirCambiosMozos]);
+  }, [cargarMesas, cargarPedidosActivos, suscribirCambiosMesas, fetchMozos, suscribirCambiosMozos, desuscribirCambiosMozos]);
 
-  const handleCrearMesa = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  useEffect(() => {
+    const handleChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", handleChange);
+    return () => document.removeEventListener("fullscreenchange", handleChange);
+  }, []);
 
-    const numero = Number(numeroMesa);
-    const capacidad = Number(capacidadMesa);
-
-    if (!numero || numero <= 0) {
-      alert("Ingresá un número de mesa válido");
-      return;
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      floorWrapperRef.current?.requestFullscreen();
     }
+  }, []);
 
-    if (!capacidad || capacidad <= 0) {
-      alert("Ingresá una capacidad válida");
-      return;
-    }
-
-    await crearMesaDesdePanel({
-      numero,
-      capacidad,
-      ubicacion: ubicacionMesa,
+  const visibleMesaIds = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (activeFilter === "todas" && !term) return null;
+    const ids = new Set<string>();
+    mesas.forEach((mesa) => {
+      const matchesFilter = activeFilter === "todas" || mesa.estado === activeFilter;
+      const matchesSearch = !term || String(mesa.numero).includes(term) || mesa.zona.toLowerCase().includes(term);
+      if (matchesFilter && matchesSearch) ids.add(mesa.id);
     });
-
-    setNumeroMesa("");
-    setCapacidadMesa("");
-    setUbicacionMesa("SALÓN PRINCIPAL");
-  };
+    return ids;
+  }, [mesas, activeFilter, search]);
 
   const abrirAlertaEliminar = (id: string) => {
-  const mesa = mesas.find((m) => m.id === id);
+    const mesa = mesas.find((m) => m.id === id);
 
-  if (!mesa) return;
+    if (!mesa) return;
 
-  setMesaAEliminar(mesa);
-};
+    setMesaAEliminar(mesa);
+  };
 
-const confirmarEliminarMesa = async () => {
-  if (!mesaAEliminar) return;
+  const confirmarEliminarMesa = async () => {
+    if (!mesaAEliminar) return;
 
-  await eliminarMesaDesdePanel(mesaAEliminar.id);
+    await eliminarMesaDesdePanel(mesaAEliminar.id);
 
-  setMesaAEliminar(null);
-};
+    setMesaAEliminar(null);
+  };
 
   const cancelarEliminarMesa = () => {
     setMesaAEliminar(null);
@@ -102,9 +107,9 @@ const confirmarEliminarMesa = async () => {
 
   const crearMesaDesdeEditor = useCallback(async (numeroElegido?: number, capacidadElegida?: number) => {
     const siguienteNumero = numeroElegido || mesas.reduce((maximo, mesa) => Math.max(maximo, mesa.numero), 0) + 1;
-    await crearMesaDesdePanel({ numero: siguienteNumero, capacidad: capacidadElegida ?? 0, ubicacion: ubicacionMesa });
+    await crearMesaDesdePanel({ numero: siguienteNumero, capacidad: capacidadElegida ?? 0, ubicacion: UBICACION_POR_DEFECTO });
     await cargarMesas();
-  }, [mesas, crearMesaDesdePanel, cargarMesas, ubicacionMesa]);
+  }, [mesas, crearMesaDesdePanel, cargarMesas]);
 
   const handleSingleClick = useCallback(
     (id: string) => {
@@ -115,146 +120,30 @@ const confirmarEliminarMesa = async () => {
 
   const handleDoubleClick = useCallback(
     (mesa: Mesa) => {
-      setModalMesa(mesa);
-      setModalOpen(true);
       limpiarSeleccion();
+      const comensales = mesa.personas || mesa.capacidad;
+      setComensales(mesa.id, comensales).catch(() => {});
+      iniciarPedido(mesa.id, mesa.numero, mesa.zona, comensales);
+      router.push(`/dashboard/pedido?mesa=${mesa.id}`);
     },
-    [limpiarSeleccion]
+    [limpiarSeleccion, iniciarPedido, router]
   );
 
   return (
-    <div className="fixed inset-0 z-0 ml-20 flex min-h-0 flex-col overflow-hidden pt-24 lg:ml-20">
-      {false && <>
-      {/* Mozos Asignados */}
-      <div className="bg-[#080808] border border-[#1a1a1a] rounded-xl p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Users size={18} className="text-violet-400" />
-            <div>
-              <h2 className="text-white font-bold tracking-widest uppercase">
-                Mozos del turno actual
-              </h2>
-              <p className="text-[#676b67] text-xs">
-                {new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              </p>
-            </div>
-          </div>
-          {getTurnoActual() && (
-            <div className="px-3 py-1 rounded-full bg-violet-600 text-white text-sm font-semibold">
-              {getTurnoActual()}
-            </div>
-          )}
-        </div>
+    <div className="flex h-[calc(100vh-136px)] min-h-0 flex-col overflow-hidden md:h-[calc(100vh-192px)]">
+      <MesasPageHeader
+        mesas={mesas}
+        search={search}
+        onSearchChange={setSearch}
+        activeFilter={activeFilter}
+        onFilterChange={setActiveFilter}
+        editorMode={editorMode}
+        onToggleEditorMode={() => setEditorMode((mode) => (mode === "edit" ? "preview" : "edit"))}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={toggleFullscreen}
+      />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {getAsignacionesTurnoActual().map((asignacion) => {
-            // Check if this is an override
-            const today = new Date().toISOString().split('T')[0];
-            const isOverride = dailyOverrides.some(
-              o => o.fecha === today && o.turnos[asignacion.turno]?.[asignacion.zona] === asignacion.mozo.id
-            );
-            
-            return (
-              <div
-                key={asignacion.zona}
-                className={`bg-[#151515] border rounded-lg p-4 ${
-                  isOverride ? 'border-amber-500/50' : 'border-[#252525]'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-[#676b67] text-xs uppercase font-semibold">
-                    {asignacion.zona}
-                  </p>
-                  {isOverride && (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] uppercase">
-                      Reemplazo
-                    </span>
-                  )}
-                </div>
-                <p className="text-white font-semibold">
-                  {asignacion.mozo.nombre} {asignacion.mozo.apellido}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      </>}
-
-      {/* Formulario para agregar mesas */}
-      {false && <form
-        onSubmit={handleCrearMesa}
-        className="bg-[#080808] border border-[#1a1a1a] rounded-xl p-5 space-y-4"
-      >
-        <div>
-        <h2 className="text-white font-bold tracking-widest uppercase">
-            Agregar mesa
-          </h2>
-          <p className="text-[#676B67] text-sm">
-            Crea una mesa nueva y la guarda en el backend.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-[#676B67] uppercase font-semibold">
-              Número
-            </label>
-            <input
-              type="number"
-              value={numeroMesa}
-              onChange={(e) => setNumeroMesa(e.target.value)}
-              placeholder="Ej: 1"
-              className="bg-black border border-[#2a2a2a] rounded-md px-3 py-2 text-white outline-none focus:border-white"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-[#676B67] uppercase font-semibold">
-              Capacidad
-            </label>
-            <input
-              type="number"
-              value={capacidadMesa}
-              onChange={(e) => setCapacidadMesa(e.target.value)}
-              placeholder="Ej: 4"
-              className="bg-black border border-[#2a2a2a] rounded-md px-3 py-2 text-white outline-none focus:border-white"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-[#676B67] uppercase font-semibold">
-              Ubicación
-            </label>
-            <select
-              value={ubicacionMesa}
-              onChange={(e) => setUbicacionMesa(e.target.value)}
-              className="bg-black border border-[#2a2a2a] rounded-md px-3 py-2 text-white outline-none focus:border-white"
-            >
-              <option value="SALÓN PRINCIPAL">SALÓN PRINCIPAL</option>
-              <option value="TERRAZA EXTERIOR">TERRAZA EXTERIOR</option>
-              <option value="BAR">BAR</option>
-              <option value="ZONA SOFÁS">ZONA SOFÁS</option>
-              <option value="ZONA COCINA">ZONA COCINA</option>
-            </select>
-          </div>
-
-          <div className="flex items-end">
-            <Button
-              type="submit"
-              variant="primary"
-              className="w-full"
-              loading={isLoading}
-            >
-              <Plus size={14} />
-              Agregar mesa
-            </Button>
-          </div>
-        </div>
-
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-      </form>}
+      {error && <p className="mb-2 text-sm text-red-500">{error}</p>}
 
       {isLoading && mesas.length === 0 && (
         <div className="text-[#BCB9B9]">
@@ -263,25 +152,21 @@ const confirmarEliminarMesa = async () => {
       )}
 
       {/* Plano de planta de mesas */}
-      <MesasFloorPlan
-        mesas={mesas}
-        mesasSeleccionadas={mesasSeleccionadas}
-        onSingleClick={handleSingleClick}
-        onDoubleClick={handleDoubleClick}
-        onDelete={abrirAlertaEliminar}
-        onCreateMesa={crearMesaDesdeEditor}
-      />
+      <div ref={floorWrapperRef} className="relative flex min-h-0 flex-1 flex-col bg-[#0b0f0c]">
+        <MesasFloorPlan
+          mesas={mesas}
+          mesasSeleccionadas={mesasSeleccionadas}
+          onSingleClick={handleSingleClick}
+          onDoubleClick={handleDoubleClick}
+          onDelete={abrirAlertaEliminar}
+          onCreateMesa={crearMesaDesdeEditor}
+          editorMode={editorMode}
+          onEditorModeChange={setEditorMode}
+          visibleMesaIds={visibleMesaIds}
+        />
+      </div>
 
-      {/* Mesa Modal */}
-      <MesaModal
-      mesa={modalMesa}
-      isOpen={modalOpen}
-      onClose={() => {
-        setModalOpen(false);
-        setModalMesa(null);
-  }}
-/>
-<AnimatePresence>
+      <AnimatePresence>
   {mesaAEliminar && (
     <motion.div
       className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center px-4"

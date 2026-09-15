@@ -41,6 +41,7 @@ export function useMesaQuickSummary(): UseMesaQuickSummaryReturn {
       total:       pedido?.total ?? 0,
       timerInicio: mesa.timerInicio,
       isLoading:   false,
+      mozoNombre:  pedido?.mozoNombre,
     };
   }, [activeMesaId, mesas, getPedidoPorMesa]);
 

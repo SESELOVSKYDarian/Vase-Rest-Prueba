@@ -1,6 +1,18 @@
 import type { Pedido, EstadoCocina } from "@/types/pedido";
+import { useAuthStore } from "@/store/authStore";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+
+/** Headers de identidad del usuario logueado, para que el backend registre quién abre el pedido. */
+function identidadHeaders(): Record<string, string> {
+  const usuario = useAuthStore.getState().usuario;
+  if (!usuario?.id) return {};
+  return {
+    "x-noctua-user-id": usuario.id,
+    "x-noctua-user-name": usuario.nombre,
+    "x-noctua-role": usuario.rol,
+  };
+}
 
 async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   try {
@@ -43,6 +55,8 @@ function mapBackendPedido(p: {
   createdAt?: string;
   created_at?: string;
   mesa?: { id?: string; numero: number; zona?: string };
+  mozoId?: string;
+  mozoNombre?: string;
   items?: {
     productoId?: string;
     producto_id?: string;
@@ -86,6 +100,8 @@ function mapBackendPedido(p: {
     actualizadoEn: new Date(),
     // `comensales` es la fuente persistida; `personas` se conserva por compatibilidad
     personas: p.comensales != null ? Number(p.comensales) : 1,
+    mozoId: p.mozoId || undefined,
+    mozoNombre: p.mozoNombre || undefined,
   };
 }
 
@@ -183,6 +199,7 @@ type BackendPedido = Parameters<typeof mapBackendPedido>[0];
 export async function abrirPedidoRow(mesaId: string, comensales?: number): Promise<BackendPedido> {
   const { pedido } = await apiFetch<{ pedido: BackendPedido }>("/pedidos", {
     method: "POST",
+    headers: identidadHeaders(),
     body: JSON.stringify({ mesaId, comensales }),
   });
   return pedido;

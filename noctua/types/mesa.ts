@@ -46,6 +46,8 @@ export interface MesaQuickSummaryData {
   timerInicio?: Date;
   isLoading: boolean;
   error?: string;
+  /** Mozo real que abrió el pedido activo (si el backend lo registró). */
+  mozoNombre?: string;
 }
 
 export type ContextMenuAction =

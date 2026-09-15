@@ -129,22 +129,22 @@ export function PedidoListoAlerta() {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 100, scale: 0.88 }}
             transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-            className="pointer-events-auto relative flex items-center gap-3 bg-[#0a0a0a] border-2 border-green-500/70 rounded-2xl px-4 py-3.5 shadow-2xl shadow-black/70 min-w-[260px] max-w-[320px] overflow-hidden"
+            className="pointer-events-auto relative flex items-center gap-3 bg-[#0a0a0a] border-2 border-orange-500/70 rounded-2xl px-4 py-3.5 shadow-2xl shadow-black/70 min-w-[260px] max-w-[320px] overflow-hidden"
           >
             {/* Ícono animado */}
             <div className="relative flex-shrink-0">
-              <div className="w-10 h-10 rounded-xl bg-green-500/15 border border-green-500/30 flex items-center justify-center">
-                <ChefHat size={18} className="text-green-400" />
+              <div className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center">
+                <ChefHat size={18} className="text-orange-400" />
               </div>
               {/* Pulso exterior */}
-              <span className="absolute inset-0 rounded-xl border border-green-500/40 animate-ping" />
+              <span className="absolute inset-0 rounded-xl border border-orange-500/40 animate-ping" />
             </div>
 
             {/* Contenido */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <Bell size={11} className="text-green-400 flex-shrink-0" />
-                <span className="text-green-400 text-[10px] font-semibold tracking-widest uppercase">
+                <Bell size={11} className="text-orange-400 flex-shrink-0" />
+                <span className="text-orange-400 text-[10px] font-semibold tracking-widest uppercase">
                   Pedido Listo
                 </span>
               </div>
@@ -165,7 +165,7 @@ export function PedidoListoAlerta() {
 
             {/* Barra de progreso auto-dismiss */}
             <motion.div
-              className="absolute bottom-0 left-0 h-[2px] bg-green-500/50 rounded-full"
+              className="absolute bottom-0 left-0 h-[2px] bg-orange-500/50 rounded-full"
               initial={{ width: '100%' }}
               animate={{ width: '0%' }}
               transition={{ duration: AUTO_DISMISS_MS / 1000, ease: 'linear' }}

@@ -5,13 +5,13 @@
 import type { EstadoMesa } from '@/types/mesa';
 
 export const MESA_ESTADO_HEX: Record<EstadoMesa, string> = {
-  libre:            '#4b5563', // gray-600
-  ocupada:          '#f97316', // orange-500
-  esperando_pedido: '#facc15', // yellow-400
-  pedido_listo:     '#22c55e', // green-500
-  esperando_pago:   '#3b82f6', // blue-500
-  problema:         '#ef4444', // red-500
-  para_cobrar:      '#d97706', // amber-600 — NOCTUA gold
+  libre:            '#22c55e', // green-500
+  ocupada:          '#ef4444', // red-500
+  esperando_pedido: '#3b82f6', // blue-500
+  pedido_listo:     '#f97316', // orange-500 — "Lista"
+  esperando_pago:   '#facc15', // yellow-400
+  problema:         '#db2777', // pink-600 (distinto de ocupada, que ya usa rojo)
+  para_cobrar:      '#a855f7', // purple-500
 };
 
 /** Estados que implican personas sentadas (cambia color de sillas) */

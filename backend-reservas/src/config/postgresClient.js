@@ -6,7 +6,7 @@ const ident = (value) => {
 };
 
 const RELATIONS = {
-  pedidos: { mesas: ["mesa_id", "mesas", "id", false], pedido_items: ["id", "pedido_items", "pedido_id", true] },
+  pedidos: { mesas: ["mesa_id", "mesas", "id", false], pedido_items: ["id", "pedido_items", "pedido_id", true], usuarios: ["usuario_id", "usuarios", "id", false] },
   pedido_items: { productos: ["producto_id", "productos", "id", false] },
   productos: { categorias: ["categoria_id", "categorias", "id", false], producto_ingredientes: ["id", "producto_ingredientes", "producto_id", true] },
   producto_ingredientes: { ingredientes: ["ingrediente_id", "ingredientes", "id", false] },

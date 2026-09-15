@@ -5,6 +5,93 @@ import { Canvas, Circle, Rect, Textbox, Group, FabricObject, Point, FabricImage,
 import { Hand, MousePointer2, Save, Trash2, ZoomIn, ZoomOut, Square, Undo2, Redo2, Shapes, X, ImagePlus, Pencil, Eye, Layers3, Plus, Copy, ClipboardPaste, Link2, Unlink } from 'lucide-react';
 import type { Mesa } from '@/types/mesa';
 import { database } from '@/hooks/lib/databaseClient';
+import { MESA_ESTADO_HEX, ESTADOS_CON_PERSONAS } from '@/components/mesas/mesaEstadoColors';
+import { ZONAS_NAMES } from '@/hooks/lib/constants';
+
+function findMesaForTableData(mesas: Mesa[], data: Record<string, unknown>): Mesa | undefined {
+  return mesas.find((mesa) => mesa.id === String(data.mesaId) || mesa.numero === Number(data.mesaNumero));
+}
+
+function tableColor(mesas: Mesa[], data: Record<string, unknown>): string {
+  const mesa = findMesaForTableData(mesas, data);
+  return mesa ? MESA_ESTADO_HEX[mesa.estado] : MESA_ESTADO_HEX.libre;
+}
+
+function comensalesLabel(mesa: Mesa | undefined): string {
+  if (!mesa) return '';
+  const ocupado = ESTADOS_CON_PERSONAS.has(mesa.estado);
+  if (!ocupado) return '';
+  const personas = mesa.personas ?? 0;
+  return `${personas}/${mesa.capacidad}`;
+}
+
+/** Arma los sub-objetos visuales de una mesa (superficie + inset + número + badge de comensales opcional). */
+function buildTableGroupObjects(numero: number, shape: 'round' | 'rectangular', color: string, comensales: string): FabricObject[] {
+  const round = shape !== 'rectangular';
+  const surface = round
+    ? new Circle({ left: 0, top: 0, originX: 'center', originY: 'center', radius: 46, fill: '#211b17', stroke: color, strokeWidth: 2.5 })
+    : new Rect({ left: 0, top: 0, originX: 'center', originY: 'center', width: 124, height: 78, rx: 18, ry: 18, fill: '#211b17', stroke: color, strokeWidth: 2.5 });
+  const inset = round
+    ? new Circle({ left: 0, top: 0, originX: 'center', originY: 'center', radius: 38, fill: '#30251e', stroke: '#564337', strokeWidth: 1 })
+    : new Rect({ left: 0, top: 0, originX: 'center', originY: 'center', width: 108, height: 62, rx: 13, ry: 13, fill: '#30251e', stroke: '#564337', strokeWidth: 1 });
+  const label = new Textbox(String(numero), { left: 0, top: 0, originX: 'center', originY: 'center', width: 44, fontSize: 26, fontWeight: '700', fill: '#fff', textAlign: 'center', selectable: false, evented: false });
+  const objects: FabricObject[] = [surface, inset, label];
+  if (comensales) {
+    objects.push(
+      new Rect({ left: -58, top: -58, originX: 'center', originY: 'center', width: 34, height: 20, rx: 10, ry: 10, fill: '#0e0e0eee', stroke: color, strokeWidth: 1 }),
+      new Textbox(comensales, { left: -58, top: -58, originX: 'center', originY: 'center', width: 32, fontSize: 11, fontWeight: '600', fill: '#fff', textAlign: 'center', selectable: false, evented: false }),
+    );
+  }
+  return objects;
+}
+
+/** Redibuja los rótulos de zona (uno por cada `sectionId` distinto entre las mesas), ubicados sobre el bounding-box de sus mesas. */
+function syncZoneLabels(canvas: Canvas) {
+  const tables = canvas.getObjects().filter((object) => getData(object).kind === 'tableGroup');
+  const bounds = new Map<string, { minX: number; minY: number }>();
+  tables.forEach((table) => {
+    const zona = String(getData(table).sectionId ?? '').trim();
+    if (!zona) return;
+    const rect = table.getBoundingRect();
+    const current = bounds.get(zona);
+    bounds.set(zona, {
+      minX: current ? Math.min(current.minX, rect.left) : rect.left,
+      minY: current ? Math.min(current.minY, rect.top) : rect.top,
+    });
+  });
+  canvas.getObjects().filter((object) => getData(object).kind === 'zoneLabel').forEach((object) => canvas.remove(object));
+  bounds.forEach((pos, zona) => {
+    const label = new Textbox(zona.toUpperCase(), {
+      left: pos.minX,
+      top: Math.max(8, pos.minY - 34),
+      fontSize: 13,
+      fontWeight: '700',
+      fill: '#3f4a43',
+      charSpacing: 120,
+      selectable: false,
+      evented: false,
+    });
+    setObjectData(label, { kind: 'zoneLabel' });
+    canvas.insertAt(0, label);
+  });
+  canvas.requestRenderAll();
+}
+
+/** Actualiza en el lugar el color de estado y el badge de comensales de una mesa ya dibujada, sin recrear el grupo. */
+function applyMesaVisual(object: FabricObject, mesa: Mesa) {
+  const group = object as Group;
+  if (typeof group.getObjects !== 'function') return;
+  const objects = group.getObjects();
+  const surface = objects[0];
+  const color = MESA_ESTADO_HEX[mesa.estado];
+  if (surface && surface.get('stroke') !== color) surface.set({ stroke: color });
+  const badgeRect = objects[3];
+  const badgeText = objects[4] as Textbox | undefined;
+  const label = comensalesLabel(mesa);
+  if (badgeRect && badgeRect.get('stroke') !== color) badgeRect.set({ stroke: color });
+  if (badgeText && label && badgeText.text !== label) badgeText.set({ text: label });
+  group.set({ dirty: true });
+}
 
 interface FabricFloorEditorProps {
   mesas: Mesa[];
@@ -13,6 +100,11 @@ interface FabricFloorEditorProps {
   onUpdateMesaCapacity: (id: string, capacity: number) => void;
   onPreviewTableClick?: (id: string, x: number, y: number) => void;
   onSaveMesaPosition?: (id: string, posicion: { x: number; y: number }) => Promise<void>;
+  /** Modo controlado desde afuera (ej. botón "Editar plano" del header de la página). Si se omite, el editor maneja su propio modo. */
+  mode?: 'edit' | 'preview';
+  onModeChange?: (mode: 'edit' | 'preview') => void;
+  /** Ids de mesa que deben verse resaltadas (buscador/tabs de filtro); las demás se atenúan. undefined/null = todas visibles. */
+  visibleMesaIds?: Set<string> | null;
 }
 
 type Tool = 'select' | 'hand';
@@ -56,19 +148,15 @@ function makeSofa(x: number, y: number) {
   return sofa;
 }
 
-function refreshFurnitureDesign(canvas: Canvas) {
+function refreshFurnitureDesign(canvas: Canvas, mesas: Mesa[], editing: boolean) {
   [...canvas.getObjects()].forEach((object) => {
     const data = getData(object);
     if (data.kind === 'tableGroup') {
-      const round = data.shape !== 'rectangular';
-      const surface = round
-        ? new Circle({ left: 0, top: 0, originX: 'center', originY: 'center', radius: 46, fill: '#211b17', stroke: '#7ed957', strokeWidth: 2.5 })
-        : new Rect({ left: 0, top: 0, originX: 'center', originY: 'center', width: 124, height: 78, rx: 18, ry: 18, fill: '#211b17', stroke: '#7ed957', strokeWidth: 2.5 });
-      const inset = round
-        ? new Circle({ left: 0, top: 0, originX: 'center', originY: 'center', radius: 38, fill: '#30251e', stroke: '#564337', strokeWidth: 1 })
-        : new Rect({ left: 0, top: 0, originX: 'center', originY: 'center', width: 108, height: 62, rx: 13, ry: 13, fill: '#30251e', stroke: '#564337', strokeWidth: 1 });
-      const label = new Textbox(String(data.mesaNumero ?? ''), { left: 0, top: 0, originX: 'center', originY: 'center', width: 44, fontSize: 26, fontWeight: '700', fill: '#fff', textAlign: 'center', selectable: false, evented: false });
-      const replacement = new Group([surface, inset, label], { left: object.left, top: object.top, originX: object.originX, originY: object.originY, angle: object.angle, scaleX: object.scaleX, scaleY: object.scaleY, objectCaching: false });
+      const mesa = findMesaForTableData(mesas, data);
+      const color = tableColor(mesas, data);
+      const shape: 'round' | 'rectangular' = data.shape !== 'rectangular' ? 'round' : 'rectangular';
+      const groupObjects = buildTableGroupObjects(Number(data.mesaNumero ?? 0), shape, color, comensalesLabel(mesa));
+      const replacement = new Group(groupObjects, { left: object.left, top: object.top, originX: object.originX, originY: object.originY, angle: object.angle, scaleX: object.scaleX, scaleY: object.scaleY, objectCaching: false, selectable: editing, evented: true });
       setObjectData(replacement, data);
       styleObject(replacement);
       const index = canvas.getObjects().indexOf(object);
@@ -96,7 +184,7 @@ function refreshFurnitureDesign(canvas: Canvas) {
   });
 }
 
-export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaCapacity, onPreviewTableClick, onSaveMesaPosition }: FabricFloorEditorProps) {
+export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaCapacity, onPreviewTableClick, onSaveMesaPosition, mode: controlledMode, onModeChange, visibleMesaIds }: FabricFloorEditorProps) {
   const canvasElement = useRef<HTMLCanvasElement>(null);
   const canvasRef = useRef<Canvas | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -110,7 +198,11 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
   const [canvasReady, setCanvasReady] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(true);
   const [sectionsOpen, setSectionsOpen] = useState(false);
-  const [editorMode, setEditorMode] = useState<'edit' | 'preview'>('edit');
+  const [editorMode, setEditorModeState] = useState<'edit' | 'preview'>(controlledMode ?? 'edit');
+  const setEditorMode = (next: 'edit' | 'preview') => {
+    setEditorModeState(next);
+    onModeChange?.(next);
+  };
   const [sections, setSections] = useState(['Salón principal']);
   const [activeSection, setActiveSection] = useState('Salón principal');
   const [newSectionName, setNewSectionName] = useState('');
@@ -146,6 +238,7 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
 
   useEffect(() => { toolRef.current = tool; }, [tool]);
   useEffect(() => { editorModeRef.current = editorMode; }, [editorMode]);
+  useEffect(() => { if (controlledMode && controlledMode !== editorMode) setEditorModeState(controlledMode); }, [controlledMode]);
   useEffect(() => { mesasRef.current = mesas; }, [mesas]);
   useEffect(() => { updateCapacityRef.current = onUpdateMesaCapacity; }, [onUpdateMesaCapacity]);
   useEffect(() => { previewTableClickRef.current = onPreviewTableClick; }, [onPreviewTableClick]);
@@ -167,7 +260,7 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
     canvas.getObjects().forEach((object) => object.set({ selectable: editing, evented: true }));
     if (!editing) canvas.discardActiveObject();
     canvas.requestRenderAll();
-  }, [editorMode]);
+  }, [editorMode, canvasReady, mesas]);
 
   useEffect(() => {
     if (!canvasElement.current || canvasRef.current) return;
@@ -193,7 +286,8 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
         return local ? JSON.parse(local) : null;
       })();
       if (savedPayload) await canvas.loadFromJSON(savedPayload);
-      refreshFurnitureDesign(canvas);
+      refreshFurnitureDesign(canvas, mesasRef.current, editorModeRef.current === 'edit');
+      syncZoneLabels(canvas);
       canvas.requestRenderAll(); hydratedRef.current = true; pushHistorySnapshot(); setCanvasReady(true); setStatus(savedPayload ? 'Guardado' : 'Sin cambios');
     };
     void hydrate();
@@ -209,6 +303,7 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
     const onModified = () => {
       pushHistorySnapshot();
       setStatus('Cambios sin guardar');
+      syncZoneLabels(canvas);
     };
     canvas.on('selection:created', onSelection);
     canvas.on('selection:updated', onSelection);
@@ -350,6 +445,7 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
       if (backendTable) {
         const previousId = data.mesaId ?? data.mesaNumero;
         setObjectData(object, { ...data, mesaId: backendTable.id, sectionId: backendTable.zona });
+        applyMesaVisual(object, backendTable);
         canvas.getObjects().filter((candidate) => getData(candidate).kind === 'chair' && getData(candidate).tableId === previousId).forEach((chair) => setObjectData(chair, { ...getData(chair), tableId: backendTable.id }));
         canvas.getObjects().filter((candidate) => getData(candidate).kind === 'sofa').forEach((sofa) => {
           const sofaData = getData(sofa);
@@ -371,15 +467,21 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
     if (mesas.length === 0) { canvas.requestRenderAll(); return; }
     const existingNumbers = new Set(canvas.getObjects().map((object) => getData(object).mesaNumero).filter(Boolean));
     const newTables = mesas.filter((mesa) => !existingNumbers.has(mesa.numero));
-    if (newTables.length === 0) return;
-    newTables.forEach((mesa, index) => {
-      const position = mesa.posicion.x > 20 || mesa.posicion.y > 20 ? mesa.posicion : { x: 140 + index * 220, y: 160 };
-      const objects: FabricObject[] = [new Circle({ left: 0, top: 0, originX: 'center', originY: 'center', radius: 46, fill: '#211b17', stroke: '#7ed957', strokeWidth: 2.5 }), new Circle({ left: 0, top: 0, originX: 'center', originY: 'center', radius: 38, fill: '#30251e', stroke: '#564337', strokeWidth: 1 }), new Textbox(String(mesa.numero), { left: 0, top: 0, originX: 'center', originY: 'center', width: 44, fontSize: 26, fontWeight: '700', fill: '#fff', textAlign: 'center', selectable: false, evented: false })];
-      const group = new Group(objects, { left: position.x + 80, top: position.y + 80, originX: 'center', originY: 'center', subTargetCheck: false, interactive: false, objectCaching: false });
+    if (newTables.length === 0) { syncZoneLabels(canvas); canvas.requestRenderAll(); return; }
+    const zoneRow = (zona: string) => { const idx = (ZONAS_NAMES as readonly string[]).indexOf(zona); return idx >= 0 ? idx : (ZONAS_NAMES as readonly string[]).length; };
+    const perZoneCount = new Map<string, number>();
+    newTables.forEach((mesa) => {
+      const zona = mesa.zona || ZONAS_NAMES[1];
+      const col = perZoneCount.get(zona) ?? 0;
+      perZoneCount.set(zona, col + 1);
+      const position = mesa.posicion.x > 20 || mesa.posicion.y > 20 ? mesa.posicion : { x: 140 + col * 220, y: 160 + zoneRow(zona) * 220 };
+      const objects = buildTableGroupObjects(mesa.numero, 'round', MESA_ESTADO_HEX[mesa.estado], comensalesLabel(mesa));
+      const group = new Group(objects, { left: position.x + 80, top: position.y + 80, originX: 'center', originY: 'center', subTargetCheck: false, interactive: false, objectCaching: false, selectable: editorModeRef.current === 'edit', evented: true });
       setObjectData(group, { kind: 'tableGroup', mesaId: mesa.id, mesaNumero: mesa.numero, capacidad: 0, sectionId: mesa.zona, shape: 'round' });
       styleObject(group);
       canvas.add(group);
     });
+    syncZoneLabels(canvas);
     canvas.requestRenderAll();
   }, [canvasReady, mesas]);
 
@@ -393,9 +495,25 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
         return total + Number(allocations[String(mesa.id)] ?? allocations[String(mesa.numero)] ?? 0);
       }, 0);
       const actualCapacity = relatedChairs + sofaPlaces;
-      if (mesa.capacidad !== actualCapacity) onUpdateMesaCapacity(mesa.id, actualCapacity);
+      // Solo sincroniza cuando hay sillas/sillón realmente configurados en el editor:
+      // una mesa recién creada no tiene ninguno todavía, y forzar capacidad a 0 viola
+      // el check (capacidad > 0) de la base real y le borra la capacidad elegida al crearla.
+      if (actualCapacity > 0 && mesa.capacidad !== actualCapacity) onUpdateMesaCapacity(mesa.id, actualCapacity);
     });
   }, [canvasReady, mesas, onUpdateMesaCapacity]);
+
+  // Atenúa las mesas que no matchean el filtro/buscador de la página (tabs de estado, búsqueda por número/zona).
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !hydratedRef.current) return;
+    canvas.getObjects().filter((object) => getData(object).kind === 'tableGroup').forEach((object) => {
+      const data = getData(object);
+      const mesaId = data.mesaId != null ? String(data.mesaId) : undefined;
+      const visible = !visibleMesaIds || (mesaId != null && visibleMesaIds.has(mesaId));
+      object.set({ opacity: visible ? 1 : 0.25 });
+    });
+    canvas.requestRenderAll();
+  }, [canvasReady, mesas, visibleMesaIds]);
 
   const save = async () => {
     const canvas = canvasRef.current;
@@ -424,9 +542,10 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
     window.localStorage.setItem(`${STORAGE_KEY}:section:${activeSection}`, JSON.stringify(current));
     const next = window.localStorage.getItem(`${STORAGE_KEY}:section:${nextSection}`);
     canvas.discardActiveObject();
-    if (next) { await canvas.loadFromJSON(JSON.parse(next)); refreshFurnitureDesign(canvas); }
+    if (next) { await canvas.loadFromJSON(JSON.parse(next)); refreshFurnitureDesign(canvas, mesasRef.current, editorModeRef.current === 'edit'); }
     else canvas.clear();
     canvas.backgroundColor = '#0b0f0c';
+    syncZoneLabels(canvas);
     canvas.requestRenderAll();
     setSelected(null);
     setActiveSection(nextSection);
@@ -525,16 +644,8 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
     const canvas = canvasRef.current;
     if (!canvas) return;
     const center = pendingDropPointRef.current ?? canvas.getVpCenter();
-    const table = tableDraft === 'round'
-      ? new Circle({ left: 0, top: 0, originX: 'center', originY: 'center', radius: 46, fill: '#211b17', stroke: '#7ed957', strokeWidth: 2.5 })
-      : new Rect({ left: 0, top: 0, originX: 'center', originY: 'center', width: 124, height: 78, rx: 18, ry: 18, fill: '#211b17', stroke: '#7ed957', strokeWidth: 2.5 });
-    setObjectData(table, { kind: 'table', mesaNumero: number, capacidad: 0, shape: tableDraft });
-    styleObject(table);
-    const inset = tableDraft === 'round'
-      ? new Circle({ left: 0, top: 0, originX: 'center', originY: 'center', radius: 38, fill: '#30251e', stroke: '#564337', strokeWidth: 1 })
-      : new Rect({ left: 0, top: 0, originX: 'center', originY: 'center', width: 108, height: 62, rx: 13, ry: 13, fill: '#30251e', stroke: '#564337', strokeWidth: 1 });
-    const label = new Textbox(String(number), { left: 0, top: 0, originX: 'center', originY: 'center', width: 44, fontSize: 26, fontWeight: '700', fill: '#fff', textAlign: 'center', selectable: false, evented: false });
-    const group = new Group([table, inset, label], { left: center.x, top: center.y, originX: 'center', originY: 'center', subTargetCheck: false, interactive: false, objectCaching: false });
+    const groupObjects = buildTableGroupObjects(number, tableDraft, MESA_ESTADO_HEX.libre, '');
+    const group = new Group(groupObjects, { left: center.x, top: center.y, originX: 'center', originY: 'center', subTargetCheck: false, interactive: false, objectCaching: false, selectable: editorModeRef.current === 'edit', evented: true });
     setObjectData(group, { kind: 'tableGroup', mesaNumero: number, capacidad: 0, shape: tableDraft });
     styleObject(group);
     canvas.add(group);

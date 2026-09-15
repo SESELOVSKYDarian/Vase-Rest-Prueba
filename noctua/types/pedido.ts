@@ -20,4 +20,7 @@ export interface Pedido {
   creadoEn: Date;
   actualizadoEn: Date;
   personas: number;
+  /** Usuario que abrió el pedido (mozo real que atiende), si el backend lo registró. */
+  mozoId?: string;
+  mozoNombre?: string;
 }

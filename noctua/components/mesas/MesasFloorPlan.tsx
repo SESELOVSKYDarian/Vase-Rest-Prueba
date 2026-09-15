@@ -2,11 +2,10 @@
 
 import { useState, useCallback, useRef, memo } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { MesasCanvasLayout } from './MesasCanvasLayout';
 import { FabricFloorEditor } from './FabricFloorEditor';
 import { MesaStatusLegend } from './MesaStatusLegend';
 import { MesaContextMenu } from './MesaContextMenu';
-import { MesaQuickSummaryWrapper } from './MesaQuickSummary';
+import { MesaDetailPanel } from './MesaDetailPanel';
 import { MesaMergeBar } from './MesaMergeBar';
 import { useMesaMerge } from '@/hooks/useMesaMerge';
 import { useMesaQuickSummary } from '@/hooks/useMesaQuickSummary';
@@ -15,7 +14,7 @@ import { setComensales } from '@/services/comensalesService';
 import { useMesasStore } from '@/store/mesasStore';
 import { toast } from '@/components/ui/Toast';
 import { TEXTO_ESTADO_MESA } from '@/hooks/lib/constants';
-import type { Mesa, EstadoMesa, ContextMenuAction, MesaGestureCallbacks } from '@/types/mesa';
+import type { Mesa, EstadoMesa, ContextMenuAction } from '@/types/mesa';
 
 /** Una mesa es elegible para unión si no forma parte ya de un grupo unido. */
 function esElegibleParaUnir(mesa: Mesa): boolean {
@@ -29,6 +28,9 @@ interface MesasFloorPlanProps {
   onDoubleClick:      (mesa: Mesa) => void;
   onDelete:           (id: string) => void;
   onCreateMesa:       () => void;
+  editorMode?:        'edit' | 'preview';
+  onEditorModeChange?: (mode: 'edit' | 'preview') => void;
+  visibleMesaIds?:    Set<string> | null;
 }
 
 interface ContextMenuState {
@@ -37,27 +39,27 @@ interface ContextMenuState {
   y:    number;
 }
 
-interface QuickSummaryPos {
-  x: number;
-  y: number;
-}
-
 /**
  * MesasFloorPlan — Contenedor principal del plano de planta.
- * Gestiona todo el sistema de gestos táctiles: tap, doble tap, long press, swipe, fusión.
+ * Coordina el click sobre una mesa (panel de detalle), el menú contextual y la fusión de mesas.
  */
 export const MesasFloorPlan = memo(function MesasFloorPlan({
   mesas,
-  mesasSeleccionadas,
   onSingleClick,
   onDoubleClick,
   onDelete,
   onCreateMesa,
+  editorMode,
+  onEditorModeChange,
+  visibleMesaIds,
 }: MesasFloorPlanProps) {
   // ── Estado de gestos ──────────────────────────────────────────────────────
+  // `mesasSeleccionadas` (store) y el set de "mozo requerido" ya no tienen un
+  // consumidor visual propio: MesasCanvasLayout (retirado) era el único que los
+  // pintaba. La acción "llamar mozo" del menú contextual sigue siendo real
+  // (dispara el toast), solo se perdió su indicador visual sobre la mesa.
   const [contextMenu, setContextMenu]   = useState<ContextMenuState | null>(null);
-  const [summaryPos, setSummaryPos]     = useState<QuickSummaryPos>({ x: 0, y: 0 });
-  const [mozoRequeridoIds, setMozo]     = useState<Set<string>>(new Set());
+  const [, setMozo]                     = useState<Set<string>>(new Set());
   const [mergeLoading, setMergeLoading] = useState(false);
   const mozoTimers                      = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
@@ -70,66 +72,22 @@ export const MesasFloorPlan = memo(function MesasFloorPlan({
 
   // ── Gestos ────────────────────────────────────────────────────────────────
 
-  const handleTap = useCallback((mesaId: string, x: number, y: number) => {
+  const handleTap = useCallback((mesaId: string, _x: number, _y: number) => {
     // Modo selección de unión → agregar/quitar del grupo (solo mesas elegibles)
     if (merge.isSelectionMode) {
       const mesa = mesas.find((m) => m.id === mesaId);
       if (mesa && esElegibleParaUnir(mesa)) merge.toggleSelection(mesaId);
       return;
     }
-    // Toggle quick summary: cerrar si ya está abierta para esa mesa
+    // Toggle panel de detalle: cerrar si ya está abierto para esa mesa
     if (summary.activeMesaId === mesaId) {
       summary.close();
     } else {
-      setSummaryPos({ x, y });
       summary.open(mesaId);
     }
     // Mantener compatibilidad con la lógica de selección desktop
     onSingleClick(mesaId);
   }, [merge, summary, mesas, onSingleClick]);
-
-  const handleDoubleTap = useCallback((mesa: Mesa) => {
-    if (merge.isSelectionMode) return;
-    summary.close();
-    setContextMenu(null);
-    onDoubleClick(mesa);
-  }, [merge.isSelectionMode, summary, onDoubleClick]);
-
-  const handleLongPress = useCallback((mesaId: string, x: number, y: number) => {
-    if (merge.isSelectionMode) return;
-    summary.close();
-    const mesa = mesas.find((m) => m.id === mesaId);
-    if (!mesa) return;
-    setContextMenu({ mesa, x, y });
-  }, [merge.isSelectionMode, summary, mesas]);
-
-  const handleSwipe = useCallback(async (mesaId: string, direction: 'left' | 'right') => {
-    if (merge.isSelectionMode) return;
-    const mesa = mesas.find((m) => m.id === mesaId);
-    if (!mesa) return;
-
-    let nuevoEstado: EstadoMesa;
-
-    if (direction === 'left') {
-      // Swipe izquierda → liberar mesa directamente
-      nuevoEstado = 'libre';
-    } else {
-      // Swipe derecha → ciclar: libre→ocupada→esperando_pedido→libre
-      const ciclo: EstadoMesa[] = ['libre', 'ocupada', 'esperando_pedido'];
-      const idx = ciclo.indexOf(mesa.estado);
-      nuevoEstado = ciclo[(idx + 1) % ciclo.length];
-    }
-
-    try {
-      await cambiarEstadoMesa(mesaId, nuevoEstado);
-      toast.success(
-        `Mesa ${mesa.numero}`,
-        `Marcada como ${TEXTO_ESTADO_MESA[nuevoEstado].toLowerCase()}`
-      );
-    } catch {
-      toast.error('Error', 'No se pudo cambiar el estado de la mesa');
-    }
-  }, [merge.isSelectionMode, mesas, cambiarEstadoMesa]);
 
   // ── Acciones del menú contextual ─────────────────────────────────────────
 
@@ -220,19 +178,7 @@ export const MesasFloorPlan = memo(function MesasFloorPlan({
     }
   }, [merge]);
 
-  const handleToggleSelectionMode = useCallback(() => {
-    if (merge.isSelectionMode) merge.exitSelectionMode();
-    else { summary.close(); setContextMenu(null); merge.enterSelectionMode(); }
-  }, [merge, summary]);
-
-  // ── Callbacks de Quick Summary ────────────────────────────────────────────
-
-  const handleOpenSummaryPedido = useCallback(() => {
-    if (!summary.activeMesaId) return;
-    const mesa = mesas.find((m) => m.id === summary.activeMesaId);
-    summary.close();
-    if (mesa) onDoubleClick(mesa);
-  }, [summary, mesas, onDoubleClick]);
+  // ── Callbacks del panel de detalle ────────────────────────────────────────
 
   const handleSetComensales = useCallback(async (comensales: number) => {
     if (!summary.activeMesaId) return;
@@ -243,37 +189,20 @@ export const MesasFloorPlan = memo(function MesasFloorPlan({
     }
   }, [summary.activeMesaId]);
 
-  // ── Objeto de callbacks de gestos (estable entre renders) ────────────────
-
-  const gestures: MesaGestureCallbacks = {
-    onTap:       handleTap,
-    onDoubleTap: handleDoubleTap,
-    onLongPress: handleLongPress,
-    onSwipe:     handleSwipe,
-  };
-
   // Números de mesas seleccionadas para mostrar en el MesaMergeBar
   const selectedNums = merge.selectedIds
     .map((id) => mesas.find((m) => m.id === id)?.numero ?? 0)
     .filter(Boolean);
 
+  const activeMesa = mesas.find((m) => m.id === summary.activeMesaId) ?? null;
+
   return (
     <div className={`relative flex min-h-0 flex-1 flex-col overflow-hidden ${merge.isSelectionMode ? 'pb-28' : ''}`}>
       {/* Canvas del plano de planta */}
-      {process.env.NEXT_PUBLIC_FABRIC_FLOOR_EDITOR === 'false' ? <MesasCanvasLayout
-          mesas={mesas}
-          mesasSeleccionadas={mesasSeleccionadas}
-          mergeSelectedIds={merge.selectedIds}
-          isSelectionMode={merge.isSelectionMode}
-          mozoRequeridoIds={mozoRequeridoIds}
-          gestures={gestures}
-          onDelete={onDelete}
-          onCreateMesa={onCreateMesa}
-          onToggleSelectionMode={handleToggleSelectionMode}
-        /> : <FabricFloorEditor mesas={mesas} onDelete={onDelete} onCreateMesa={onCreateMesa} onPreviewTableClick={handleTap} onSaveMesaPosition={(id, posicion) => useMesasStore.getState().moverMesa(id, posicion)} onUpdateMesaCapacity={(id, capacity) => { const mesa = mesas.find((item) => item.id === id); if (mesa) void editarMesa(id, { numero: mesa.numero, capacidad: capacity }); }} />}
+      <FabricFloorEditor mesas={mesas} onDelete={onDelete} onCreateMesa={onCreateMesa} onPreviewTableClick={handleTap} onSaveMesaPosition={(id, posicion) => useMesasStore.getState().moverMesa(id, posicion)} onUpdateMesaCapacity={(id, capacity) => { const mesa = mesas.find((item) => item.id === id); if (mesa) void editarMesa(id, { numero: mesa.numero, capacidad: capacity }); }} mode={editorMode} onModeChange={onEditorModeChange} visibleMesaIds={visibleMesaIds} />
 
       {/* Leyenda de estados */}
-      <MesaStatusLegend />
+      <MesaStatusLegend mesas={mesas} />
 
       {/* Menú contextual (long press) */}
       <AnimatePresence>
@@ -289,14 +218,15 @@ export const MesasFloorPlan = memo(function MesasFloorPlan({
         )}
       </AnimatePresence>
 
-      {/* Resumen rápido (tap) */}
-      <MesaQuickSummaryWrapper
+      {/* Panel de detalle (tap) */}
+      <MesaDetailPanel
+        mesa={activeMesa}
         data={summary.data}
-        triggerX={summaryPos.x}
-        triggerY={summaryPos.y}
         onClose={summary.close}
-        onAbrirPedido={handleOpenSummaryPedido}
         onSetComensales={handleSetComensales}
+        onMarcarParaCobrar={() => activeMesa && handleContextAction('marcar_cobrar', activeMesa)}
+        onUnirMesas={() => activeMesa && handleContextAction('unir_mesa', activeMesa)}
+        onMoreActions={(event) => activeMesa && setContextMenu({ mesa: activeMesa, x: event.clientX, y: event.clientY })}
       />
 
       {/* Barra de confirmación de unión (visible durante todo el modo selección) */}

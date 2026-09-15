@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronUp } from 'lucide-react';
 import { COLORES_ESTADO_MESA, TEXTO_ESTADO_MESA } from '@/hooks/lib/constants';
-import type { EstadoMesa } from '@/types/mesa';
+import type { EstadoMesa, Mesa } from '@/types/mesa';
 
 const ESTADOS_LEYENDA: EstadoMesa[] = [
   'libre',
@@ -24,6 +24,8 @@ const COLOR_MAP: Record<string, string> = {
   blue:   '#3b82f6',
   red:    '#ef4444',
   amber:  '#d97706',
+  pink:   '#db2777',
+  purple: '#a855f7',
 };
 
 function stateDot(tailwindBg: string): string {
@@ -40,9 +42,18 @@ function Dot({ estado }: { estado: EstadoMesa }) {
   );
 }
 
+interface MesaStatusLegendProps {
+  mesas?: Mesa[];
+}
+
 /** Leyenda colapsable centrada en la parte inferior, sin cubrir el plano. */
-export function MesaStatusLegend() {
+export function MesaStatusLegend({ mesas = [] }: MesaStatusLegendProps) {
   const [open, setOpen] = useState(false);
+
+  const counts = ESTADOS_LEYENDA.reduce((acc, estado) => {
+    acc[estado] = mesas.filter((mesa) => mesa.estado === estado).length;
+    return acc;
+  }, {} as Record<EstadoMesa, number>);
 
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-1 pointer-events-none">
@@ -62,6 +73,7 @@ export function MesaStatusLegend() {
                   <span className="text-[11px] text-zinc-400 whitespace-nowrap">
                     {TEXTO_ESTADO_MESA[estado]}
                   </span>
+                  <span className="text-[10px] font-semibold text-zinc-600">{counts[estado]}</span>
                 </div>
               ))}
             </div>
