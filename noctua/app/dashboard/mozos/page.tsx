@@ -14,7 +14,7 @@ const getTodayString = (): string => {
   return today.toISOString().split('T')[0];
 };
 
-export default function SuperAdmMozosPage() {
+export default function MozosPage() {
   const {
     mozos,
     fetchMozos,

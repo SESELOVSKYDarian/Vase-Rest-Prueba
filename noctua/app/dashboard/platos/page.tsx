@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search } from 'lucide-react';
 import { DishAdminCard } from '@/components/platos/DishAdminCard';
 import { DishFormPanel } from '@/components/platos/DishFormPanel';
-import { ConfirmDeleteModal } from '@/components/superadm/shared/ConfirmDeleteModal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ingredientesService } from '@/services/ingredientesService';
 import { platosService } from '@/services/platosService';
 import type { Ingrediente, Plato, PlatoInput } from '@/types/platos';
@@ -201,7 +201,7 @@ export default function PlatosPage() {
         onCreateIngredient={handleCreateIngredient}
       />
 
-      <ConfirmDeleteModal
+      <ConfirmDialog
         isOpen={!!platoToDelete}
         onClose={() => setPlatoToDelete(undefined)}
         onConfirm={() => {

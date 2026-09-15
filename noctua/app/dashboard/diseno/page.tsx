@@ -22,7 +22,7 @@ const PRESETS = {
 
 const FONTS = ['Inter', 'Geist', 'Roboto', 'Poppins', 'Lato', 'Nunito', 'DM Sans'];
 
-export default function SuperAdmDisenoPage() {
+export default function DisenoPage() {
   const { config, isDirty, saveAll, discardChanges, updateTheme, initializeConfig, updateDashboardText } = useSuperAdmStore();
   const [tab, setTab] = useState<'colores' | 'tipografia' | 'textos' | 'preview'>('colores');
   const [liveStyles, setLiveStyles] = useState(true);

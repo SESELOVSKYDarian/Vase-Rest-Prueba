@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { PromotionCard } from '@/components/promociones/PromotionCard';
 import { PromotionFormModal } from '@/components/promociones/PromotionFormModal';
-import { ConfirmDeleteModal } from '@/components/superadm/shared/ConfirmDeleteModal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { usePromotionsStore } from '@/store/promotionsStore';
 import type { Promotion } from '@/types/promotions';
 
@@ -118,7 +118,7 @@ export default function PromocionesPage() {
         promotionToEdit={promotionToEdit}
       />
 
-      <ConfirmDeleteModal
+      <ConfirmDialog
         isOpen={!!promotionToDelete}
         onClose={() => setPromotionToDelete(undefined)}
         onConfirm={confirmDelete}

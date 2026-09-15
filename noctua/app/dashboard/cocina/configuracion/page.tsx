@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAuthStore } from '@/store/authStore';
 import { useSuperAdmStore } from '@/store/superadmStore';
 import { EditableRow } from '@/components/superadm/shared/EditableRow';
-import { ConfirmDeleteModal } from '@/components/superadm/shared/ConfirmDeleteModal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ColorPickerField } from '@/components/superadm/shared/ColorPickerField';
 import { DragHandle } from '@/components/superadm/shared/DragHandle';
 import { generateId } from '@/hooks/lib/utils';
@@ -78,7 +79,8 @@ function SortableStatus({ status, onUpdate, onDelete }: any) {
   );
 }
 
-export default function SuperAdmCocinaPage() {
+export default function ConfiguracionCocinaPage() {
+  const usuario = useAuthStore((s) => s.usuario);
   const {
     config, isDirty, isSaving,
     updateKitchenStatus, addKitchenStatus, deleteKitchenStatus,
@@ -100,6 +102,17 @@ export default function SuperAdmCocinaPage() {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
+
+  if (usuario?.rol && usuario.rol !== 'admin') {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="rounded-lg border border-[#1a1a1a] bg-[#080808] p-8 text-center">
+          <h1 className="text-xl font-bold text-white">Acceso restringido</h1>
+          <p className="mt-2 text-sm text-[#676B67]">Solo administradores pueden configurar los estados de cocina.</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
@@ -191,7 +204,7 @@ export default function SuperAdmCocinaPage() {
         </button>
       )}
 
-      <ConfirmDeleteModal
+      <ConfirmDialog
         isOpen={!!deleteId} onClose={() => setDeleteId(null)}
         onConfirm={() => deleteId && deleteKitchenStatus(deleteId)}
         message="¿Estás seguro de eliminar este estado?"

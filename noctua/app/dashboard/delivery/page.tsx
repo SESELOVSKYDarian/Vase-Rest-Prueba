@@ -39,6 +39,7 @@ export default function DeliveryPage() {
   }, [initializeConfig]);
 
   const activeApps = config.deliveryApps?.filter(app => app.isActive) || [];
+  const inactiveApps = config.deliveryApps?.filter(app => !app.isActive) || [];
 
   return (
     <div className="space-y-6">
@@ -69,6 +70,20 @@ export default function DeliveryPage() {
           );
         })}
       </div>
+
+      {inactiveApps.length > 0 && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {inactiveApps.map((app) => (
+            <div key={app.id} className="flex items-center justify-between rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6 opacity-60">
+              <div className="flex items-center gap-3">
+                <span className="font-semibold text-white">{app.name}</span>
+                <span className="rounded-full bg-[#252525] px-2 py-0.5 text-xs font-bold text-[#676b67]">Inactiva</span>
+              </div>
+              <button onClick={() => { setAppSeleccionada(app); setConfiguracionAbierta(true); }} aria-label={`Editar ${app.name}`} className="rounded-lg p-2 text-[#829487] hover:bg-white/10 hover:text-white"><MoreHorizontal size={19} /></button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -7,18 +7,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Lock, User } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/Button';
+import { HOME_POR_ROL, type RolSistema } from '@/config/roles';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isAuthenticated, isLoading, error, clearError } = useAuthStore();
+  const { login, isAuthenticated, usuario: sesion, isLoading, error, clearError } = useAuthStore();
   const [usuario, setUsuario] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [shakeKey, setShakeKey] = useState(0);
 
+  const homeDelRol = (rol?: string) => HOME_POR_ROL[rol as RolSistema] ?? '/dashboard';
+
   useEffect(() => {
-    if (isAuthenticated) router.replace('/dashboard/mesas');
-  }, [isAuthenticated, router]);
+    if (isAuthenticated) router.replace(homeDelRol(sesion?.rol));
+  }, [isAuthenticated, sesion, router]);
 
   useEffect(() => {
     if (error) setShakeKey((k) => k + 1);
@@ -29,7 +32,7 @@ export default function LoginPage() {
     clearError();
     const success = await login(usuario, password);
     if (success) {
-      router.push('/dashboard/mesas');
+      router.push(homeDelRol(useAuthStore.getState().usuario?.rol));
     }
   };
 

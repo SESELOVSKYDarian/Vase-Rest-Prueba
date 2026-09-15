@@ -28,7 +28,7 @@ const getExpirationStatus = (ingredient: Ingredient) => {
   }
 };
 
-export default function SuperAdmStockPage() {
+export default function ConfiguracionStockPage() {
   const {
     categories,
     filter,

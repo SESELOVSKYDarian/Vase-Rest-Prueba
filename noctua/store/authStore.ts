@@ -19,12 +19,18 @@ export const useAuthStore = create<AuthState>()(persist((set) => ({
       if (!response.ok) throw new Error(result.error || 'Usuario o contraseña incorrectos');
       set({ usuario: result.usuario, token: result.token, isAuthenticated: true, isLoading: false, error: null });
       document.cookie = `noctua-auth=${encodeURIComponent(JSON.stringify({ state: { isAuthenticated: true } }))}; path=/; samesite=lax`;
+      // El JWT trae el rol firmado por el backend; el middleware lo usa para autorizar por sección (no solo autenticar).
+      document.cookie = `noctua-token=${result.token}; path=/; samesite=lax`;
       return true;
     } catch (error) {
       set({ isLoading: false, error: error instanceof Error ? error.message : 'No se pudo iniciar sesión' });
       return false;
     }
   },
-  logout: () => { document.cookie = 'noctua-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'; set({ usuario: null, token: null, isAuthenticated: false, error: null }); },
+  logout: () => {
+    document.cookie = 'noctua-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    document.cookie = 'noctua-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    set({ usuario: null, token: null, isAuthenticated: false, error: null });
+  },
   clearError: () => set({ error: null }),
 }), { name: 'noctua-auth', partialize: (state) => ({ usuario: state.usuario, token: state.token, isAuthenticated: state.isAuthenticated }) }));

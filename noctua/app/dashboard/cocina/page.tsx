@@ -3,6 +3,7 @@
 import { useEffect, useState, memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Users, Archive, CheckCircle, ChefHat, Play, Trash2 } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { usePedidosStore } from '@/store/pedidosStore';
 import { useMesasStore } from '@/store/mesasStore';
 import { useSuperAdmStore } from '@/store/superadmStore';
@@ -206,59 +207,6 @@ const KDSColumn = memo(function KDSColumn({
   );
 });
 
-// ── Confirm Delete Modal ───────────────────────────────────────────────────────
-
-function ConfirmEliminarModal({
-  pedidoId,
-  onConfirm,
-  onCancel,
-}: {
-  pedidoId: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}) {
-  return (
-    <motion.div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.92, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.92, y: 20 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-        className="w-full max-w-sm bg-[#0d0d0d] border border-[#1f1f1f] rounded-2xl shadow-2xl p-6 space-y-4"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center flex-shrink-0">
-            <Trash2 size={16} className="text-red-400" />
-          </div>
-          <div>
-            <h2 className="text-white font-bold text-base tracking-wide">Eliminar pedido</h2>
-            <p className="text-[#676B67] text-xs mt-0.5">Esta acción no se puede deshacer.</p>
-          </div>
-        </div>
-        <div className="flex gap-2 pt-1">
-          <button
-            onClick={onCancel}
-            className="flex-1 px-4 py-2 rounded-lg border border-[#2a2a2a] text-[#BCB9B9] text-sm hover:bg-[#1a1a1a] transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 px-4 py-2 rounded-lg bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-colors"
-          >
-            Eliminar
-          </button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
 // ── Main Page ──────────────────────────────────────────────────────────────────
 
 const REFRESH_INTERVAL_MS = 20_000; // 20 segundos
@@ -371,15 +319,13 @@ export default function CocinaPage() {
         ))}
       </div>
 
-      <AnimatePresence>
-        {pedidoAEliminar && (
-          <ConfirmEliminarModal
-            pedidoId={pedidoAEliminar}
-            onConfirm={confirmarEliminar}
-            onCancel={() => setPedidoAEliminar(null)}
-          />
-        )}
-      </AnimatePresence>
+      <ConfirmDialog
+        isOpen={Boolean(pedidoAEliminar)}
+        onClose={() => setPedidoAEliminar(null)}
+        onConfirm={confirmarEliminar}
+        title="Eliminar pedido"
+        message="Esta acción no se puede deshacer."
+      />
     </div>
   );
 }

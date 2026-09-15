@@ -92,7 +92,7 @@ export function Navbar() {
                   <p className="text-white text-sm font-semibold">{nombreUsuario}</p>
                   <p className="text-[#8b938d] text-xs capitalize mt-1">{funcionUsuario}</p>
                 </div>
-                <button onClick={() => { setUserMenuOpen(false); router.push('/superadm/configuracion'); }} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-[#c1c8c2] hover:bg-[#7ed957]/10 hover:text-[#b7f397] transition-colors" role="menuitem">
+                <button onClick={() => { setUserMenuOpen(false); router.push('/dashboard/administracion?tab=negocio'); }} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-[#c1c8c2] hover:bg-[#7ed957]/10 hover:text-[#b7f397] transition-colors" role="menuitem">
                   <Settings size={17} /> Configuración
                 </button>
                 <button onClick={handleLogout} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-[#e9a6a0] hover:bg-red-500/10 transition-colors" role="menuitem">

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UtensilsCrossed, ClipboardList, ChefHat, Package, CalendarDays, LayoutDashboard, Menu, X, History, Receipt, ShieldCheck, Truck, Headphones, Utensils, Tag } from 'lucide-react';
+import { UtensilsCrossed, ClipboardList, ChefHat, Package, CalendarDays, LayoutDashboard, Menu, X, History, Receipt, ShieldCheck, Truck, Headphones, Utensils, Tag, Home, Users, Palette } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/hooks/lib/utils';
 import { useAuthStore } from '@/store/authStore';
@@ -17,7 +17,8 @@ const NAV_ITEMS = [
   { seccion: 'stock', icon: Package }, { seccion: 'platos', icon: Utensils },
   { seccion: 'promociones', icon: Tag }, { seccion: 'delivery', icon: Truck },
   { seccion: 'reservas', icon: CalendarDays }, { seccion: 'administracion', icon: ShieldCheck },
-  { seccion: 'soporte', icon: Headphones },
+  { seccion: 'soporte', icon: Headphones }, { seccion: 'mozos', icon: Users },
+  { seccion: 'diseno', icon: Palette },
 ] satisfies { seccion: SeccionSistema; icon: typeof UtensilsCrossed }[];
 
 export function Sidebar() {
@@ -37,6 +38,11 @@ export function Sidebar() {
         <h1 className="font-display text-2xl font-black tracking-tight text-white leading-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Vase <span className="text-[#7ed957]">Rest</span></h1>
       </div>
       <nav className="flex-1 px-3 py-8 space-y-3 overflow-y-auto" role="navigation" aria-label="Navegación principal">
+        <Link href="/dashboard" onClick={() => setMobileOpen(false)} aria-current={pathname === '/dashboard' ? 'page' : undefined} className={cn('flex items-center justify-start gap-4 px-4 py-4 rounded-[22px] text-sm font-medium transition-all duration-300 min-w-[240px]', pathname === '/dashboard' ? 'bg-[#7ed957]/12 text-[#b7f397] shadow-[inset_0_0_0_1px_rgba(126,217,87,0.18)]' : 'text-[#829487] hover:text-white hover:bg-[#7ed957]/7')}>
+          <Home size={20} strokeWidth={pathname === '/dashboard' ? 2.4 : 1.9} className={cn('flex-shrink-0 transition-colors', pathname === '/dashboard' ? 'text-[#7ed957]' : 'text-[#708375] group-hover:text-[#b7f397]')} />
+          <span className="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap ml-1 tracking-wide">Inicio</span>
+          {pathname === '/dashboard' && <motion.div layoutId="sidebar-active" className="ml-auto w-1.5 h-1.5 bg-[#7ed957] rounded-full" />}
+        </Link>
         {NAV_ITEMS.filter(({ seccion }) => seccionesPermitidas.includes(seccion)).map(({ seccion, icon: Icon }) => {
           const href = RUTA_POR_SECCION[seccion]; const isActive = pathname.startsWith(href);
           return <Link key={href} href={href} onClick={() => setMobileOpen(false)} aria-current={isActive ? 'page' : undefined} className={cn('flex items-center justify-start gap-4 px-4 py-4 rounded-[22px] text-sm font-medium transition-all duration-300 min-w-[240px]', isActive ? 'bg-[#7ed957]/12 text-[#b7f397] shadow-[inset_0_0_0_1px_rgba(126,217,87,0.18)]' : 'text-[#829487] hover:text-white hover:bg-[#7ed957]/7')}>
