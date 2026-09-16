@@ -93,41 +93,41 @@ export const PedidoOrderSummary = memo(function PedidoOrderSummary({
 
                   <div className="flex items-center justify-between mt-2">
                     {/* Cantidad */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => onDec(item.productoId)}
                         disabled={item.cantidad <= 1}
-                        className="w-7 h-7 rounded-md bg-[#202020] text-white flex items-center justify-center hover:bg-[#2a2a2a] disabled:opacity-30"
+                        className="w-9 h-9 rounded-md bg-[#202020] text-white flex items-center justify-center hover:bg-[#2a2a2a] disabled:opacity-30"
                         aria-label="Menos cantidad"
                       >
-                        <Minus size={13} />
+                        <Minus size={14} />
                       </button>
                       <span className="text-white text-sm font-bold w-5 text-center tabular-nums">{item.cantidad}</span>
                       <button
                         onClick={() => onInc(item.productoId)}
-                        className="w-7 h-7 rounded-md bg-[#202020] text-white flex items-center justify-center hover:bg-[#2a2a2a]"
+                        className="w-9 h-9 rounded-md bg-[#202020] text-white flex items-center justify-center hover:bg-[#2a2a2a]"
                         aria-label="Más cantidad"
                       >
-                        <Plus size={13} />
+                        <Plus size={14} />
                       </button>
                     </div>
 
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => setEditingNotas(editingNotas === item.productoId ? null : item.productoId)}
-                        className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors ${
+                        className={`w-9 h-9 rounded-md flex items-center justify-center transition-colors ${
                           item.notas ? 'bg-amber-600/20 text-amber-400' : 'bg-[#202020] text-[#676b67] hover:text-white'
                         }`}
                         aria-label="Nota para cocina"
                       >
-                        <StickyNote size={13} />
+                        <StickyNote size={14} />
                       </button>
                       <button
                         onClick={() => onRemove(item.productoId)}
-                        className="w-7 h-7 rounded-md bg-[#202020] text-red-400 flex items-center justify-center hover:bg-red-500/10"
+                        className="w-9 h-9 rounded-md bg-[#202020] text-red-400 flex items-center justify-center hover:bg-red-500/10"
                         aria-label="Quitar producto"
                       >
-                        <Trash2 size={13} />
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </div>

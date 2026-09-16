@@ -10,7 +10,7 @@
 }
 
 .content {
-  padding: 128px 56px 64px;
+  padding: 104px 56px 64px;
 }
 
 .content > * {
@@ -25,6 +25,6 @@
   }
 
   .content {
-    padding: 104px 20px 32px;
+    padding: 80px 20px 32px;
   }
 }

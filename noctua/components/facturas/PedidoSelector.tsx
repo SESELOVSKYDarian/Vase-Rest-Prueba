@@ -4,6 +4,10 @@ import { memo } from 'react';
 import { Receipt } from 'lucide-react';
 import type { PedidoFacturaItem, PedidoListoFactura } from '@/services/facturasService';
 import { formatearARS } from './facturasConstants';
+import { StatusChip } from '@/components/ui/StatusChip';
+import { TONO_ESTADO_COCINA } from '@/hooks/lib/statusTones';
+import type { EstadoCocina } from '@/types/pedido';
+import { cn } from '@/hooks/lib/utils';
 
 interface PedidoSelectorProps {
   pedidos: PedidoListoFactura[];
@@ -31,18 +35,30 @@ function PedidoSelectorBase({
         </div>
       ) : (
         <div className="space-y-3">
-          <select
-            value={pedidoSeleccionadoId}
-            onChange={(event) => onSeleccionarPedido(event.target.value)}
-            className="w-full rounded-xl border border-[#2a2a2a] bg-black px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-white/40"
-          >
-            <option value="">Seleccionar pedido...</option>
-            {pedidos.map((pedido) => (
-              <option key={pedido.id} value={pedido.id}>
-                Mesa {pedido.mesa?.numero || '-'} | {formatearARS(pedido.total)} | {pedido.estado}
-              </option>
-            ))}
-          </select>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3" role="radiogroup" aria-label="Pedidos listos para cobrar">
+            {pedidos.map((pedido) => {
+              const seleccionado = pedido.id === pedidoSeleccionadoId;
+              return (
+                <button
+                  key={pedido.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={seleccionado}
+                  onClick={() => onSeleccionarPedido(pedido.id)}
+                  className={cn(
+                    'flex flex-col gap-2 rounded-xl border p-4 text-left transition-colors',
+                    seleccionado ? 'border-white bg-white/5' : 'border-[#2a2a2a] bg-black hover:border-[#3a3a3a]'
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-black">Mesa {pedido.mesa?.numero || '-'}</span>
+                    <span className="font-mono text-sm font-bold">{formatearARS(pedido.total)}</span>
+                  </div>
+                  <StatusChip tone={TONO_ESTADO_COCINA[pedido.estado as EstadoCocina] ?? 'info'} label={pedido.estado} />
+                </button>
+              );
+            })}
+          </div>
 
           {pedidoSeleccionado && (
             <div className="rounded-2xl border border-[#1a1a1a] bg-black/50 p-4">

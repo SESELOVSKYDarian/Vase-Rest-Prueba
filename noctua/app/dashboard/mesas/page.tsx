@@ -132,7 +132,7 @@ export default function MesasPage() {
   );
 
   return (
-    <div className="flex h-[calc(100vh-136px)] min-h-0 flex-col overflow-hidden md:h-[calc(100vh-192px)]">
+    <div className="flex h-[calc(100vh-112px)] min-h-0 flex-col overflow-hidden md:h-[calc(100vh-168px)]">
       <MesasPageHeader
         mesas={mesas}
         search={search}

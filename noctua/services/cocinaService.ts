@@ -11,6 +11,15 @@ const COCINA_TO_MESA: Record<EstadoCocina, EstadoMesa> = {
   entregado: 'para_cobrar',
 };
 
+// Cadena de estados canónica del KDS, independiente de los nombres/colores/orden que un
+// admin configure para las columnas (esas son solo cosmética sobre estos 4 valores reales).
+export const SIGUIENTE_ESTADO_COCINA: Record<EstadoCocina, EstadoCocina> = {
+  pendiente: 'preparando',
+  preparando: 'listo',
+  listo: 'entregado',
+  entregado: 'entregado',
+};
+
 export const cocinaService = {
   getPedidosActivos: async (): Promise<Pedido[]> => {
     return usePedidosStore.getState().pedidos.filter((p) => p.estado !== 'entregado');
@@ -20,14 +29,7 @@ export const cocinaService = {
     const pedido = usePedidosStore.getState().pedidos.find((item) => item.id === pedidoId);
     if (!pedido) return;
 
-    const siguienteEstado: Record<EstadoCocina, EstadoCocina> = {
-      pendiente: 'preparando',
-      preparando: 'listo',
-      listo: 'entregado',
-      entregado: 'entregado',
-    };
-
-    await cocinaService.cambiarEstadoLibre(pedidoId, siguienteEstado[pedido.estado]);
+    await cocinaService.cambiarEstadoLibre(pedidoId, SIGUIENTE_ESTADO_COCINA[pedido.estado]);
   },
 
   cambiarEstadoLibre: async (pedidoId: string, nuevoEstado: EstadoCocina): Promise<void> => {

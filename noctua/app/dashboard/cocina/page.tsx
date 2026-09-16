@@ -2,15 +2,19 @@
 
 import { useEffect, useState, memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Users, Archive, CheckCircle, ChefHat, Play, Trash2 } from 'lucide-react';
+import { Clock, Users, Archive, CheckCircle, ChefHat, Play, Trash2, ArrowRight, MoreHorizontal, Settings } from 'lucide-react';
+import Link from 'next/link';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { StatusChip } from '@/components/ui/StatusChip';
+import { useAuthStore } from '@/store/authStore';
 import { usePedidosStore } from '@/store/pedidosStore';
 import { useMesasStore } from '@/store/mesasStore';
 import { useSuperAdmStore } from '@/store/superadmStore';
-import { cocinaService } from '@/services/cocinaService';
+import { cocinaService, SIGUIENTE_ESTADO_COCINA } from '@/services/cocinaService';
+import { TONO_ESTADO_COCINA } from '@/hooks/lib/statusTones';
 import { KDS_TIMER_GREEN_MINUTES, KDS_TIMER_YELLOW_MINUTES } from '@/hooks/lib/constants';
 import { elapsedMinutes, formatElapsed, cn } from '@/hooks/lib/utils';
-import type { Pedido } from '@/types/pedido';
+import type { Pedido, EstadoCocina } from '@/types/pedido';
 
 // ── KDS Timer ──────────────────────────────────────────────────────────────────
 
@@ -54,20 +58,28 @@ const ICONOS_ESTADO: Record<string, any> = {
   entregado: Archive,
 };
 
+const ESTADOS_CANONICOS: EstadoCocina[] = ['pendiente', 'preparando', 'listo', 'entregado'];
+
 const PedidoKDSCard = memo(function PedidoKDSCard({
   pedido,
   statuses,
   mesasLabel,
+  onAvanzar,
   onCambiarEstado,
   onEliminar,
 }: {
   pedido: Pedido;
   statuses: any[];
   mesasLabel: string;
+  onAvanzar: (id: string) => void;
   onCambiarEstado: (id: string, nuevoEstado: string) => void;
   onEliminar: (id: string) => void;
 }) {
+  const [menuAbierto, setMenuAbierto] = useState(false);
   const currentStatus = statuses.find(s => s.name.toLowerCase() === pedido.estado);
+  const esTerminal = pedido.estado === 'entregado';
+  const siguienteEstado = SIGUIENTE_ESTADO_COCINA[pedido.estado];
+  const labelSiguiente = statuses.find((s) => s.name.toLowerCase() === siguienteEstado)?.name ?? siguienteEstado;
 
   return (
     <motion.div
@@ -96,14 +108,42 @@ const PedidoKDSCard = memo(function PedidoKDSCard({
         </div>
         <div className="flex flex-col items-end gap-2">
           <KDSTimer creadoEn={pedido.creadoEn} />
-          <button
-            onClick={() => onEliminar(pedido.id)}
-            className="flex items-center gap-1 text-[#676B67] hover:text-red-400 transition-colors text-xs px-2 py-1 rounded-lg hover:bg-red-400/10 border border-transparent hover:border-red-400/20"
-            title="Eliminar pedido"
-          >
-            <Trash2 size={12} />
-            Eliminar
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setMenuAbierto((open) => !open)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-[#676B67] hover:bg-white/5 hover:text-white transition-colors"
+              aria-label="Más acciones"
+              aria-expanded={menuAbierto}
+            >
+              <MoreHorizontal size={16} />
+            </button>
+            {menuAbierto && (
+              <>
+                <button className="fixed inset-0 z-10" aria-label="Cerrar menú" onClick={() => setMenuAbierto(false)} />
+                <div className="absolute right-0 top-9 z-20 w-48 rounded-xl border border-[#2a2a2a] bg-[#111] p-1.5 shadow-2xl">
+                  <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#676B67]">Cambiar a</p>
+                  {ESTADOS_CANONICOS.map((estado) => (
+                    <button
+                      key={estado}
+                      onClick={() => { onCambiarEstado(pedido.id, estado); setMenuAbierto(false); }}
+                      disabled={estado === pedido.estado}
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-[#D9D9D9] hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      {statuses.find((s) => s.name.toLowerCase() === estado)?.name ?? estado}
+                    </button>
+                  ))}
+                  <div className="my-1 h-px bg-[#2a2a2a]" />
+                  <button
+                    onClick={() => { onEliminar(pedido.id); setMenuAbierto(false); }}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-400 hover:bg-red-400/10"
+                  >
+                    <Trash2 size={14} />
+                    Eliminar pedido
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -126,25 +166,18 @@ const PedidoKDSCard = memo(function PedidoKDSCard({
         ))}
       </div>
 
-      {/* Select Box for Estado */}
-      <div className="pt-2 border-t border-[#1a1a1a]">
-        <label className="text-xs text-[#676B67] font-semibold mb-1 block uppercase tracking-widest">
-          Modificar Estado
-        </label>
-        <select
-          value={pedido.estado}
-          onChange={(e) => onCambiarEstado(pedido.id, e.target.value)}
-          className="w-full bg-[#111] border border-[#2a2a2a] text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-white transition-colors"
-        >
-          {statuses.map((status) => {
-            const estadoKey = status.name.toLowerCase();
-            return (
-              <option key={status.id} value={estadoKey}>
-                {status.name}
-              </option>
-            );
-          })}
-        </select>
+      {/* Estado + avanzar */}
+      <div className="pt-2 border-t border-[#1a1a1a] space-y-2.5">
+        <StatusChip tone={TONO_ESTADO_COCINA[pedido.estado]} label={currentStatus?.name ?? pedido.estado} />
+        {!esTerminal && (
+          <button
+            onClick={() => onAvanzar(pedido.id)}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-white text-black py-2.5 text-sm font-bold hover:bg-[#D9D9D9] transition-colors"
+          >
+            Avanzar a {labelSiguiente}
+            <ArrowRight size={15} />
+          </button>
+        )}
       </div>
     </motion.div>
   );
@@ -157,6 +190,7 @@ const KDSColumn = memo(function KDSColumn({
   allStatuses,
   pedidos,
   getMesasLabel,
+  onAvanzar,
   onCambiarEstado,
   onEliminar,
 }: {
@@ -164,6 +198,7 @@ const KDSColumn = memo(function KDSColumn({
   allStatuses: any[];
   pedidos: Pedido[];
   getMesasLabel: (pedido: Pedido) => string;
+  onAvanzar: (id: string) => void;
   onCambiarEstado: (id: string, nuevoEstado: string) => void;
   onEliminar: (id: string) => void;
 }) {
@@ -196,6 +231,7 @@ const KDSColumn = memo(function KDSColumn({
                 pedido={pedido}
                 statuses={allStatuses}
                 mesasLabel={getMesasLabel(pedido)}
+                onAvanzar={onAvanzar}
                 onCambiarEstado={onCambiarEstado}
                 onEliminar={onEliminar}
               />
@@ -212,6 +248,7 @@ const KDSColumn = memo(function KDSColumn({
 const REFRESH_INTERVAL_MS = 20_000; // 20 segundos
 
 export default function CocinaPage() {
+  const usuario = useAuthStore((s) => s.usuario);
   const pedidos = usePedidosStore((s) => s.pedidos);
   const cargarPedidosActivos = usePedidosStore((s) => s.cargarPedidosActivos);
   const eliminarPedido = usePedidosStore((s) => s.eliminarPedido);
@@ -243,6 +280,12 @@ export default function CocinaPage() {
   const handleCambiarEstado = useCallback(async (pedidoId: string, nuevoEstado: string) => {
     await cocinaService.cambiarEstadoLibre(pedidoId, nuevoEstado as any);
     // Refrescar pedidos (mover card de columna) y mesas (sincronizar estado)
+    cargarPedidosActivos();
+    cargarMesas();
+  }, [cargarPedidosActivos, cargarMesas]);
+
+  const handleAvanzar = useCallback(async (pedidoId: string) => {
+    await cocinaService.avanzarEstado(pedidoId);
     cargarPedidosActivos();
     cargarMesas();
   }, [cargarPedidosActivos, cargarMesas]);
@@ -295,14 +338,25 @@ export default function CocinaPage() {
             {pedidos.length} {pedidos.length === 1 ? 'pedido activo' : 'pedidos activos'}
           </span>
         </div>
-        <button
-          onClick={handleRefreshManual}
-          disabled={refreshing}
-          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-600 hover:border-zinc-600 hover:text-zinc-400 transition-all disabled:opacity-40"
-        >
-          <Clock size={11} className={refreshing ? 'animate-spin' : ''} />
-          {refreshing ? 'Actualizando...' : 'Actualizar'}
-        </button>
+        <div className="flex items-center gap-2">
+          {usuario?.rol === 'admin' && (
+            <Link
+              href="/dashboard/cocina/configuracion"
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-600 hover:border-zinc-600 hover:text-zinc-400 transition-all"
+              title="Configurar estados de cocina"
+            >
+              <Settings size={11} />
+            </Link>
+          )}
+          <button
+            onClick={handleRefreshManual}
+            disabled={refreshing}
+            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-600 hover:border-zinc-600 hover:text-zinc-400 transition-all disabled:opacity-40"
+          >
+            <Clock size={11} className={refreshing ? 'animate-spin' : ''} />
+            {refreshing ? 'Actualizando...' : 'Actualizar'}
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 overflow-hidden">
@@ -313,6 +367,7 @@ export default function CocinaPage() {
             allStatuses={sortedStatuses}
             pedidos={getPedidosPorEstado(status.name)}
             getMesasLabel={getMesasLabel}
+            onAvanzar={handleAvanzar}
             onCambiarEstado={handleCambiarEstado}
             onEliminar={handleEliminar}
           />

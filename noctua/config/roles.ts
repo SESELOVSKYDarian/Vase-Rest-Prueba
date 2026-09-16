@@ -117,6 +117,39 @@ export const HOME_POR_ROL: Record<RolSistema, string> = {
   desarrollador: '/dashboard',
 };
 
+export type CategoriaNav = 'operacion' | 'gestion' | 'negocio' | 'sistema';
+
+export const ORDEN_CATEGORIAS: CategoriaNav[] = ['operacion', 'gestion', 'negocio', 'sistema'];
+
+export const LABEL_POR_CATEGORIA: Record<CategoriaNav, string> = {
+  operacion: 'Operación',
+  gestion: 'Gestión',
+  negocio: 'Negocio',
+  sistema: 'Sistema',
+};
+
+// Agrupación puramente visual del Sidebar, ajustada a cómo se usa el sistema en la práctica
+// (no al esquema OPERACIÓN/GESTIÓN/NEGOCIO/SISTEMA aplicado a ciegas): Historial va con
+// Caja porque es lo que consulta el cajero a diario, no un reporte gerencial; Analítica
+// queda sola en NEGOCIO porque es la única pantalla puramente de métricas.
+export const CATEGORIA_POR_SECCION: Record<SeccionSistema, CategoriaNav> = {
+  mesas: 'operacion',
+  pedidos: 'operacion',
+  cocina: 'operacion',
+  cajero: 'operacion',
+  historial: 'operacion',
+  delivery: 'operacion',
+  reservas: 'operacion',
+  platos: 'gestion',
+  promociones: 'gestion',
+  stock: 'gestion',
+  mozos: 'gestion',
+  analytics: 'negocio',
+  administracion: 'sistema',
+  diseno: 'sistema',
+  soporte: 'sistema',
+};
+
 export function obtenerSeccionesPorRol(rol?: string | null): SeccionSistema[] {
   // Fail-closed: un rol ausente o desconocido no debe caer en acceso total de admin.
   if (!rol || !(rol in SECCIONES_POR_ROL)) return [];
