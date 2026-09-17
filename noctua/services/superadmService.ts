@@ -1,6 +1,10 @@
+import { database } from '@/hooks/lib/databaseClient';
+import { useAuthStore } from '@/store/authStore';
 import type { SuperAdmConfig } from '@/types/superadm';
 
-const STORAGE_KEY = 'noctua-superadm-config';
+// Fila reusada de `salon_layouts` (mismo patrón que ya usa FabricFloorEditor para el
+// plano) bajo un id distinto — evita crear una tabla nueva solo para esta config.
+const CONFIG_ROW_ID = 'superadm-config';
 
 const defaultConfig: SuperAdmConfig = {
   zones: [
@@ -72,38 +76,64 @@ export async function loadSuperAdmConfig(): Promise<SuperAdmConfig> {
   if (typeof window === 'undefined') {
     return defaultConfig;
   }
-  const data = localStorage.getItem(STORAGE_KEY);
-  if (data) {
-    try {
-      const parsed = JSON.parse(data);
-      parsed.lastModified = new Date(parsed.lastModified);
-      // Merge with default config to ensure all fields exist
-      return {
-        ...defaultConfig,
-        ...parsed,
-        theme: {
-          ...defaultConfig.theme,
-          ...parsed.theme,
-        },
-      };
-    } catch (e) {
-      console.error('Error parsing config:', e);
-    }
+  const { data, error } = await database
+    .from('salon_layouts')
+    .select('payload')
+    .eq('id', CONFIG_ROW_ID)
+    .maybeSingle();
+
+  if (error || !data?.payload) return defaultConfig;
+
+  try {
+    const parsed = data.payload as Partial<SuperAdmConfig> & { lastModified?: string };
+    return {
+      ...defaultConfig,
+      ...parsed,
+      theme: {
+        ...defaultConfig.theme,
+        ...parsed.theme,
+      },
+      lastModified: parsed.lastModified ? new Date(parsed.lastModified) : defaultConfig.lastModified,
+    };
+  } catch (e) {
+    console.error('Error parsing config:', e);
+    return defaultConfig;
   }
-  return defaultConfig;
 }
 
 export async function saveSuperAdmConfig(config: SuperAdmConfig): Promise<void> {
   if (typeof window === 'undefined') {
     throw new Error('Cannot save config on server');
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    ...config,
-    lastModified: new Date().toISOString(),
-  }));
+
+  const { error } = await database.from('salon_layouts').upsert({
+    id: CONFIG_ROW_ID,
+    payload: { ...config, lastModified: new Date().toISOString() },
+    updated_at: new Date().toISOString(),
+  });
+
+  if (error) throw new Error(error.message);
 }
 
-export async function testDeliveryConnection(appId: string): Promise<'connected' | 'error'> {
-  console.log('Testing delivery connection test');
-  return 'connected';
+// No hay una API real de PedidosYa/Rappi/Uber Eats para validar credenciales en vivo
+// (fuera de alcance sin esas specs/credenciales reales) — el chequeo real y honesto que sí
+// se puede hacer es confirmar que la integración quedó de verdad persistida y activa en
+// Postgres (antes esta función devolvía 'connected' fijo para cualquier id, incluso uno
+// que nunca se guardó).
+export async function testDeliveryConnection(proveedor: string): Promise<'connected' | 'error'> {
+  if (typeof window === 'undefined') return 'error';
+  try {
+    const token = useAuthStore.getState().token;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+    const response = await fetch(`${apiUrl}/integraciones/delivery`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) return 'error';
+    const data = await response.json();
+    const integraciones = (data.integraciones ?? []) as Array<{ proveedor: string; activa: boolean }>;
+    return integraciones.some((item) => item.proveedor === proveedor && item.activa) ? 'connected' : 'error';
+  } catch (e) {
+    console.error('Error probando conexión de delivery:', e);
+    return 'error';
+  }
 }
