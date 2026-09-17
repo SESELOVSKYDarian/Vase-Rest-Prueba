@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { DishSelector } from '@/components/promociones/DishSelector';
-import { useDishesStore } from '@/store/dishesStore';
+import type { PromocionInput } from '@/services/promocionesService';
+import type { Plato } from '@/types/platos';
 import type { Promotion, PaymentMethod } from '@/types/promotions';
-import { generateId } from '@/hooks/lib/utils';
 
 const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
   { value: 'efectivo', label: 'Efectivo' },
@@ -19,88 +19,41 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
 interface PromotionFormModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSubmit: (input: PromocionInput) => void;
+  isSaving?: boolean;
+  platos: Plato[];
   promotionToEdit?: Promotion;
 }
 
-export function PromotionFormModal({ isOpen, onClose, promotionToEdit }: PromotionFormModalProps) {
-  const { dishes } = useDishesStore();
-  
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [discountPercentage, setDiscountPercentage] = useState('');
-  const [selectedDishIds, setSelectedDishIds] = useState<string[]>([]);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [allPaymentMethods, setAllPaymentMethods] = useState(false);
-  const [startDate, setStartDate] = useState('');
-  const [expirationDate, setExpirationDate] = useState('');
-  const [activateImmediately, setActivateImmediately] = useState(true);
+export function PromotionFormModal({ isOpen, onClose, onSubmit, isSaving, platos, promotionToEdit }: PromotionFormModalProps) {
+  const [name, setName] = useState(() => promotionToEdit?.name || '');
+  const [description, setDescription] = useState(() => promotionToEdit?.description || '');
+  const [discountPercentage, setDiscountPercentage] = useState(() => promotionToEdit?.discountPercentage.toString() || '');
+  const [selectedDishIds, setSelectedDishIds] = useState<string[]>(() => promotionToEdit?.applicableDishes.map((d) => d.dishId) || []);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(() => promotionToEdit?.paymentMethods.filter((m) => m !== 'todos') || []);
+  const [allPaymentMethods, setAllPaymentMethods] = useState(() => promotionToEdit?.paymentMethods.includes('todos') ?? false);
+  const [startDate, setStartDate] = useState(() => promotionToEdit?.startDate.toISOString().split('T')[0] || new Date().toISOString().split('T')[0]);
+  const [expirationDate, setExpirationDate] = useState(() => promotionToEdit?.expirationDate.toISOString().split('T')[0] || '');
+  const [activateImmediately, setActivateImmediately] = useState(() => promotionToEdit?.isActive ?? true);
 
-  useEffect(() => {
-    if (promotionToEdit) {
-      setName(promotionToEdit.name);
-      setDescription(promotionToEdit.description || '');
-      setDiscountPercentage(promotionToEdit.discountPercentage.toString());
-      setSelectedDishIds(promotionToEdit.applicableDishes.map(d => d.dishId));
-      setAllPaymentMethods(promotionToEdit.paymentMethods.includes('todos'));
-      setPaymentMethods(promotionToEdit.paymentMethods.filter(m => m !== 'todos'));
-      setStartDate(promotionToEdit.startDate.toISOString().split('T')[0]);
-      setExpirationDate(promotionToEdit.expirationDate.toISOString().split('T')[0]);
-      setActivateImmediately(promotionToEdit.isActive);
-    } else {
-      const today = new Date().toISOString().split('T')[0];
-      setName('');
-      setDescription('');
-      setDiscountPercentage('');
-      setSelectedDishIds([]);
-      setPaymentMethods([]);
-      setAllPaymentMethods(false);
-      setStartDate(today);
-      setExpirationDate('');
-      setActivateImmediately(true);
-    }
-  }, [promotionToEdit]);
-
-  const applicableDishes = useMemo(() => {
-    return dishes
-      .filter(dish => selectedDishIds.includes(dish.id))
-      .map(dish => ({
-        dishId: dish.id,
-        dishName: dish.name,
-        originalPrice: dish.price,
-        discountedPrice: dish.price - (dish.price * (parseFloat(discountPercentage) || 0) / 100),
-      }));
-  }, [dishes, selectedDishIds, discountPercentage]);
+  const discountValue = useMemo(() => parseFloat(discountPercentage) || 0, [discountPercentage]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const finalPaymentMethods: PaymentMethod[] = allPaymentMethods 
-      ? ['todos'] 
-      : paymentMethods;
 
-    const promoData = {
-      name,
-      description: description || undefined,
-      discountPercentage: parseFloat(discountPercentage) || 0,
-      applicableDishes,
-      paymentMethods: finalPaymentMethods,
-      startDate: new Date(startDate),
-      expirationDate: new Date(expirationDate),
-      isActive: activateImmediately,
-    };
+    const finalPaymentMethods: PaymentMethod[] = allPaymentMethods ? ['todos'] : paymentMethods;
 
-    if (promotionToEdit) {
-      useDishesStore.getState(); // Just to trigger re-render
-      usePromotionsStore.getState().updatePromotion(promotionToEdit.id, promoData);
-    } else {
-      usePromotionsStore.getState().addPromotion(promoData);
-    }
-
-    onClose();
+    onSubmit({
+      nombre: name,
+      descripcion: description || undefined,
+      discountPercentage: discountValue,
+      productoIds: selectedDishIds,
+      metodosPago: finalPaymentMethods,
+      fechaInicio: startDate,
+      fechaFin: expirationDate,
+      activo: activateImmediately,
+    });
   };
-
-  // We need to import usePromotionsStore here
-  const usePromotionsStore = require('@/store/promotionsStore').usePromotionsStore;
 
   return (
     <AnimatePresence>
@@ -180,9 +133,10 @@ export function PromotionFormModal({ isOpen, onClose, promotionToEdit }: Promoti
                     Platos incluidos
                   </label>
                   <DishSelector
+                    platos={platos}
                     selectedDishIds={selectedDishIds}
                     onChange={setSelectedDishIds}
-                    discountPercentage={parseFloat(discountPercentage) || 0}
+                    discountPercentage={discountValue}
                   />
                 </div>
 
@@ -209,7 +163,7 @@ export function PromotionFormModal({ isOpen, onClose, promotionToEdit }: Promoti
                             if (e.target.checked) {
                               setPaymentMethods([...paymentMethods, method.value]);
                             } else {
-                              setPaymentMethods(paymentMethods.filter(m => m !== method.value));
+                              setPaymentMethods(paymentMethods.filter((m) => m !== method.value));
                             }
                           }}
                           className="rounded"
@@ -268,16 +222,17 @@ export function PromotionFormModal({ isOpen, onClose, promotionToEdit }: Promoti
                   <button
                     type="submit"
                     disabled={
-                      !name || 
-                      !discountPercentage || 
-                      selectedDishIds.length === 0 || 
-                      (!allPaymentMethods && paymentMethods.length === 0) || 
+                      isSaving ||
+                      !name ||
+                      !discountPercentage ||
+                      selectedDishIds.length === 0 ||
+                      (!allPaymentMethods && paymentMethods.length === 0) ||
                       !expirationDate ||
                       new Date(expirationDate) <= new Date(startDate)
                     }
                     className="flex-1 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {promotionToEdit ? 'Actualizar' : 'Crear'}
+                    {isSaving ? 'Guardando...' : promotionToEdit ? 'Actualizar' : 'Crear'}
                   </button>
                 </div>
               </form>

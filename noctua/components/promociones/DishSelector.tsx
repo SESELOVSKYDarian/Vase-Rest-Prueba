@@ -2,57 +2,46 @@
 
 import { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
-import { useDishesStore } from '@/store/dishesStore';
-import type { DishCategory, Dish } from '@/types/dishes';
+import type { Plato } from '@/types/platos';
 
 interface DishSelectorProps {
+  platos: Plato[];
   selectedDishIds: string[];
   onChange: (dishIds: string[]) => void;
   discountPercentage: number;
 }
 
-const CATEGORIES: { value: DishCategory | 'all'; label: string }[] = [
-  { value: 'all', label: 'Todas' },
-  { value: 'entradas', label: 'Entradas' },
-  { value: 'hamburguesas', label: 'Hamburguesas' },
-  { value: 'sandwiches', label: 'Sandwiches' },
-  { value: 'minutas', label: 'Minutas' },
-  { value: 'pastas', label: 'Pastas' },
-  { value: 'pizzas', label: 'Pizzas' },
-  { value: 'ensaladas', label: 'Ensaladas' },
-  { value: 'postres', label: 'Postres' },
-  { value: 'bebidas_sin_alcohol', label: 'Bebidas sin alcohol' },
-  { value: 'bebidas_con_alcohol', label: 'Bebidas con alcohol' },
-  { value: 'cafeteria', label: 'Cafetería' },
-];
-
-export function DishSelector({ selectedDishIds, onChange, discountPercentage }: DishSelectorProps) {
-  const { dishes } = useDishesStore();
+export function DishSelector({ platos, selectedDishIds, onChange, discountPercentage }: DishSelectorProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<DishCategory | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  const categorias = useMemo(() => {
+    const nombres = new Set(platos.map((plato) => plato.categoriaNombre));
+    return Array.from(nombres);
+  }, [platos]);
 
   const filteredDishes = useMemo(() => {
-    return dishes.filter(dish => {
-      const matchesSearch = dish.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === 'all' || dish.category === selectedCategory;
+    return platos.filter((plato) => {
+      const matchesSearch = plato.nombre.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === 'all' || plato.categoriaNombre === selectedCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [dishes, searchQuery, selectedCategory]);
+  }, [platos, searchQuery, selectedCategory]);
 
   const handleToggleDish = (dishId: string) => {
     if (selectedDishIds.includes(dishId)) {
-      onChange(selectedDishIds.filter(id => id !== dishId));
+      onChange(selectedDishIds.filter((id) => id !== dishId));
     } else {
       onChange([...selectedDishIds, dishId]);
     }
   };
 
   const handleSelectAllInCategory = () => {
-    const categoryDishIds = filteredDishes.map(d => d.id);
-    const allSelected = categoryDishIds.every(id => selectedDishIds.includes(id));
-    
+    const categoryDishIds = filteredDishes.map((d) => d.id);
+    const allSelected = categoryDishIds.every((id) => selectedDishIds.includes(id));
+
     if (allSelected) {
-      onChange(selectedDishIds.filter(id => !categoryDishIds.includes(id)));
+      onChange(selectedDishIds.filter((id) => !categoryDishIds.includes(id)));
     } else {
       const newSelected = new Set([...selectedDishIds, ...categoryDishIds]);
       onChange(Array.from(newSelected));
@@ -60,7 +49,7 @@ export function DishSelector({ selectedDishIds, onChange, discountPercentage }: 
   };
 
   const calculateDiscountedPrice = (price: number) => {
-    return price - (price * discountPercentage / 100);
+    return price - (price * discountPercentage) / 100;
   };
 
   return (
@@ -78,11 +67,12 @@ export function DishSelector({ selectedDishIds, onChange, discountPercentage }: 
         </div>
         <select
           value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value as any)}
+          onChange={(e) => setSelectedCategory(e.target.value)}
           className="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white"
         >
-          {CATEGORIES.map(cat => (
-            <option key={cat.value} value={cat.value}>{cat.label}</option>
+          <option value="all">Todas</option>
+          {categorias.map((nombre) => (
+            <option key={nombre} value={nombre}>{nombre}</option>
           ))}
         </select>
       </div>
@@ -93,8 +83,8 @@ export function DishSelector({ selectedDishIds, onChange, discountPercentage }: 
           onClick={handleSelectAllInCategory}
           className="text-xs text-violet-400 hover:text-violet-300"
         >
-          {filteredDishes.every(d => selectedDishIds.includes(d.id)) 
-            ? 'Deseleccionar todos en la categoría' 
+          {filteredDishes.every((d) => selectedDishIds.includes(d.id))
+            ? 'Deseleccionar todos en la categoría'
             : 'Seleccionar todos en la categoría'}
         </button>
       )}
@@ -103,27 +93,27 @@ export function DishSelector({ selectedDishIds, onChange, discountPercentage }: 
         {filteredDishes.length === 0 && (
           <p className="text-center text-[#676b67] text-sm py-4">No hay platos para mostrar</p>
         )}
-        {filteredDishes.map(dish => (
+        {filteredDishes.map((plato) => (
           <label
-            key={dish.id}
+            key={plato.id}
             className="flex items-center justify-between p-3 rounded-lg hover:bg-[#151515] cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <input
                 type="checkbox"
-                checked={selectedDishIds.includes(dish.id)}
-                onChange={() => handleToggleDish(dish.id)}
+                checked={selectedDishIds.includes(plato.id)}
+                onChange={() => handleToggleDish(plato.id)}
                 className="rounded"
               />
               <div>
-                <div className="text-white text-sm">{dish.name}</div>
-                <div className="text-[#676b67] text-xs">{dish.category}</div>
+                <div className="text-white text-sm">{plato.nombre}</div>
+                <div className="text-[#676b67] text-xs">{plato.categoriaNombre}</div>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[#676b67] text-sm line-through">${dish.price.toFixed(2)}</span>
+              <span className="text-[#676b67] text-sm line-through">${plato.precio.toFixed(2)}</span>
               <span className="text-green-400 text-sm font-medium">
-                ${calculateDiscountedPrice(dish.price).toFixed(2)}
+                ${calculateDiscountedPrice(plato.precio).toFixed(2)}
               </span>
             </div>
           </label>

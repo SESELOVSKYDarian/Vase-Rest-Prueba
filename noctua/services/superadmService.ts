@@ -54,7 +54,7 @@ const defaultConfig: SuperAdmConfig = {
       pedidos: { title: 'Pedidos', subtitle: 'Gestiona los pedidos de los clientes' },
       cocina: { title: 'Cocina', subtitle: 'Gestiona los pedidos en preparación' },
       delivery: { title: 'Delivery', subtitle: 'Gestiona pedidos de todas las plataformas' },
-      stock: { title: 'Stock', subtitle: 'Gestiona el inventario de ingredientes' },
+      stock: { title: 'Inventario', subtitle: 'Gestiona el inventario de ingredientes' },
       facturas: { title: 'Facturas', subtitle: 'Gestiona las facturas y cobros' },
       historial: { title: 'Historial', subtitle: 'Consulta el historial de pedidos' },
       reservas: { title: 'Reservas', subtitle: 'Gestiona las reservas de mesas' },

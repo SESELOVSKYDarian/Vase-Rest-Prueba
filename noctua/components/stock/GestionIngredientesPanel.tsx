@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useStockStore } from '@/store/stockStore';
 import { Plus, Trash2, Edit2, AlertTriangle, Calendar } from 'lucide-react';
 import type { Ingredient, StockFilter } from '@/types/stock';
@@ -13,7 +13,7 @@ const getExpirationStatus = (ingredient: Ingredient) => {
   const expirationDate = new Date(ingredient.expirationDate);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   const diffTime = expirationDate.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -28,7 +28,11 @@ const getExpirationStatus = (ingredient: Ingredient) => {
   }
 };
 
-export default function ConfiguracionStockPage() {
+interface GestionIngredientesPanelProps {
+  isLoading?: boolean;
+}
+
+export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredientesPanelProps) => {
   const {
     categories,
     filter,
@@ -40,8 +44,7 @@ export default function ConfiguracionStockPage() {
     updateIngredient,
     getExpiringIngredients,
   } = useStockStore();
-  
-  const [isLoading, setIsLoading] = useState(true);
+
   const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState<{
@@ -68,20 +71,12 @@ export default function ConfiguracionStockPage() {
     hasExpiration: false,
   });
 
-  useEffect(() => {
-    const load = async () => {
-      await Promise.all([useStockStore.getState().cargarCategorias(), useStockStore.getState().cargarProductos()]);
-      setIsLoading(false);
-    };
-    load();
-  }, []);
-
   const filteredCategories = useMemo(() => {
     return categories.map(cat => {
       const filteredIngredients = cat.ingredients.filter(ing => {
         const matchesSearch = ing.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           (ing.subcategory?.toLowerCase() || '').includes(searchQuery.toLowerCase());
-        
+
         const matchesFilter = (() => {
           switch (filter) {
             case 'all': return true;
@@ -105,7 +100,7 @@ export default function ConfiguracionStockPage() {
 
   const expiringIngredients = useMemo(() => {
     return getExpiringIngredients(7);
-  }, [categories]);
+  }, [getExpiringIngredients, categories]);
 
   const handleAddOrUpdate = async () => {
     if (!formData.name.trim() || !formData.category.trim()) return;
@@ -179,8 +174,8 @@ export default function ConfiguracionStockPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Gestión de Stock</h1>
-          <p className="text-[#676b67]">Administra ingredientes y materias primas</p>
+          <h2 className="text-xl font-semibold text-white mb-1">Gestión de ingredientes</h2>
+          <p className="text-[#676b67] text-sm">Categorías, alta/baja y vencimientos</p>
         </div>
         <button
           onClick={() => {
@@ -476,4 +471,4 @@ export default function ConfiguracionStockPage() {
       </div>
     </div>
   );
-}
+};

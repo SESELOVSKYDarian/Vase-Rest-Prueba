@@ -13,6 +13,8 @@ const RELATIONS = {
   reservas: { mesas: ["mesa_id", "mesas", "id", false] },
   facturas: { clientes: ["cliente_id", "clientes", "id", false], pagos: ["pago_id", "pagos", "id", false], pedidos: ["pedido_id", "pedidos", "id", false] },
   cuentas_corrientes: { clientes: ["cliente_id", "clientes", "id", false] },
+  promociones: { promocion_productos: ["id", "promocion_productos", "promocion_id", true] },
+  promocion_productos: { productos: ["producto_id", "productos", "id", false] },
 };
 
 function relationNames(selection) {
@@ -64,7 +66,13 @@ class PostgresQuery {
       if (filter.op === "in") { values.push(filter.value); return `${ident(filter.column)} = any($${start + values.length - 1})`; }
       if (filter.op === "is") return `${ident(filter.column)} is ${filter.value === null ? "null" : "not null"}`;
       if (filter.op === "or") {
-        const parts = String(filter.value).split(",").map((part) => { const [column, operator, ...raw] = part.split("."); values.push(raw.join(".").replaceAll("*", "%")); return `${ident(column)} ${operator === "ilike" ? "ilike" : "="} $${start + values.length - 1}`; });
+        const parts = String(filter.value).split(",").map((part) => {
+          const [column, operator, ...raw] = part.split(".");
+          const rawValue = raw.join(".");
+          if (operator === "is") return `${ident(column)} is ${rawValue === "null" ? "null" : "not null"}`;
+          values.push(rawValue.replaceAll("*", "%"));
+          return `${ident(column)} ${operator === "ilike" ? "ilike" : "="} $${start + values.length - 1}`;
+        });
         return `(${parts.join(" or ")})`;
       }
       values.push(filter.value); return `${ident(filter.column)} ${filter.op} $${start + values.length - 1}`;

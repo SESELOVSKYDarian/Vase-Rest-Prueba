@@ -7,7 +7,6 @@ export type SeccionSistema =
   | 'historial'
   | 'stock'
   | 'platos'
-  | 'promociones'
   | 'reservas'
   | 'administracion'
   | 'delivery'
@@ -36,7 +35,6 @@ export const SECCIONES_POR_ROL: Record<RolSistema, SeccionSistema[]> = {
     'historial',
     'stock',
     'platos',
-    'promociones',
     'reservas',
     'administracion',
     'delivery',
@@ -54,14 +52,13 @@ export const SECCIONES_POR_ROL: Record<RolSistema, SeccionSistema[]> = {
     'historial',
     'stock',
     'platos',
-    'promociones',
     'reservas',
     'delivery',
   ],
   cajero: ['mesas', 'pedidos', 'cajero', 'historial'],
   cocina: ['cocina'],
   mozo: ['mesas', 'pedidos', 'cocina'],
-  stock: ['stock', 'platos', 'promociones'],
+  stock: ['stock', 'platos'],
   delivery: ['delivery'],
   soporte: ['soporte'],
   desarrollador: ['soporte'],
@@ -76,7 +73,6 @@ export const RUTA_POR_SECCION: Record<SeccionSistema, string> = {
   historial:      '/dashboard/historial',
   stock:          '/dashboard/stock',
   platos:         '/dashboard/platos',
-  promociones:    '/dashboard/promociones',
   reservas:       '/dashboard/reservas',
   administracion: '/dashboard/administracion',
   delivery:       '/dashboard/delivery',
@@ -92,9 +88,8 @@ export const LABEL_POR_SECCION: Record<SeccionSistema, string> = {
   cocina:         'Cocina',
   cajero:         'Facturas',
   historial:      'Historial',
-  stock:          'Stock',
-  platos:         'Platos',
-  promociones:    'Promociones',
+  stock:          'Inventario',
+  platos:         'Menú',
   reservas:       'Reservas',
   administracion: 'Administración',
   delivery:       'Delivery',
@@ -141,7 +136,6 @@ export const CATEGORIA_POR_SECCION: Record<SeccionSistema, CategoriaNav> = {
   delivery: 'operacion',
   reservas: 'operacion',
   platos: 'gestion',
-  promociones: 'gestion',
   stock: 'gestion',
   mozos: 'gestion',
   analytics: 'negocio',

@@ -20,7 +20,7 @@ export const StockHeader = ({ onOpenModal }: StockHeaderProps) => {
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <Package size={24} className="text-white" />
-          <h1 className="text-2xl font-bold text-white">Stock</h1>
+          <h1 className="text-2xl font-bold text-white">Inventario</h1>
         </div>
         <p className="text-[#676B67] text-sm">
           Gestiona tu inventario de ingredientes y productos

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UtensilsCrossed, ClipboardList, ChefHat, Package, CalendarDays, LayoutDashboard, Menu, X, History, Receipt, ShieldCheck, Truck, Headphones, Utensils, Tag, Home, Users, Palette } from 'lucide-react';
+import { UtensilsCrossed, ClipboardList, ChefHat, Package, CalendarDays, LayoutDashboard, Menu, X, History, Receipt, ShieldCheck, Truck, Headphones, Utensils, Home, Users, Palette } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/hooks/lib/utils';
 import { useAuthStore } from '@/store/authStore';
@@ -15,7 +15,7 @@ const NAV_ITEMS = [
   { seccion: 'pedidos', icon: ClipboardList }, { seccion: 'cocina', icon: ChefHat },
   { seccion: 'cajero', icon: Receipt }, { seccion: 'historial', icon: History },
   { seccion: 'stock', icon: Package }, { seccion: 'platos', icon: Utensils },
-  { seccion: 'promociones', icon: Tag }, { seccion: 'delivery', icon: Truck },
+  { seccion: 'delivery', icon: Truck },
   { seccion: 'reservas', icon: CalendarDays }, { seccion: 'administracion', icon: ShieldCheck },
   { seccion: 'soporte', icon: Headphones }, { seccion: 'mozos', icon: Users },
   { seccion: 'diseno', icon: Palette },
