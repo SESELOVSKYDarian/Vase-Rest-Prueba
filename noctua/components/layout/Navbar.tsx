@@ -2,19 +2,18 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, Search, ChevronDown, Settings, LogOut, X, ArrowRight } from 'lucide-react';
+import { Bell, Search, ChevronDown, Settings, LogOut, X } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useNotificationsStore } from '@/store/notificationsStore';
-import { LABEL_POR_SECCION, RUTA_POR_SECCION, obtenerSeccionesPorRol } from '@/config/roles';
+import { useCommandPaletteStore } from '@/store/commandPaletteStore';
 
 export function Navbar() {
   const router = useRouter();
   const usuario = useAuthStore((state) => state.usuario);
   const logout = useAuthStore((state) => state.logout);
+  const openCommandPalette = useCommandPaletteStore((state) => state.open);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const searchRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const notifications = useNotificationsStore((state) => state.notifications);
   const removeNotification = useNotificationsStore((state) => state.removeNotification);
@@ -25,23 +24,15 @@ export function Navbar() {
   useEffect(() => {
     const handleOutsidePointer = (event: PointerEvent) => {
       const target = event.target as Node;
-      if (search && searchRef.current && !searchRef.current.contains(target)) setSearch('');
       if (notificationsOpen && notificationsRef.current && !notificationsRef.current.contains(target)) setNotificationsOpen(false);
     };
     document.addEventListener('pointerdown', handleOutsidePointer);
     return () => document.removeEventListener('pointerdown', handleOutsidePointer);
-  }, [notificationsOpen, search]);
+  }, [notificationsOpen]);
 
   const nombreUsuario = usuario?.nombre ?? 'Administrador';
   const funcionUsuario = usuario?.rol === 'admin' ? 'Administrador' : usuario?.rol ?? 'Usuario';
   const iniciales = nombreUsuario.split(' ').map((parte) => parte[0]).join('').slice(0, 2).toUpperCase();
-  // Generado desde las secciones reales del rol en vez de una lista fija: queda
-  // automáticamente sincronizado si se agregan/quitan secciones sin mantenimiento manual.
-  const searchItems = obtenerSeccionesPorRol(usuario?.rol).map((seccion) => ({
-    label: LABEL_POR_SECCION[seccion],
-    href: RUTA_POR_SECCION[seccion],
-  }));
-  const searchResults = search.trim() ? searchItems.filter((item) => item.label.toLowerCase().includes(search.toLowerCase())).slice(0, 5) : [];
 
   const handleLogout = () => {
     logout();
@@ -51,13 +42,16 @@ export function Navbar() {
   return (
     <header className="fixed top-0 left-0 lg:left-20 right-0 h-[72px] bg-[#131313]/85 border-b border-[#1d2b21] px-4 pl-16 sm:px-6 sm:pl-20 lg:px-10 flex items-center justify-between z-40 backdrop-blur-xl">
       <div className="flex items-center min-w-0 flex-1">
-        <div ref={searchRef} className="relative flex items-center bg-[#201f1f] h-11 px-4 sm:px-6 rounded-full w-full max-w-[400px] focus-within:ring-2 focus-within:ring-[#7ed957]/30 transition-all">
+        <button
+          type="button"
+          onClick={() => openCommandPalette()}
+          className="relative flex items-center bg-[#201f1f] h-11 px-4 sm:px-6 rounded-full w-full max-w-[400px] hover:bg-[#242424] transition-colors text-left"
+          aria-label="Abrir búsqueda global"
+        >
           <Search size={20} className="text-[#8b938d] mr-3 flex-shrink-0" />
-          <input value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && searchResults[0]) { router.push(searchResults[0].href); setSearch(''); } }} className="!border-0 !outline-none !ring-0 focus:!border-0 focus:!outline-none focus:!ring-0 bg-transparent w-full min-w-0 text-sm sm:text-base text-[#e5e2e1] placeholder:text-[#8b938d]/60 appearance-none" placeholder="Buscar pedidos, mesas o platos..." aria-label="Buscar en Vase Rest" />
-          {searchResults.length > 0 && <><button className="fixed inset-0 z-[45] cursor-default" aria-label="Cerrar resultados de búsqueda" onMouseDown={() => setSearch('')} /><div className="absolute left-0 top-12 z-[60] w-[min(360px,calc(100vw-5rem))] rounded-2xl border border-[#2b3a2f] bg-[#151a16] p-2 shadow-2xl shadow-black/40">
-            {searchResults.map((item) => <button key={item.href} onClick={() => { router.push(item.href); setSearch(''); }} className="w-full flex items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm text-[#c1c8c2] hover:bg-[#7ed957]/10 hover:text-[#b7f397] transition-colors"><span>{item.label}</span><ArrowRight size={15} /></button>)}
-          </div></>}
-        </div>
+          <span className="flex-1 min-w-0 text-sm sm:text-base text-[#8b938d]/60 truncate">Buscar secciones, mesas, pedidos o platos...</span>
+          <kbd className="hidden sm:inline text-[10px] text-[#8b938d] border border-[#333] rounded px-1.5 py-0.5 flex-shrink-0">⌘K</kbd>
+        </button>
       </div>
 
       <div className="flex items-center gap-4 lg:gap-7 ml-4">

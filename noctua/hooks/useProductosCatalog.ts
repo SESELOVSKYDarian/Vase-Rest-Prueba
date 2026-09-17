@@ -15,12 +15,14 @@ export interface CategoriaConProductos {
 
 const SIN_CATEGORIA = 'Sin categoría';
 
-export function useProductosCatalog() {
+export function useProductosCatalog(options: { enabled?: boolean } = {}) {
+  const { enabled = true } = options;
   const query = useQuery({
     queryKey: ['productos', 'catalogo', 'disponibles'],
     // Solo productos disponibles: los que se agotan (disponible=false vía descuento
     // de stock) desaparecen del catálogo en el siguiente refetch (~near real-time).
     queryFn: () => obtenerProductos({ soloDisponibles: true }),
+    enabled,
     staleTime: 10_000,
     refetchInterval: 15_000,
     refetchOnWindowFocus: true,
