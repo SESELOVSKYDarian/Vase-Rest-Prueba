@@ -3,14 +3,22 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Search, ArrowRight, LayoutGrid, UtensilsCrossed, ClipboardList, Utensils, CalendarDays } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Search, ArrowRight, LayoutGrid, UtensilsCrossed, ClipboardList, Utensils, CalendarDays, Contact } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useMesasStore } from '@/store/mesasStore';
 import { usePedidosStore } from '@/store/pedidosStore';
 import { useProductosCatalog } from '@/hooks/useProductosCatalog';
 import { useReservasIndex } from '@/hooks/useReservasIndex';
 import { useCommandPaletteStore } from '@/store/commandPaletteStore';
+import { clientesService } from '@/services/clientesService';
 import { LABEL_POR_SECCION, RUTA_POR_SECCION, obtenerSeccionesPorRol } from '@/config/roles';
+
+// Búsqueda insensible a mayúsculas y a tildes/diacríticos — con nombres reales en
+// español (clientes, reservas), buscar "lucia" debe encontrar "Lucía" igual.
+function normalizar(texto: string): string {
+  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
 
 interface PaletteResult {
   id: string;
@@ -71,6 +79,8 @@ function PaletteContent({ initialQuery, onClose }: { initialQuery: string; onClo
   const cargarPedidosActivos = usePedidosStore((s) => s.cargarPedidosActivos);
   const { productos } = useProductosCatalog();
   const { reservas } = useReservasIndex();
+  const clientesQuery = useQuery({ queryKey: ['clientes'], queryFn: clientesService.getClientes });
+  const clientes = clientesQuery.data ?? [];
 
   const [query, setQuery] = useState(initialQuery);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -135,14 +145,23 @@ function PaletteContent({ initialQuery, onClose }: { initialQuery: string; onClo
       href: '/dashboard/reservas',
     }));
 
-    return [...secciones, ...mesasResultados, ...pedidosResultados, ...platosResultados, ...reservasResultados];
-  }, [usuario?.rol, mesas, pedidos, productos, reservas]);
+    const clientesResultados = clientes.map((cliente) => ({
+      id: `cliente-${cliente.id}`,
+      group: 'Clientes',
+      icon: Contact,
+      label: cliente.nombre,
+      sublabel: cliente.telefono || cliente.email || undefined,
+      href: '/dashboard/clientes',
+    }));
+
+    return [...secciones, ...mesasResultados, ...pedidosResultados, ...platosResultados, ...reservasResultados, ...clientesResultados];
+  }, [usuario?.rol, mesas, pedidos, productos, reservas, clientes]);
 
   const filteredResults = useMemo(() => {
-    const trimmed = query.trim().toLowerCase();
+    const trimmed = normalizar(query);
     if (!trimmed) return allResults.filter((r) => r.group === 'Secciones');
     return allResults.filter((r) =>
-      r.label.toLowerCase().includes(trimmed) || r.sublabel?.toLowerCase().includes(trimmed)
+      normalizar(r.label).includes(trimmed) || (r.sublabel && normalizar(r.sublabel).includes(trimmed))
     ).slice(0, 30);
   }, [allResults, query]);
 
@@ -191,7 +210,7 @@ function PaletteContent({ initialQuery, onClose }: { initialQuery: string; onClo
           value={query}
           onChange={(e) => { setQuery(e.target.value); setActiveIndex(0); }}
           onKeyDown={handleKeyDown}
-          placeholder="Buscar secciones, mesas, pedidos, platos o reservas..."
+          placeholder="Buscar secciones, mesas, pedidos, platos, reservas o clientes..."
           className="flex-1 bg-transparent border-0 outline-none text-white placeholder:text-[#676b67] text-sm"
           aria-label="Buscar en Vase Rest"
         />

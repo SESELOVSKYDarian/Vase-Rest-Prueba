@@ -28,3 +28,13 @@
     padding: 80px 20px 32px;
   }
 }
+
+/* Reserva espacio para el MobileBottomNav (lg:hidden, breakpoint 1024px de Tailwind).
+   Se aplica con una clase aparte (ver DashboardContent.tsx) en vez de siempre sobre
+   .content, porque Pedido oculta el MobileBottomNav (ya tiene su propio bottom sheet
+   fijo) y no debe quedar espacio vacío de más debajo suyo. */
+@media (max-width: 1023px) {
+  .contentWithBottomNav {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom));
+  }
+}

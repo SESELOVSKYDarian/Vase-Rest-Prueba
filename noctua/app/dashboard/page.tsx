@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowRight, UtensilsCrossed, ClipboardList, ChefHat, Package, CalendarDays, BarChart3, History, Receipt, ShieldCheck, Truck, Headphones, Utensils } from 'lucide-react';
+import { ArrowRight, UtensilsCrossed, ClipboardList, ChefHat, Package, CalendarDays, BarChart3, History, Receipt, ShieldCheck, Truck, Headphones, Utensils, Contact } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useMesasStore } from '@/store/mesasStore';
 import { usePedidosStore } from '@/store/pedidosStore';
@@ -13,7 +13,7 @@ import { LABEL_POR_SECCION, RUTA_POR_SECCION, obtenerSeccionesPorRol, type Secci
 const ICONO_POR_SECCION: Partial<Record<SeccionSistema, typeof UtensilsCrossed>> = {
   analytics: BarChart3, mesas: UtensilsCrossed, pedidos: ClipboardList, cocina: ChefHat,
   cajero: Receipt, historial: History, stock: Package, platos: Utensils,
-  delivery: Truck, reservas: CalendarDays, administracion: ShieldCheck, soporte: Headphones,
+  delivery: Truck, reservas: CalendarDays, clientes: Contact, administracion: ShieldCheck, soporte: Headphones,
 };
 
 export default function InicioPage() {
