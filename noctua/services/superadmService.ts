@@ -35,6 +35,7 @@ const defaultConfig: SuperAdmConfig = {
     { id: 'da4', name: 'Uber Eats', isActive: true, apiKeyEnvVar: 'UBEREATS_API_KEY', connectionStatus: 'unconfigured' },
   ],
   theme: {
+    accent: 'salvia',
     colors: {
       primary: '#8b5cf6',
       accent: '#f59e0b',

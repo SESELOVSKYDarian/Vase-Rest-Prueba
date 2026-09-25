@@ -30,28 +30,28 @@ export function HorarioSoporteCard() {
           size={20}
           className={
             horario.abierto
-              ? 'text-green-400'
-              : 'text-yellow-400'
+              ? 'text-green-700 dark:text-green-400'
+              : 'text-yellow-700 dark:text-yellow-400'
           }
         />
 
         <div>
-          <p className="font-bold text-white">
+          <p className="font-bold text-ink">
             Soporte: {horario.estado}
           </p>
 
-          <p className="mt-1 text-sm text-zinc-400">
+          <p className="mt-1 text-sm text-ink-3">
             Lunes a viernes de 09:00 a 18:00 · Sábados de
             09:00 a 13:00 · Domingos cerrado.
           </p>
 
           {!horario.abierto && horario.proximaApertura && (
-            <p className="mt-2 text-sm text-yellow-300">
+            <p className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
               Próxima atención: {horario.proximaApertura}.
             </p>
           )}
 
-          <p className="mt-1 text-xs text-zinc-600">
+          <p className="mt-1 text-xs text-ink-3">
             Hora de Argentina
           </p>
         </div>

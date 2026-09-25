@@ -57,7 +57,7 @@ export function CommandPalette() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[200]"
+            className="fixed inset-0 bg-scrim backdrop-blur-sm z-[200]"
             onClick={close}
             aria-hidden="true"
           />
@@ -200,30 +200,30 @@ function PaletteContent({ initialQuery, onClose }: { initialQuery: string; onClo
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96, y: -12 }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
-      className="relative w-full max-w-xl bg-[#0d0d0d] border border-[#222] rounded-2xl shadow-2xl overflow-hidden"
+      className="relative w-full max-w-xl bg-surface border border-line rounded-2xl shadow-float overflow-hidden"
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-[#1e1e1e]">
-        <Search size={18} className="text-[#8b938d] flex-shrink-0" />
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-line">
+        <Search size={18} className="text-ink-3 flex-shrink-0" />
         <input
           ref={inputRef}
           value={query}
           onChange={(e) => { setQuery(e.target.value); setActiveIndex(0); }}
           onKeyDown={handleKeyDown}
           placeholder="Buscar secciones, mesas, pedidos, platos, reservas o clientes..."
-          className="flex-1 bg-transparent border-0 outline-none text-white placeholder:text-[#676b67] text-sm"
+          className="flex-1 bg-transparent border-0 outline-none text-ink placeholder:text-ink-3 text-sm"
           aria-label="Buscar en Vase Rest"
         />
-        <kbd className="hidden sm:inline text-[10px] text-[#676b67] border border-[#2a2a2a] rounded px-1.5 py-0.5">Esc</kbd>
+        <kbd className="hidden sm:inline text-[10px] text-ink-3 border border-line-strong rounded px-1.5 py-0.5">Esc</kbd>
       </div>
 
       <div className="max-h-[60vh] overflow-y-auto p-2">
         {filteredResults.length === 0 ? (
-          <p className="text-center text-[#676b67] text-sm py-8">No se encontraron resultados</p>
+          <p className="text-center text-ink-3 text-sm py-8">No se encontraron resultados</p>
         ) : (
           groupedResults.map(([group, results]) => (
             <div key={group} className="mb-2 last:mb-0">
-              <p className="px-3 py-1.5 text-[10px] uppercase tracking-widest text-[#676b67] font-semibold">{group}</p>
+              <p className="px-3 py-1.5 text-[10px] uppercase tracking-widest text-ink-3 font-semibold">{group}</p>
               {results.map((result) => {
                 const globalIndex = filteredResults.indexOf(result);
                 const isActive = globalIndex === activeIndex;
@@ -234,12 +234,12 @@ function PaletteContent({ initialQuery, onClose }: { initialQuery: string; onClo
                     onMouseEnter={() => setActiveIndex(globalIndex)}
                     onClick={() => navigateTo(result)}
                     className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
-                      isActive ? 'bg-[#7ed957]/10 text-[#b7f397]' : 'text-[#c1c8c2] hover:bg-[#1a1a1a]'
+                      isActive ? 'bg-brand/10 text-brand-strong' : 'text-ink-2 hover:bg-surface-3'
                     }`}
                   >
                     <Icon size={16} className="flex-shrink-0 opacity-70" />
                     <span className="flex-1 min-w-0 truncate">{result.label}</span>
-                    {result.sublabel && <span className="text-xs text-[#676b67] flex-shrink-0 truncate max-w-[35%]">{result.sublabel}</span>}
+                    {result.sublabel && <span className="text-xs text-ink-3 flex-shrink-0 truncate max-w-[35%]">{result.sublabel}</span>}
                     <ArrowRight size={14} className="flex-shrink-0 opacity-50" />
                   </button>
                 );

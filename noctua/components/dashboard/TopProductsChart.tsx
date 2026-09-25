@@ -14,15 +14,15 @@ interface TopProductsChartProps {
 }
 
 export function TopProductsChart({ title, data, variant, loading, error }: TopProductsChartProps) {
-  if (loading) return <div className="h-80 rounded-lg border border-[#1a1a1a] bg-[#080808] animate-pulse" />;
+  if (loading) return <div className="h-80 rounded-lg border border-line bg-canvas animate-pulse" />;
   if (error) return <EmptyProducts title={title} message="Error al cargar los datos. Intentá de nuevo." />;
   if (data.length === 0) return <EmptyProducts title={title} message="Sin datos para el período seleccionado" />;
 
   const color = variant === 'top' ? DASHBOARD_COLORS.positive : DASHBOARD_COLORS.negative;
 
   return (
-    <section className="rounded-2xl border border-[#1d2b21] bg-[#0e0e0e] p-7">
-      <h2 className="text-sm font-bold uppercase tracking-widest text-[#BCB9B9]">{title}</h2>
+    <section className="rounded-2xl border border-line bg-surface p-7">
+      <h2 className="text-base text-ink text-ink-2 font-medium">{title}</h2>
       <div className="mt-7 h-72">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} layout="vertical" margin={{ left: 10, right: 18, top: 4, bottom: 4 }}>
@@ -61,9 +61,9 @@ function truncate(value: string) {
 
 function EmptyProducts({ title, message }: { title: string; message: string }) {
   return (
-    <section className="rounded-2xl border border-[#1d2b21] bg-[#0e0e0e] p-7">
-      <h2 className="text-sm font-bold uppercase tracking-widest text-[#BCB9B9]">{title}</h2>
-      <div className="mt-5 flex h-72 items-center justify-center text-sm text-[#676B67]">{message}</div>
+    <section className="rounded-2xl border border-line bg-surface p-7">
+      <h2 className="text-base text-ink text-ink-2 font-medium">{title}</h2>
+      <div className="mt-5 flex h-72 items-center justify-center text-sm text-ink-3">{message}</div>
     </section>
   );
 }

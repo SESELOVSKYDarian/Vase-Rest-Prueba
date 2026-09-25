@@ -184,49 +184,49 @@ export function DishFormPanel({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-scrim backdrop-blur-sm z-40"
           />
           <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            className="fixed right-0 top-0 h-full w-full max-w-2xl bg-[#0a0a0a] border-l border-[#252525] z-50 overflow-y-auto"
+            className="fixed right-0 top-0 h-full w-full max-w-2xl bg-canvas border-l border-line z-50 overflow-y-auto"
           >
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-white font-bold text-xl">
+                <h2 className="text-ink font-bold text-xl">
                   {platoToEdit ? 'Editar plato' : 'Nuevo plato'}
                 </h2>
-                <button type="button" onClick={onClose} className="p-2 hover:bg-[#202020] rounded-lg">
-                  <X size={20} className="text-[#676b67]" />
+                <button type="button" onClick={onClose} className="p-2 hover:bg-surface-3 rounded-lg">
+                  <X size={20} className="text-ink-3" />
                 </button>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 {formError && (
-                  <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+                  <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300">
                     {formError}
                   </div>
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <label className="block">
-                    <span className="text-white text-sm font-medium mb-1 block">Nombre del plato</span>
+                    <span className="text-ink text-sm font-medium mb-1 block">Nombre del plato</span>
                     <input
                       type="text"
                       value={name}
                       onChange={(event) => setName(event.target.value)}
                       required
-                      className="w-full bg-[#151515] border border-[#252525] rounded-lg px-3 py-2 text-white"
+                      className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-ink"
                     />
                   </label>
 
                   <label className="block">
-                    <span className="text-white text-sm font-medium mb-1 block">Categoria</span>
+                    <span className="text-ink text-sm font-medium mb-1 block">Categoria</span>
                     <select
                       value={categoryId}
                       onChange={(event) => setCategoryId(event.target.value)}
-                      className="w-full bg-[#151515] border border-[#252525] rounded-lg px-3 py-2 text-white"
+                      className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-ink"
                     >
                       <option value="">Sin categoria</option>
                       {categorias.map((category) => (
@@ -236,7 +236,7 @@ export function DishFormPanel({
                   </label>
 
                   <label className="block">
-                    <span className="text-white text-sm font-medium mb-1 block">Precio</span>
+                    <span className="text-ink text-sm font-medium mb-1 block">Precio</span>
                     <input
                       type="number"
                       step="0.01"
@@ -244,42 +244,42 @@ export function DishFormPanel({
                       value={price}
                       onChange={(event) => setPrice(event.target.value)}
                       required
-                      className="w-full bg-[#151515] border border-[#252525] rounded-lg px-3 py-2 text-white"
+                      className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-ink"
                     />
                   </label>
 
                   <label className="block">
-                    <span className="text-white text-sm font-medium mb-1 block">Stock fallback del producto</span>
+                    <span className="text-ink text-sm font-medium mb-1 block">Stock fallback del producto</span>
                     <input
                       type="number"
                       step="0.01"
                       min="0"
                       value={stockActual}
                       onChange={(event) => setStockActual(event.target.value)}
-                      className="w-full bg-[#151515] border border-[#252525] rounded-lg px-3 py-2 text-white"
+                      className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-ink"
                     />
                   </label>
                 </div>
 
                 <label className="block">
-                  <span className="text-white text-sm font-medium mb-1 block">Descripcion</span>
+                  <span className="text-ink text-sm font-medium mb-1 block">Descripcion</span>
                   <textarea
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
-                    className="w-full bg-[#151515] border border-[#252525] rounded-lg px-3 py-2 text-white h-24"
+                    className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-ink h-24"
                   />
                 </label>
 
-                <section className="rounded-xl border border-[#252525] bg-[#111] p-4 space-y-3">
+                <section className="rounded-xl border border-line bg-surface p-4 space-y-3">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <h3 className="text-white font-semibold">Receta</h3>
-                      <p className="text-xs text-[#676b67]">Minimo un ingrediente para guardar.</p>
+                      <h3 className="text-ink font-semibold">Receta</h3>
+                      <p className="text-xs text-ink-3">Minimo un ingrediente para guardar.</p>
                     </div>
                     <button
                       type="button"
                       onClick={addRecipeRow}
-                      className="flex items-center gap-1 text-violet-400 hover:text-violet-300 text-sm"
+                      className="flex items-center gap-1 text-brand hover:text-brand text-sm"
                     >
                       <Plus size={16} />
                       Anadir
@@ -291,7 +291,7 @@ export function DishFormPanel({
                       <select
                         value={item.ingredienteId}
                         onChange={(event) => updateRecipeRow(index, { ingredienteId: event.target.value })}
-                        className="col-span-6 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white"
+                        className="col-span-6 bg-canvas border border-line-strong rounded-lg px-3 py-2 text-sm text-ink"
                       >
                         <option value="">Seleccionar ingrediente...</option>
                         {ingredientes.map((ingredient) => (
@@ -304,17 +304,17 @@ export function DishFormPanel({
                         min="0"
                         value={item.cantidadNecesaria}
                         onChange={(event) => updateRecipeRow(index, { cantidadNecesaria: event.target.value })}
-                        className="col-span-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white"
+                        className="col-span-2 bg-canvas border border-line-strong rounded-lg px-3 py-2 text-sm text-ink"
                       />
                       <input
                         value={item.unidad}
                         onChange={(event) => updateRecipeRow(index, { unidad: event.target.value })}
-                        className="col-span-3 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white"
+                        className="col-span-3 bg-canvas border border-line-strong rounded-lg px-3 py-2 text-sm text-ink"
                       />
                       <button
                         type="button"
                         onClick={() => removeRecipeRow(index)}
-                        className="col-span-1 text-red-400 hover:text-red-300 flex justify-end"
+                        className="col-span-1 text-red-700 dark:text-red-400 hover:text-red-600 flex justify-end"
                         aria-label="Quitar ingrediente"
                       >
                         <Trash2 size={16} />
@@ -322,24 +322,24 @@ export function DishFormPanel({
                     </div>
                   ))}
 
-                  <p className="text-[#676b67] text-sm">
-                    Con el stock actual de ingredientes podrias preparar <span className="text-white font-bold">{maxAvailable}</span> unidades.
+                  <p className="text-ink-3 text-sm">
+                    Con el stock actual de ingredientes podrias preparar <span className="text-ink font-bold">{maxAvailable}</span> unidades.
                   </p>
                 </section>
 
-                <section className="rounded-xl border border-[#252525] bg-[#111] p-4 space-y-3">
-                  <h3 className="text-white font-semibold">Crear ingrediente rapido</h3>
+                <section className="rounded-xl border border-line bg-surface p-4 space-y-3">
+                  <h3 className="text-ink font-semibold">Crear ingrediente rapido</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
                     <input
                       value={newIngredientName}
                       onChange={(event) => setNewIngredientName(event.target.value)}
                       placeholder="Nombre"
-                      className="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white"
+                      className="bg-canvas border border-line-strong rounded-lg px-3 py-2 text-sm text-ink"
                     />
                     <select
                       value={newIngredientUnit}
                       onChange={(event) => setNewIngredientUnit(event.target.value)}
-                      className="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white"
+                      className="bg-canvas border border-line-strong rounded-lg px-3 py-2 text-sm text-ink"
                     >
                       {UNIT_OPTIONS.map((unit) => <option key={unit} value={unit}>{unit}</option>)}
                     </select>
@@ -350,7 +350,7 @@ export function DishFormPanel({
                       value={newIngredientStock}
                       onChange={(event) => setNewIngredientStock(event.target.value)}
                       placeholder="Stock"
-                      className="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white"
+                      className="bg-canvas border border-line-strong rounded-lg px-3 py-2 text-sm text-ink"
                     />
                     <input
                       type="number"
@@ -359,14 +359,14 @@ export function DishFormPanel({
                       value={newIngredientMinStock}
                       onChange={(event) => setNewIngredientMinStock(event.target.value)}
                       placeholder="Minimo"
-                      className="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white"
+                      className="bg-canvas border border-line-strong rounded-lg px-3 py-2 text-sm text-ink"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={() => void handleCreateIngredient()}
                     disabled={creatingIngredient}
-                    className="px-4 py-2 bg-[#202020] text-white rounded-lg hover:bg-[#2a2a2a] disabled:opacity-50"
+                    className="px-4 py-2 bg-surface-3 text-ink rounded-lg hover:bg-surface-3 disabled:opacity-50"
                   >
                     {creatingIngredient ? 'Creando...' : 'Crear y agregar a receta'}
                   </button>
@@ -376,14 +376,14 @@ export function DishFormPanel({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="flex-1 px-4 py-2 border border-[#252525] text-white rounded-lg hover:bg-[#202020]"
+                    className="flex-1 px-4 py-2 border border-line text-ink rounded-lg hover:bg-surface-3"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="flex-1 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-500 disabled:opacity-50"
+                    className="flex-1 px-4 py-2 bg-brand text-on-brand rounded-lg hover:bg-brand-strong disabled:opacity-50"
                   >
                     {isSaving ? 'Guardando...' : platoToEdit ? 'Actualizar' : 'Crear'}
                   </button>

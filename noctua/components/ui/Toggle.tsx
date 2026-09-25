@@ -29,7 +29,7 @@ export function Toggle({
         onClick={() => onChange(!checked)}
         className={cn(
           'relative w-10 h-5 rounded-full transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
-          checked ? 'bg-green-500' : 'bg-[#2a2a2a]'
+          checked ? 'bg-green-500' : 'bg-surface-3'
         )}
       >
         <span
@@ -39,7 +39,7 @@ export function Toggle({
           )}
         />
       </button>
-      {label && <span className="text-xs text-[#BCB9B9]">{label}</span>}
+      {label && <span className="text-xs text-ink-2">{label}</span>}
     </label>
   );
 }

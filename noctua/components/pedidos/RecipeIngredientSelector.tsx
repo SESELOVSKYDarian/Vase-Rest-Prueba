@@ -55,11 +55,11 @@ export const RecipeIngredientSelector = ({ ingredients, allStockIngredients, onC
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">Ingredientes</h3>
+        <h3 className="text-sm font-semibold text-ink">Ingredientes</h3>
         <button
           type="button"
           onClick={addIngredient}
-          className="flex items-center gap-1 text-violet-400 hover:text-violet-300 text-sm"
+          className="flex items-center gap-1 text-brand hover:text-brand text-sm"
         >
           <Plus size={16} />
           Añadir
@@ -72,13 +72,13 @@ export const RecipeIngredientSelector = ({ ingredients, allStockIngredients, onC
             initial={{ opacity: 0, x: -20, height: 0 }}
             animate={{ opacity: 1, x: 0, height: 'auto' }}
             exit={{ opacity: 0, x: 20, height: 0 }}
-            className="grid grid-cols-12 gap-2 items-center bg-[#111] border border-[#2a2a2a] rounded-xl p-3"
+            className="grid grid-cols-12 gap-2 items-center bg-surface border border-line-strong rounded-xl p-3"
           >
             <div className="col-span-5">
               <select
                 value={ing.ingredientId}
                 onChange={(e) => updateIngredient(index, { ingredientId: e.target.value })}
-                className="w-full bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white"
+                className="w-full bg-canvas border border-line-strong rounded-lg px-3 py-2 text-sm text-ink"
               >
                 <option value="">Seleccionar...</option>
                 {allStockIngredients.map((ing) => (
@@ -92,14 +92,14 @@ export const RecipeIngredientSelector = ({ ingredients, allStockIngredients, onC
                 step="0.1"
                 value={ing.quantity}
                 onChange={(e) => updateIngredient(index, { quantity: parseFloat(e.target.value) || 0 })}
-                className="w-full bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white"
+                className="w-full bg-canvas border border-line-strong rounded-lg px-3 py-2 text-sm text-ink"
               />
             </div>
             <div className="col-span-2">
-              <span className="text-sm text-[#676b67]">{ing.unit}</span>
+              <span className="text-sm text-ink-3">{ing.unit}</span>
             </div>
             <div className="col-span-2">
-              <label className="flex items-center gap-2 text-sm text-[#676b67]">
+              <label className="flex items-center gap-2 text-sm text-ink-3">
                 <input
                   type="checkbox"
                   checked={ing.isRemovable}
@@ -113,7 +113,7 @@ export const RecipeIngredientSelector = ({ ingredients, allStockIngredients, onC
               <button
                 type="button"
                 onClick={() => removeIngredient(index)}
-                className="text-red-400 hover:text-red-300"
+                className="text-red-700 dark:text-red-400 hover:text-red-600"
               >
                 <Trash2 size={16} />
               </button>

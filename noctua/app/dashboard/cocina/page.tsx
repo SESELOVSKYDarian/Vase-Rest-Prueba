@@ -34,10 +34,10 @@ function KDSTimer({ creadoEn }: { creadoEn: Date }) {
 
   const colorClass =
     minutes >= KDS_TIMER_YELLOW_MINUTES
-      ? 'text-red-400'
+      ? 'text-red-700 dark:text-red-400'
       : minutes >= KDS_TIMER_GREEN_MINUTES
-      ? 'text-yellow-400'
-      : 'text-green-400';
+      ? 'text-yellow-700 dark:text-yellow-400'
+      : 'text-green-700 dark:text-green-400';
 
   return (
     <div className={cn('flex items-center gap-1.5 font-mono font-bold text-sm', colorClass,
@@ -84,34 +84,34 @@ const PedidoKDSCard = memo(function PedidoKDSCard({
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20, scale: 0.95 }}
-      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-      className="bg-[#0d0d0d] border-2 rounded-xl p-4 space-y-3"
-      style={{ borderColor: currentStatus?.bgColor ?? '#374151' }}
+      initial={{ opacity: 0, transform: 'translateY(8px)' }}
+      animate={{ opacity: 1, transform: 'translateY(0px)' }}
+      exit={{ opacity: 0, transform: 'scale(0.97)', transition: { duration: 0.15 } }}
+      transition={{ type: 'spring', duration: 0.35, bounce: 0.12 }}
+      className="bg-surface border border-line rounded-xl p-4 space-y-3 shadow-soft border-l-[3px]"
+      style={{ borderLeftColor: currentStatus?.bgColor ?? 'var(--line-strong)' }}
       aria-live="polite"
     >
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-display text-4xl font-black text-white leading-none">
+            <span className="font-display text-4xl font-semibold text-ink leading-none">
               {mesasLabel}
             </span>
-            <div className="flex items-center gap-1 text-[#676B67] text-xs mt-1">
+            <div className="flex items-center gap-1 text-ink-3 text-xs mt-1">
               <Users size={11} />
               <span>{pedido.personas}</span>
             </div>
           </div>
-          <p className="text-[#676B67] text-xs mt-0.5 tracking-wide">{pedido.zona}</p>
+          <p className="text-ink-3 text-xs mt-0.5 tracking-wide">{pedido.zona}</p>
         </div>
         <div className="flex flex-col items-end gap-2">
           <KDSTimer creadoEn={pedido.creadoEn} />
           <div className="relative">
             <button
               onClick={() => setMenuAbierto((open) => !open)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-[#676B67] hover:bg-white/5 hover:text-white transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-3 hover:bg-ink/5 hover:text-ink transition-colors"
               aria-label="Más acciones"
               aria-expanded={menuAbierto}
             >
@@ -120,22 +120,22 @@ const PedidoKDSCard = memo(function PedidoKDSCard({
             {menuAbierto && (
               <>
                 <button className="fixed inset-0 z-10" aria-label="Cerrar menú" onClick={() => setMenuAbierto(false)} />
-                <div className="absolute right-0 top-9 z-20 w-48 rounded-xl border border-[#2a2a2a] bg-[#111] p-1.5 shadow-2xl">
-                  <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#676B67]">Cambiar a</p>
+                <div className="absolute right-0 top-9 z-20 w-48 rounded-xl border border-line-strong bg-surface p-1.5 shadow-float">
+                  <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-ink-3">Cambiar a</p>
                   {ESTADOS_CANONICOS.map((estado) => (
                     <button
                       key={estado}
                       onClick={() => { onCambiarEstado(pedido.id, estado); setMenuAbierto(false); }}
                       disabled={estado === pedido.estado}
-                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-[#D9D9D9] hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed"
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-ink-2 hover:bg-ink/5 disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                       {statuses.find((s) => s.name.toLowerCase() === estado)?.name ?? estado}
                     </button>
                   ))}
-                  <div className="my-1 h-px bg-[#2a2a2a]" />
+                  <div className="my-1 h-px bg-surface-3" />
                   <button
                     onClick={() => { onEliminar(pedido.id); setMenuAbierto(false); }}
-                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-400 hover:bg-red-400/10"
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-700 dark:text-red-400 hover:bg-red-400/10"
                   >
                     <Trash2 size={14} />
                     Eliminar pedido
@@ -151,13 +151,13 @@ const PedidoKDSCard = memo(function PedidoKDSCard({
       <div className="space-y-1.5" role="list" aria-label="Items del pedido">
         {pedido.items.map((item, idx) => (
           <div key={`${item.productoId}-${idx}`} role="listitem" className="flex items-start gap-2">
-            <span className="text-white font-bold text-base leading-tight w-6 flex-shrink-0">
+            <span className="text-ink font-bold text-base leading-tight w-6 flex-shrink-0">
               {item.cantidad}×
             </span>
             <div>
-              <p className="text-[#D9D9D9] text-sm font-medium leading-tight">{item.nombre}</p>
+              <p className="text-ink-2 text-sm font-medium leading-tight">{item.nombre}</p>
               {item.notas && (
-                <p className="text-yellow-400 text-xs mt-0.5 font-medium">
+                <p className="text-yellow-700 dark:text-yellow-400 text-xs mt-0.5 font-medium">
                   ⚑ {item.notas}
                 </p>
               )}
@@ -167,12 +167,12 @@ const PedidoKDSCard = memo(function PedidoKDSCard({
       </div>
 
       {/* Estado + avanzar */}
-      <div className="pt-2 border-t border-[#1a1a1a] space-y-2.5">
+      <div className="pt-2 border-t border-line space-y-2.5">
         <StatusChip tone={TONO_ESTADO_COCINA[pedido.estado]} label={currentStatus?.name ?? pedido.estado} />
         {!esTerminal && (
           <button
             onClick={() => onAvanzar(pedido.id)}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-white text-black py-2.5 text-sm font-bold hover:bg-[#D9D9D9] transition-colors"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand text-on-brand py-2.5 text-sm font-bold hover:bg-brand-strong transition-colors"
           >
             Avanzar a {labelSiguiente}
             <ArrowRight size={15} />
@@ -203,15 +203,15 @@ const KDSColumn = memo(function KDSColumn({
   onEliminar: (id: string) => void;
 }) {
   return (
-    <div className="flex flex-col bg-[#060606] border border-[#111] rounded-xl overflow-hidden">
-      <div
-        className="px-4 py-3 flex items-center justify-between"
-        style={{ backgroundColor: status.bgColor, color: status.color }}
-      >
-        <span className="font-display text-xl tracking-widest font-black uppercase">
-          {status.name}
+    <div className="flex flex-col bg-surface-2/60 border border-line rounded-2xl overflow-hidden">
+      {/* El color configurado de la columna queda como punto + filete: identifica sin gritar. */}
+      <div className="relative px-4 pt-4 pb-3 flex items-center justify-between">
+        <span className="absolute inset-x-4 top-0 h-[3px] rounded-b-full" style={{ backgroundColor: status.bgColor }} aria-hidden="true" />
+        <span className="flex items-center gap-2.5 text-sm font-medium text-ink">
+          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: status.bgColor }} aria-hidden="true" />
+          {status.name.charAt(0).toUpperCase() + status.name.slice(1).toLowerCase()}
         </span>
-        <span className="text-sm font-black opacity-80">{pedidos.length}</span>
+        <span className="tabular min-w-7 rounded-full bg-surface px-2 py-0.5 text-center text-xs font-medium text-ink-2 border border-line">{pedidos.length}</span>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
@@ -220,7 +220,7 @@ const KDSColumn = memo(function KDSColumn({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex items-center justify-center h-32 text-[#2a2a2a] text-sm"
+              className="flex items-center justify-center h-32 text-ink-3 text-sm"
             >
               Sin pedidos
             </motion.div>
@@ -328,38 +328,37 @@ export default function CocinaPage() {
   }, [mesas]);
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col gap-3">
-      {/* Header con refresh */}
-      <div className="flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2 text-[#676B67] text-xs">
-          <span className="font-mono text-[10px] uppercase tracking-widest">Cocina · KDS</span>
-          <span className="text-zinc-700">·</span>
-          <span className="font-mono text-[10px] text-zinc-700">
-            {pedidos.length} {pedidos.length === 1 ? 'pedido activo' : 'pedidos activos'}
-          </span>
+    <div className="min-h-[calc(100dvh-10rem)] flex flex-col gap-5">
+      <div className="flex flex-wrap items-end justify-between gap-3 flex-shrink-0">
+        <div>
+          <h1>Cocina</h1>
+          <p className="mt-1.5 text-sm text-ink-3">
+            <span className="tabular">{pedidos.length}</span> {pedidos.length === 1 ? 'comanda activa' : 'comandas activas'} · se actualiza sola
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {usuario?.rol === 'admin' && (
             <Link
               href="/dashboard/cocina/configuracion"
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-600 hover:border-zinc-600 hover:text-zinc-400 transition-all"
+              aria-label="Configurar estados de cocina"
               title="Configurar estados de cocina"
+              className="pressable grid h-10 w-10 place-items-center rounded-xl border border-line bg-surface text-ink-2 shadow-soft hover:border-line-strong hover:text-ink"
             >
-              <Settings size={11} />
+              <Settings size={16} />
             </Link>
           )}
           <button
             onClick={handleRefreshManual}
             disabled={refreshing}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-600 hover:border-zinc-600 hover:text-zinc-400 transition-all disabled:opacity-40"
+            className="pressable flex h-10 items-center gap-2 rounded-xl border border-line bg-surface px-3.5 text-sm text-ink-2 shadow-soft hover:border-line-strong hover:text-ink disabled:opacity-50"
           >
-            <Clock size={11} className={refreshing ? 'animate-spin' : ''} />
-            {refreshing ? 'Actualizando...' : 'Actualizar'}
+            <Clock size={15} className={refreshing ? 'animate-spin' : ''} />
+            {refreshing ? 'Actualizando…' : 'Actualizar'}
           </button>
         </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {sortedStatuses.map((status) => (
           <KDSColumn
             key={status.id}

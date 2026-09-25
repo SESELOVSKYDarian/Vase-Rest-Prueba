@@ -19,14 +19,14 @@ function TablaFacturasBase({ facturas, filtros, exportando, onFiltroChange, onEx
   };
 
   return (
-    <section className="rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5">
+    <section className="rounded-2xl border border-line bg-canvas p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-4">
-        <h2 className="font-black tracking-widest uppercase text-sm">Ultimas facturas</h2>
+        <h2 className="text-base text-ink font-medium">Ultimas facturas</h2>
         <button
           type="button"
           onClick={onExportar}
           disabled={exportando}
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-50"
         >
           <Download size={16} />
           {exportando ? 'Exportando...' : 'Exportar a Excel'}
@@ -35,20 +35,20 @@ function TablaFacturasBase({ facturas, filtros, exportando, onFiltroChange, onEx
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-3 mb-5">
         <label>
-          <span className="text-xs font-bold uppercase tracking-widest text-[#676B67]">Desde</span>
-          <input type="date" value={filtros.desde || ''} onChange={(event) => setFiltro('desde', event.target.value)} className="mt-2 w-full rounded-xl border border-[#2a2a2a] bg-black px-3 py-2 text-sm text-white" />
+          <span className="text-xs font-bold uppercase tracking-widest text-ink-3">Desde</span>
+          <input type="date" value={filtros.desde || ''} onChange={(event) => setFiltro('desde', event.target.value)} className="mt-2 w-full rounded-xl border border-line-strong bg-surface-2 px-3 py-2 text-sm text-ink" />
         </label>
         <label>
-          <span className="text-xs font-bold uppercase tracking-widest text-[#676B67]">Hasta</span>
-          <input type="date" value={filtros.hasta || ''} onChange={(event) => setFiltro('hasta', event.target.value)} className="mt-2 w-full rounded-xl border border-[#2a2a2a] bg-black px-3 py-2 text-sm text-white" />
+          <span className="text-xs font-bold uppercase tracking-widest text-ink-3">Hasta</span>
+          <input type="date" value={filtros.hasta || ''} onChange={(event) => setFiltro('hasta', event.target.value)} className="mt-2 w-full rounded-xl border border-line-strong bg-surface-2 px-3 py-2 text-sm text-ink" />
         </label>
         <label>
-          <span className="text-xs font-bold uppercase tracking-widest text-[#676B67]">Cliente</span>
-          <input value={filtros.cliente || ''} onChange={(event) => setFiltro('cliente', event.target.value)} className="mt-2 w-full rounded-xl border border-[#2a2a2a] bg-black px-3 py-2 text-sm text-white" />
+          <span className="text-xs font-bold uppercase tracking-widest text-ink-3">Cliente</span>
+          <input value={filtros.cliente || ''} onChange={(event) => setFiltro('cliente', event.target.value)} className="mt-2 w-full rounded-xl border border-line-strong bg-surface-2 px-3 py-2 text-sm text-ink" />
         </label>
         <label>
-          <span className="text-xs font-bold uppercase tracking-widest text-[#676B67]">Estado</span>
-          <select value={filtros.estado || ''} onChange={(event) => setFiltro('estado', event.target.value)} className="mt-2 w-full rounded-xl border border-[#2a2a2a] bg-black px-3 py-2 text-sm text-white">
+          <span className="text-xs font-bold uppercase tracking-widest text-ink-3">Estado</span>
+          <select value={filtros.estado || ''} onChange={(event) => setFiltro('estado', event.target.value)} className="mt-2 w-full rounded-xl border border-line-strong bg-surface-2 px-3 py-2 text-sm text-ink">
             <option value="">Todos</option>
             <option value="emitida">Emitida</option>
             <option value="pendiente">Pendiente</option>
@@ -57,15 +57,15 @@ function TablaFacturasBase({ facturas, filtros, exportando, onFiltroChange, onEx
           </select>
         </label>
         <label>
-          <span className="text-xs font-bold uppercase tracking-widest text-[#676B67]">Tipo</span>
-          <select value={filtros.tipoComprobante || ''} onChange={(event) => setFiltro('tipoComprobante', event.target.value)} className="mt-2 w-full rounded-xl border border-[#2a2a2a] bg-black px-3 py-2 text-sm text-white">
+          <span className="text-xs font-bold uppercase tracking-widest text-ink-3">Tipo</span>
+          <select value={filtros.tipoComprobante || ''} onChange={(event) => setFiltro('tipoComprobante', event.target.value)} className="mt-2 w-full rounded-xl border border-line-strong bg-surface-2 px-3 py-2 text-sm text-ink">
             <option value="">Todos</option>
             {TIPOS_COMPROBANTE.map((tipo) => <option key={tipo.codigo} value={tipo.codigo}>{tipo.nombre}</option>)}
           </select>
         </label>
         <label>
-          <span className="text-xs font-bold uppercase tracking-widest text-[#676B67]">Pago</span>
-          <select value={filtros.metodoPago || ''} onChange={(event) => setFiltro('metodoPago', event.target.value)} className="mt-2 w-full rounded-xl border border-[#2a2a2a] bg-black px-3 py-2 text-sm text-white">
+          <span className="text-xs font-bold uppercase tracking-widest text-ink-3">Pago</span>
+          <select value={filtros.metodoPago || ''} onChange={(event) => setFiltro('metodoPago', event.target.value)} className="mt-2 w-full rounded-xl border border-line-strong bg-surface-2 px-3 py-2 text-sm text-ink">
             <option value="">Todos</option>
             {METODOS_PAGO.map((metodo) => <option key={metodo.value} value={metodo.value}>{metodo.label}</option>)}
           </select>
@@ -73,12 +73,12 @@ function TablaFacturasBase({ facturas, filtros, exportando, onFiltroChange, onEx
       </div>
 
       {facturas.length === 0 ? (
-        <p className="text-sm text-[#676B67]">Todavia no hay facturas para los filtros seleccionados.</p>
+        <p className="text-sm text-ink-3">Todavia no hay facturas para los filtros seleccionados.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[920px] text-sm">
             <thead>
-              <tr className="border-b border-[#1a1a1a] text-left text-[#676B67]">
+              <tr className="border-b border-line text-left text-ink-3">
                 <th className="py-3">Comprobante</th>
                 <th className="py-3">Tipo</th>
                 <th className="py-3">Cliente</th>
@@ -91,16 +91,16 @@ function TablaFacturasBase({ facturas, filtros, exportando, onFiltroChange, onEx
             </thead>
             <tbody>
               {facturas.map((factura) => (
-                <tr key={factura.id} className="border-b border-[#111]">
+                <tr key={factura.id} className="border-b border-line">
                   <td className="py-3 font-mono">{factura.numeroComprobante}</td>
                   <td className="py-3">{TIPOS_COMPROBANTE.find((tipo) => tipo.codigo === factura.tipoComprobante)?.nombre}</td>
                   <td className="py-3">{factura.cliente?.nombre || '-'}</td>
                   <td className="py-3 capitalize">{factura.metodoPago?.replace('_', ' ')}</td>
                   <td className="py-3 font-mono">{formatearARS(factura.total)}</td>
                   <td className="py-3 font-mono">{formatearARS(factura.saldoPendiente || 0)}</td>
-                  <td className="py-3 font-mono text-xs text-[#BCB9B9]">{factura.cae || '-'}</td>
+                  <td className="py-3 font-mono text-xs text-ink-2">{factura.cae || '-'}</td>
                   <td className="py-3">
-                    <span className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-xs font-bold text-green-300">
+                    <span className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-xs font-bold text-green-700 dark:text-green-300">
                       {factura.estado}
                     </span>
                   </td>

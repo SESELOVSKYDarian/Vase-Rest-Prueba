@@ -38,9 +38,9 @@ export const PedidoOrderSummary = memo(function PedidoOrderSummary({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-[#1f1f1f] flex items-center justify-between flex-shrink-0">
-        <h2 className="text-white font-bold text-sm uppercase tracking-widest">Pedido</h2>
-        <span className="text-[#676b67] text-xs font-mono">
+      <div className="px-4 py-3 border-b border-line flex items-center justify-between flex-shrink-0">
+        <h2 className="text-ink text-sm font-medium">Pedido</h2>
+        <span className="text-ink-3 text-xs font-mono">
           {draftItems.length + sentItems.length} ítems
         </span>
       </div>
@@ -48,8 +48,8 @@ export const PedidoOrderSummary = memo(function PedidoOrderSummary({
       <div className="flex-1 overflow-y-auto">
         {vacio && (
           <div className="h-full flex flex-col items-center justify-center gap-2 px-6 py-12 text-center">
-            <ChefHat size={28} className="text-zinc-700" />
-            <p className="text-[#676b67] text-sm">Agregá productos para esta mesa</p>
+            <ChefHat size={28} className="text-ink-3" />
+            <p className="text-ink-3 text-sm">Agregá productos para esta mesa</p>
           </div>
         )}
 
@@ -63,12 +63,12 @@ export const PedidoOrderSummary = memo(function PedidoOrderSummary({
               {sentItems.map((item, idx) => (
                 <div key={`sent-${item.productoId}-${idx}`} className="flex items-start justify-between gap-2 opacity-70">
                   <div className="min-w-0">
-                    <p className="text-zinc-300 text-sm truncate">
-                      <span className="text-zinc-500">{item.cantidad}×</span> {item.nombre}
+                    <p className="text-ink-2 text-sm truncate">
+                      <span className="text-ink-3">{item.cantidad}×</span> {item.nombre}
                     </p>
-                    {item.notas && <p className="text-zinc-600 text-[11px] truncate">{item.notas}</p>}
+                    {item.notas && <p className="text-ink-3 text-[11px] truncate">{item.notas}</p>}
                   </div>
-                  <span className="text-zinc-500 text-xs font-mono flex-shrink-0">{formatARS(item.subtotal)}</span>
+                  <span className="text-ink-3 text-xs font-mono flex-shrink-0">{formatARS(item.subtotal)}</span>
                 </div>
               ))}
             </div>
@@ -85,10 +85,10 @@ export const PedidoOrderSummary = memo(function PedidoOrderSummary({
             )}
             <div className="space-y-2">
               {draftItems.map((item) => (
-                <div key={item.productoId} className="bg-[#111] border border-[#222] rounded-lg p-2.5">
+                <div key={item.productoId} className="bg-surface border border-line rounded-lg p-2.5">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-white text-sm font-medium min-w-0 truncate">{item.nombre}</p>
-                    <span className="text-white text-xs font-mono flex-shrink-0">{formatARS(item.subtotal)}</span>
+                    <p className="text-ink text-sm font-medium min-w-0 truncate">{item.nombre}</p>
+                    <span className="text-ink text-xs font-mono flex-shrink-0">{formatARS(item.subtotal)}</span>
                   </div>
 
                   <div className="flex items-center justify-between mt-2">
@@ -97,15 +97,15 @@ export const PedidoOrderSummary = memo(function PedidoOrderSummary({
                       <button
                         onClick={() => onDec(item.productoId)}
                         disabled={item.cantidad <= 1}
-                        className="w-9 h-9 rounded-md bg-[#202020] text-white flex items-center justify-center hover:bg-[#2a2a2a] disabled:opacity-30"
+                        className="w-9 h-9 rounded-md bg-surface-3 text-ink flex items-center justify-center hover:bg-surface-3 disabled:opacity-30"
                         aria-label="Menos cantidad"
                       >
                         <Minus size={14} />
                       </button>
-                      <span className="text-white text-sm font-bold w-5 text-center tabular-nums">{item.cantidad}</span>
+                      <span className="text-ink text-sm font-bold w-5 text-center tabular-nums">{item.cantidad}</span>
                       <button
                         onClick={() => onInc(item.productoId)}
-                        className="w-9 h-9 rounded-md bg-[#202020] text-white flex items-center justify-center hover:bg-[#2a2a2a]"
+                        className="w-9 h-9 rounded-md bg-surface-3 text-ink flex items-center justify-center hover:bg-surface-3"
                         aria-label="Más cantidad"
                       >
                         <Plus size={14} />
@@ -116,7 +116,7 @@ export const PedidoOrderSummary = memo(function PedidoOrderSummary({
                       <button
                         onClick={() => setEditingNotas(editingNotas === item.productoId ? null : item.productoId)}
                         className={`w-9 h-9 rounded-md flex items-center justify-center transition-colors ${
-                          item.notas ? 'bg-amber-600/20 text-amber-400' : 'bg-[#202020] text-[#676b67] hover:text-white'
+                          item.notas ? 'bg-amber-600/20 text-amber-700 dark:text-amber-400' : 'bg-surface-3 text-ink-3 hover:text-ink'
                         }`}
                         aria-label="Nota para cocina"
                       >
@@ -124,7 +124,7 @@ export const PedidoOrderSummary = memo(function PedidoOrderSummary({
                       </button>
                       <button
                         onClick={() => onRemove(item.productoId)}
-                        className="w-9 h-9 rounded-md bg-[#202020] text-red-400 flex items-center justify-center hover:bg-red-500/10"
+                        className="w-9 h-9 rounded-md bg-surface-3 text-red-700 dark:text-red-400 flex items-center justify-center hover:bg-red-500/10"
                         aria-label="Quitar producto"
                       >
                         <Trash2 size={14} />
@@ -141,7 +141,7 @@ export const PedidoOrderSummary = memo(function PedidoOrderSummary({
                       onBlur={() => setEditingNotas(null)}
                       onKeyDown={(e) => { if (e.key === 'Enter') setEditingNotas(null); }}
                       placeholder="Nota para cocina (ej: sin sal)"
-                      className="mt-2 w-full bg-black border border-[#2a2a2a] rounded-md px-2 py-1.5 text-white text-xs outline-none focus:border-amber-500/50"
+                      className="mt-2 w-full bg-surface-2 border border-line-strong rounded-md px-2 py-1.5 text-ink text-xs outline-none focus:border-amber-500/50"
                     />
                   ) : (
                     item.notas && (
@@ -156,31 +156,31 @@ export const PedidoOrderSummary = memo(function PedidoOrderSummary({
       </div>
 
       {/* Total + enviar */}
-      <div className="border-t border-[#1f1f1f] px-4 py-3 space-y-3 flex-shrink-0">
+      <div className="border-t border-line px-4 py-3 space-y-3 flex-shrink-0">
         {sentTotal > 0 && (
           <div className="flex items-center justify-between text-xs">
-            <span className="text-zinc-500">En cocina</span>
-            <span className="text-zinc-400 font-mono">{formatARS(sentTotal)}</span>
+            <span className="text-ink-3">En cocina</span>
+            <span className="text-ink-3 font-mono">{formatARS(sentTotal)}</span>
           </div>
         )}
         <div className="flex items-center justify-between">
-          <span className="text-zinc-400 text-sm uppercase tracking-widest">
+          <span className="text-ink-3 text-sm uppercase tracking-widest">
             {sentTotal > 0 ? 'Por enviar' : 'Total'}
           </span>
-          <span className="text-white font-bold text-lg font-mono">{formatARS(draftTotal)}</span>
+          <span className="text-ink font-bold text-lg font-mono">{formatARS(draftTotal)}</span>
         </div>
         <button
           onClick={onEnviar}
           disabled={draftItems.length === 0 || enviando}
           className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all min-h-[48px]
-            enabled:bg-amber-600 enabled:hover:bg-amber-500 enabled:text-white enabled:shadow-lg enabled:shadow-amber-900/40
-            disabled:bg-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed"
+            enabled:bg-brand enabled:hover:bg-brand-strong enabled:text-on-brand enabled:shadow-lg enabled:
+            disabled:bg-surface-3 disabled:text-ink-3 disabled:cursor-not-allowed"
         >
           {enviando ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
           {enviando ? 'Enviando...' : 'Enviar a cocina'}
         </button>
         {draftItems.length === 0 && !enviando && (
-          <p className="text-center text-[11px] text-zinc-600">Agregá al menos un producto para enviar</p>
+          <p className="text-center text-[11px] text-ink-3">Agregá al menos un producto para enviar</p>
         )}
       </div>
     </div>

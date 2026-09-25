@@ -267,7 +267,7 @@ export function TicketDetalleModal({
             transition={{
               duration: 0.15,
             }}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-scrim backdrop-blur-sm"
             onClick={handleClose}
           />
 
@@ -299,7 +299,7 @@ export function TicketDetalleModal({
                 ease: 'easeOut',
               }}
               className={cn(
-                'relative flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-l-4 border-zinc-800 bg-[#0d0d0d] shadow-2xl',
+                'relative flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-l-4 border-line bg-surface shadow-float',
                 borderColor
               )}
               onClick={(event) =>
@@ -307,7 +307,7 @@ export function TicketDetalleModal({
               }
             >
               {/* Encabezado */}
-              <div className="flex flex-shrink-0 items-start justify-between border-b border-zinc-800 px-5 py-5 sm:px-6">
+              <div className="flex flex-shrink-0 items-start justify-between border-b border-line px-5 py-5 sm:px-6">
                 <div className="flex-1 pr-4">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <TicketCategoriaBadge
@@ -323,7 +323,7 @@ export function TicketDetalleModal({
                     />
                   </div>
 
-                  <h2 className="text-lg font-bold leading-snug text-white">
+                  <h2 className="text-lg font-bold leading-snug text-ink">
                     {ticket.asunto}
                   </h2>
                 </div>
@@ -336,7 +336,7 @@ export function TicketDetalleModal({
                     eliminando
                   }
                   aria-label="Cerrar"
-                  className="flex-shrink-0 rounded-lg p-1 text-zinc-600 transition-colors hover:bg-zinc-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex-shrink-0 rounded-lg p-1 text-ink-3 transition-colors hover:bg-surface-3 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <X size={18} />
                 </button>
@@ -348,16 +348,16 @@ export function TicketDetalleModal({
                 <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
                   {ticket.nombre_usuario && (
                     <div>
-                      <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-zinc-600">
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-ink-3">
                         Usuario
                       </p>
 
-                      <p className="text-zinc-300">
+                      <p className="text-ink-2">
                         {
                           ticket.nombre_usuario
                         }{' '}
 
-                        <span className="text-xs capitalize text-zinc-600">
+                        <span className="text-xs capitalize text-ink-3">
                           (
                           {
                             ticket.rol_usuario
@@ -369,11 +369,11 @@ export function TicketDetalleModal({
                   )}
 
                   <div>
-                    <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-zinc-600">
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-ink-3">
                       Creado
                     </p>
 
-                    <p className="text-zinc-300">
+                    <p className="text-ink-2">
                       {formatFecha(
                         ticket.creado_en
                       )}
@@ -382,11 +382,11 @@ export function TicketDetalleModal({
 
                   {ticket.resuelto_en && (
                     <div>
-                      <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-zinc-600">
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-ink-3">
                         Resuelto
                       </p>
 
-                      <p className="text-zinc-300">
+                      <p className="text-ink-2">
                         {formatFecha(
                           ticket.resuelto_en
                         )}
@@ -395,11 +395,11 @@ export function TicketDetalleModal({
                   )}
 
                   <div>
-                    <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-zinc-600">
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-ink-3">
                       ID
                     </p>
 
-                    <p className="truncate font-mono text-xs text-zinc-600">
+                    <p className="truncate font-mono text-xs text-ink-3">
                       {ticket.id}
                     </p>
                   </div>
@@ -407,12 +407,12 @@ export function TicketDetalleModal({
 
                 {/* Descripción */}
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-zinc-600">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-ink-3">
                     Descripción
                   </p>
 
-                  <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-300">
+                  <div className="rounded-lg border border-line bg-surface-2 p-4">
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-2">
                       {
                         ticket.descripcion
                       }
@@ -423,12 +423,12 @@ export function TicketDetalleModal({
                 {/* Respuesta del equipo */}
                 {ticket.respuesta_interna && (
                   <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-zinc-600">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-ink-3">
                       Respuesta del equipo
                     </p>
 
                     <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-4">
-                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-green-300">
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-green-700 dark:text-green-300">
                         {
                           ticket.respuesta_interna
                         }
@@ -439,7 +439,7 @@ export function TicketDetalleModal({
 
                 {/* Estado visual */}
                 <div>
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-600">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-ink-3">
                     Estado del ticket
                   </p>
 
@@ -480,8 +480,8 @@ export function TicketDetalleModal({
                                   'flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all',
 
                                   completado
-                                    ? 'border-white bg-white'
-                                    : 'border-zinc-700 bg-zinc-900'
+                                    ? 'border-brand bg-brand'
+                                    : 'border-line bg-surface-2'
                                 )}
                               >
                                 {completado ? (
@@ -489,14 +489,14 @@ export function TicketDetalleModal({
                                     size={
                                       12
                                     }
-                                    className="text-black"
+                                    className="text-on-brand"
                                   />
                                 ) : (
                                   <Clock
                                     size={
                                       10
                                     }
-                                    className="text-zinc-600"
+                                    className="text-ink-3"
                                   />
                                 )}
                               </div>
@@ -506,8 +506,8 @@ export function TicketDetalleModal({
                                   'whitespace-nowrap text-center text-[9px] font-semibold uppercase tracking-wider',
 
                                   completado
-                                    ? 'text-zinc-300'
-                                    : 'text-zinc-700'
+                                    ? 'text-ink-2'
+                                    : 'text-ink-3'
                                 )}
                               >
                                 {
@@ -529,7 +529,7 @@ export function TicketDetalleModal({
                                     indice <
                                       indiceActual
                                     ? 'bg-white'
-                                    : 'bg-zinc-800'
+                                    : 'bg-surface-3'
                                 )}
                               />
                             )}
@@ -542,8 +542,8 @@ export function TicketDetalleModal({
 
                 {/* Panel del desarrollador */}
                 {isAdmin && (
-                  <div className="space-y-4 rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
-                    <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-zinc-500">
+                  <div className="space-y-4 rounded-xl border border-line bg-surface-2/40 p-4">
+                    <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-ink-3">
                       <AlertCircle
                         size={12}
                       />
@@ -553,7 +553,7 @@ export function TicketDetalleModal({
 
                     {/* Selección de estado */}
                     <div>
-                      <p className="mb-2 text-xs font-semibold text-zinc-600">
+                      <p className="mb-2 text-xs font-semibold text-ink-3">
                         Cambiar estado
                       </p>
 
@@ -579,8 +579,8 @@ export function TicketDetalleModal({
 
                                 estadoActivo ===
                                   estado
-                                  ? 'border-white bg-white text-black'
-                                  : 'border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-300'
+                                  ? 'border-brand bg-brand text-on-brand'
+                                  : 'border-line text-ink-3 hover:border-line-strong hover:text-ink-2'
                               )}
                             >
                               {
@@ -598,7 +598,7 @@ export function TicketDetalleModal({
                     <div>
                       <label
                         htmlFor="respuesta-ticket"
-                        className="mb-1.5 block text-xs font-semibold text-zinc-600"
+                        className="mb-1.5 block text-xs font-semibold text-ink-3"
                       >
                         Respuesta para el usuario
                       </label>
@@ -621,12 +621,12 @@ export function TicketDetalleModal({
                             : 'Escribí la solución o respuesta para el usuario...'
                         }
                         rows={4}
-                        className="w-full resize-none rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white outline-none transition-colors placeholder:text-zinc-600 focus:border-zinc-500 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="w-full resize-none rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-ink-3 focus:border-line-strong disabled:cursor-not-allowed disabled:opacity-50"
                       />
 
                       {estadoRequiereRespuesta &&
                         !respuestaDisponible && (
-                          <p className="mt-1 text-xs text-yellow-400">
+                          <p className="mt-1 text-xs text-yellow-700 dark:text-yellow-400">
                             Para resolver o cerrar
                             el ticket debés escribir
                             una respuesta.
@@ -654,12 +654,12 @@ export function TicketDetalleModal({
                 {!isAdmin &&
                   !ticket.respuesta_interna && (
                     <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4 text-center">
-                      <p className="text-sm text-blue-300">
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
                         Nuestro equipo está
                         revisando tu solicitud.
                       </p>
 
-                      <p className="mt-1 text-xs text-zinc-600">
+                      <p className="mt-1 text-xs text-ink-3">
                         La respuesta aparecerá en
                         este espacio cuando esté
                         disponible.
@@ -675,16 +675,16 @@ export function TicketDetalleModal({
                         <div className="mb-3 flex items-start gap-3">
                           <Trash2
                             size={18}
-                            className="mt-0.5 flex-shrink-0 text-red-400"
+                            className="mt-0.5 flex-shrink-0 text-red-700 dark:text-red-400"
                           />
 
                           <div>
-                            <p className="text-sm font-semibold text-red-300">
+                            <p className="text-sm font-semibold text-red-700 dark:text-red-300">
                               Eliminar ticket
                               respondido
                             </p>
 
-                            <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                            <p className="mt-1 text-xs leading-relaxed text-ink-3">
                               El ticket ya fue
                               respondido y puede
                               eliminarse del listado.
@@ -703,7 +703,7 @@ export function TicketDetalleModal({
                             eliminando ||
                             guardando
                           }
-                          className="w-full rounded-lg border border-red-500/40 px-4 py-2.5 text-sm font-semibold text-red-300 transition-colors hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="w-full rounded-lg border border-red-500/40 px-4 py-2.5 text-sm font-semibold text-red-700 dark:text-red-300 transition-colors hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Eliminar ticket
                         </button>
@@ -711,11 +711,11 @@ export function TicketDetalleModal({
                     ) : (
                       <div className="space-y-3">
                         <div>
-                          <p className="text-sm font-semibold text-red-300">
+                          <p className="text-sm font-semibold text-red-700 dark:text-red-300">
                             ¿Confirmar eliminación?
                           </p>
 
-                          <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                          <p className="mt-1 text-xs leading-relaxed text-ink-3">
                             El ticket desaparecerá
                             del listado. Esta acción
                             no puede deshacerse.
@@ -733,7 +733,7 @@ export function TicketDetalleModal({
                                 false
                               )
                             }
-                            className="flex-1 rounded-lg border border-zinc-700 px-3 py-2 text-sm font-semibold text-zinc-300 transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="flex-1 rounded-lg border border-line px-3 py-2 text-sm font-semibold text-ink-2 transition-colors hover:bg-surface-3 disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             Cancelar
                           </button>

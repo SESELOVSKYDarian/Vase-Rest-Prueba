@@ -125,38 +125,38 @@ export function DishCustomizerPanel({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-scrim backdrop-blur-sm z-40"
           />
           <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-[#0a0a0a] border-l border-[#252525] z-50 overflow-y-auto"
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-canvas border-l border-line z-50 overflow-y-auto"
           >
             <div className="p-6">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="text-white font-bold text-xl">{dish.name}</h2>
-                  <p className="text-[#676b67] text-sm mt-1">${dish.price.toFixed(2)} base</p>
+                  <h2 className="text-ink font-bold text-xl">{dish.name}</h2>
+                  <p className="text-ink-3 text-sm mt-1">${dish.price.toFixed(2)} base</p>
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-[#202020] rounded-lg"
+                  className="p-2 hover:bg-surface-3 rounded-lg"
                 >
-                  <X size={20} className="text-[#676b67]" />
+                  <X size={20} className="text-ink-3" />
                 </button>
               </div>
 
               {dish.description && (
-                <p className="text-[#676b67] text-sm mb-6">{dish.description}</p>
+                <p className="text-ink-3 text-sm mb-6">{dish.description}</p>
               )}
 
               <div className="mb-6">
-                <h3 className="text-white font-medium mb-3">Ingredientes incluidos</h3>
+                <h3 className="text-ink font-medium mb-3">Ingredientes incluidos</h3>
                 <div className="flex flex-wrap gap-2">
                   {dish.recipe.map((ing, idx) => (
                     <div key={idx} className="flex items-center gap-2">
-                      <span className={`px-3 py-1 rounded-full text-sm ${ing.isRemovable ? 'bg-green-900/30 text-green-300' : 'bg-[#202020] text-[#676b67]'}`}>
+                      <span className={`px-3 py-1 rounded-full text-sm ${ing.isRemovable ? 'bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-surface-3 text-ink-3'}`}>
                         {ing.ingredientName}
                       </span>
                       {ing.isRemovable && (
@@ -172,7 +172,7 @@ export function DishCustomizerPanel({
                               isDefault: false,
                             });
                           }}
-                          className="text-red-400 hover:text-red-300"
+                          className="text-red-700 dark:text-red-400 hover:text-red-600"
                         >
                           <XCircle size={16} />
                         </button>
@@ -184,7 +184,7 @@ export function DishCustomizerPanel({
 
               {customizationOptions.filter(o => o.type === 'add').length > 0 && (
                 <div className="mb-6">
-                  <h3 className="text-white font-medium mb-3">Agregados disponibles</h3>
+                  <h3 className="text-ink font-medium mb-3">Agregados disponibles</h3>
                   <div className="flex flex-wrap gap-2">
                     {customizationOptions
                       .filter(o => o.type === 'add')
@@ -194,8 +194,8 @@ export function DishCustomizerPanel({
                           onClick={() => toggleOption(opt)}
                           className={`px-4 py-2 rounded-full text-sm transition-all ${
                             selectedOptions.has(opt.id)
-                              ? 'bg-violet-600 text-white'
-                              : 'bg-[#202020] text-[#676b67] hover:text-white'
+                              ? 'bg-brand text-on-brand'
+                              : 'bg-surface-3 text-ink-3 hover:text-ink'
                           }`}
                         >
                           {opt.label}
@@ -209,7 +209,7 @@ export function DishCustomizerPanel({
 
               {showCookingOptions && (
                 <div className="mb-6">
-                  <h3 className="text-white font-medium mb-3">Preferencia de cocción</h3>
+                  <h3 className="text-ink font-medium mb-3">Preferencia de cocción</h3>
                   <div className="flex gap-2">
                     {['Jugosa', 'A punto', 'Bien cocida'].map(pref => (
                       <button
@@ -217,8 +217,8 @@ export function DishCustomizerPanel({
                         onClick={() => setCookingPreference(pref)}
                         className={`px-4 py-2 rounded-full text-sm transition-all ${
                           cookingPreference === pref
-                            ? 'bg-violet-600 text-white'
-                            : 'bg-[#202020] text-[#676b67] hover:text-white'
+                            ? 'bg-brand text-on-brand'
+                            : 'bg-surface-3 text-ink-3 hover:text-ink'
                         }`}
                       >
                         {pref}
@@ -229,31 +229,31 @@ export function DishCustomizerPanel({
               )}
 
               <div className="mb-6">
-                <label className="text-white font-medium mb-2 block">
+                <label className="text-ink font-medium mb-2 block">
                   Notas para cocina
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full bg-[#151515] border border-[#252525] rounded-lg px-3 py-2 text-white h-24"
+                  className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-ink h-24"
                   placeholder="Ej: sin sal, aparte la salsa, bien tostado el pan"
                 />
               </div>
 
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-white font-medium">Cantidad</h3>
+                  <h3 className="text-ink font-medium">Cantidad</h3>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="p-2 rounded-lg bg-[#202020] text-white hover:bg-[#303030]"
+                      className="p-2 rounded-lg bg-surface-3 text-ink hover:bg-surface-3"
                     >
                       <Minus size={16} />
                     </button>
-                    <span className="text-white font-bold text-xl w-8 text-center">{quantity}</span>
+                    <span className="text-ink font-bold text-xl w-8 text-center">{quantity}</span>
                     <button
                       onClick={() => setQuantity(Math.min(20, quantity + 1))}
-                      className="p-2 rounded-lg bg-[#202020] text-white hover:bg-[#303030]"
+                      className="p-2 rounded-lg bg-surface-3 text-ink hover:bg-surface-3"
                     >
                       <Plus size={16} />
                     </button>
@@ -261,17 +261,17 @@ export function DishCustomizerPanel({
                 </div>
               </div>
 
-              <div className="border-t border-[#252525] pt-4 mb-6">
+              <div className="border-t border-line pt-4 mb-6">
                 <div className="flex justify-between items-center text-lg">
-                  <span className="text-[#676b67]">Subtotal</span>
-                  <span className="text-white font-bold">${subtotal.toFixed(2)}</span>
+                  <span className="text-ink-3">Subtotal</span>
+                  <span className="text-ink font-bold">${subtotal.toFixed(2)}</span>
                 </div>
               </div>
 
               <button
                 onClick={handleSubmit}
                 disabled={!dish.isAvailable || dish.maxAvailable < quantity}
-                className="w-full px-4 py-4 bg-violet-600 text-white rounded-lg hover:bg-violet-500 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-4 bg-brand text-on-brand rounded-lg hover:bg-brand-strong font-bold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {!dish.isAvailable ? 'Agotado' : 'Agregar al pedido'}
               </button>

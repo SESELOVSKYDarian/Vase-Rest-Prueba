@@ -1088,14 +1088,14 @@ export default function FacturasPage() {
   }, [cargarDatos]);
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 sm:p-6 space-y-6">
+    <div className="min-h-screen bg-surface-2 text-ink p-4 sm:p-6 space-y-6">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-black tracking-[0.18em] uppercase">
+          <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[0.18em] uppercase">
             Facturas
           </h1>
 
-          <p className="text-sm text-[#676B67] mt-1">
+          <p className="text-sm text-ink-3 mt-1">
             Selecciona un pedido listo para
             cobrar, verifica ARCA y emite la
             factura.
@@ -1103,10 +1103,10 @@ export default function FacturasPage() {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <button type="button" onClick={() => setConfiguracionAbierta(true)} className="rounded-xl border border-[#304034] px-4 py-3 text-sm font-bold text-[#b7c8bc] hover:border-[#7ed957] hover:text-[#b7f397]">Configurar ARCA</button>
+          <button type="button" onClick={() => setConfiguracionAbierta(true)} className="rounded-xl border border-line-strong px-4 py-3 text-sm font-bold text-ink-2 hover:border-brand hover:text-brand-strong">Configurar ARCA</button>
           <Link
             href="/dashboard/facturas/cuentas-corrientes"
-            className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-500/20"
+            className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20"
           >
             <Users size={16} />
             Cuentas corrientes
@@ -1118,7 +1118,7 @@ export default function FacturasPage() {
               void verificarARCA();
             }}
             disabled={verificandoArca}
-            className="flex items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm font-bold text-blue-300 hover:bg-blue-500/20 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-500/20 disabled:opacity-50"
           >
             <ShieldCheck size={16} />
 
@@ -1133,7 +1133,7 @@ export default function FacturasPage() {
               void cargarDatos();
             }}
             disabled={loading}
-            className="flex items-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#0d0d0d] px-4 py-3 text-sm font-bold text-[#BCB9B9] hover:bg-[#151515] disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl border border-line-strong bg-surface px-4 py-3 text-sm font-bold text-ink-2 hover:bg-surface-2 disabled:opacity-50"
           >
             <RefreshCcw size={16} />
 
@@ -1151,13 +1151,13 @@ export default function FacturasPage() {
             'rounded-2xl border p-4 flex items-start gap-3',
 
             mensaje.tipo === 'success' &&
-              'border-green-500/30 bg-green-500/10 text-green-200',
+              'border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-200',
 
             mensaje.tipo === 'warning' &&
-              'border-yellow-500/30 bg-yellow-500/10 text-yellow-200',
+              'border-yellow-500/30 bg-yellow-500/10 text-yellow-700 dark:text-yellow-200',
 
             mensaje.tipo === 'error' &&
-              'border-red-500/30 bg-red-500/10 text-red-200'
+              'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-200'
           )}
         >
           {mensaje.tipo === 'success' ? (
@@ -1167,7 +1167,7 @@ export default function FacturasPage() {
           )}
 
           <div>
-            <h2 className="text-sm font-black uppercase tracking-widest">
+            <h2 className="text-base text-ink font-medium">
               {mensaje.titulo}
             </h2>
 
@@ -1281,9 +1281,9 @@ export default function FacturasPage() {
       />
 
       {puedeRegistrarPagoInterno && (
-        <section className="rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5">
+        <section className="rounded-2xl border border-line bg-canvas p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-4">
-            <h2 className="font-black tracking-widest uppercase text-sm">Movimientos de caja</h2>
+            <h2 className="text-base text-ink font-medium">Movimientos de caja</h2>
 
             <button
               type="button"
@@ -1291,7 +1291,7 @@ export default function FacturasPage() {
                 void exportarMovimientosCaja();
               }}
               disabled={exportandoMovimientos}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm font-bold text-yellow-200 hover:bg-yellow-500/20 disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm font-bold text-yellow-700 dark:text-yellow-200 hover:bg-yellow-500/20 disabled:opacity-50"
             >
               <Download size={16} />
               {exportandoMovimientos
@@ -1301,12 +1301,12 @@ export default function FacturasPage() {
           </div>
 
           {movimientosCaja.length === 0 ? (
-            <p className="text-sm text-[#676B67]">Todavia no hay movimientos de caja para los filtros seleccionados.</p>
+            <p className="text-sm text-ink-3">Todavia no hay movimientos de caja para los filtros seleccionados.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[960px] text-sm">
                 <thead>
-                  <tr className="border-b border-[#1a1a1a] text-left text-[#676B67]">
+                  <tr className="border-b border-line text-left text-ink-3">
                     <th className="py-3">Fecha</th>
                     <th className="py-3">Pedido</th>
                     <th className="py-3">Mesa</th>
@@ -1319,16 +1319,16 @@ export default function FacturasPage() {
                 </thead>
                 <tbody>
                   {movimientosCaja.map((movimiento) => (
-                    <tr key={movimiento.id} className="border-b border-[#111]">
+                    <tr key={movimiento.id} className="border-b border-line">
                       <td className="py-3">{formatearFechaMovimiento(movimiento.creadoEn)}</td>
                       <td className="py-3 font-mono text-xs">{movimiento.pedidoId || '-'}</td>
                       <td className="py-3">{movimiento.mesa?.numero || '-'}</td>
                       <td className="py-3 font-mono">{formatearARS(movimiento.importe)}</td>
                       <td className="py-3">{obtenerMotivoPagoInternoLabel(movimiento.motivo)}</td>
-                      <td className="py-3 text-[#BCB9B9]">{movimiento.observacion || '-'}</td>
+                      <td className="py-3 text-ink-2">{movimiento.observacion || '-'}</td>
                       <td className="py-3">{movimiento.creadoPor || '-'}</td>
                       <td className="py-3">
-                        <span className="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-1 text-xs font-bold text-yellow-200">
+                        <span className="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-1 text-xs font-bold text-yellow-700 dark:text-yellow-200">
                           {movimiento.tipo}
                         </span>
                       </td>
@@ -1360,24 +1360,24 @@ export default function FacturasPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-[#676B67] uppercase tracking-widest text-xs font-bold">Pedido</p>
+              <p className="text-ink-3 uppercase tracking-widest text-xs font-bold">Pedido</p>
               <p className="mt-1 font-mono">{pedidoSeleccionado?.id || '-'}</p>
             </div>
             <div>
-              <p className="text-[#676B67] uppercase tracking-widest text-xs font-bold">Mesa</p>
+              <p className="text-ink-3 uppercase tracking-widest text-xs font-bold">Mesa</p>
               <p className="mt-1">{pedidoSeleccionado?.mesa?.numero || '-'}</p>
             </div>
             <div>
-              <p className="text-[#676B67] uppercase tracking-widest text-xs font-bold">Importe</p>
+              <p className="text-ink-3 uppercase tracking-widest text-xs font-bold">Importe</p>
               <p className="mt-1 font-mono">{formatearARS(Number(montoRecibido || 0))}</p>
             </div>
             <div>
-              <p className="text-[#676B67] uppercase tracking-widest text-xs font-bold">Motivo</p>
+              <p className="text-ink-3 uppercase tracking-widest text-xs font-bold">Motivo</p>
               <p className="mt-1">{obtenerMotivoPagoInternoLabel(motivoPagoInterno)}</p>
             </div>
             <div className="sm:col-span-2">
-              <p className="text-[#676B67] uppercase tracking-widest text-xs font-bold">Observacion</p>
-              <p className="mt-1 text-[#BCB9B9]">{observacionPagoInterno || '-'}</p>
+              <p className="text-ink-3 uppercase tracking-widest text-xs font-bold">Observacion</p>
+              <p className="mt-1 text-ink-2">{observacionPagoInterno || '-'}</p>
             </div>
           </div>
 
@@ -1386,7 +1386,7 @@ export default function FacturasPage() {
               type="button"
               onClick={() => setConfirmandoPagoInterno(false)}
               disabled={cobrando}
-              className="rounded-xl border border-[#2a2a2a] bg-black px-4 py-3 text-sm font-bold text-[#BCB9B9] hover:bg-[#151515] disabled:opacity-50"
+              className="rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm font-bold text-ink-2 hover:bg-surface-2 disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -1394,7 +1394,7 @@ export default function FacturasPage() {
               type="button"
               onClick={handleRegistrarPagoInterno}
               disabled={cobrando}
-              className="rounded-xl bg-yellow-300 px-4 py-3 text-sm font-black text-black hover:bg-yellow-200 disabled:opacity-50"
+              className="rounded-xl bg-yellow-300 px-4 py-3 text-sm font-semibold text-black hover:bg-yellow-200 disabled:opacity-50"
             >
               {cobrando
                 ? 'Procesando...'

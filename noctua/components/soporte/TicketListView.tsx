@@ -106,16 +106,16 @@ const FILTROS_CATEGORIA: {
  */
 function TicketSkeleton() {
   return (
-    <div className="animate-pulse rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+    <div className="animate-pulse rounded-xl border border-line bg-surface-2 p-5">
       <div className="mb-3 flex gap-2">
-        <div className="h-5 w-16 rounded-full bg-zinc-800" />
-        <div className="h-5 w-16 rounded-full bg-zinc-800" />
+        <div className="h-5 w-16 rounded-full bg-surface-3" />
+        <div className="h-5 w-16 rounded-full bg-surface-3" />
       </div>
 
-      <div className="mb-2 h-4 w-3/4 rounded bg-zinc-800" />
-      <div className="mb-1 h-3 w-full rounded bg-zinc-800" />
-      <div className="mb-4 h-3 w-2/3 rounded bg-zinc-800" />
-      <div className="h-3 w-1/3 rounded bg-zinc-800" />
+      <div className="mb-2 h-4 w-3/4 rounded bg-surface-3" />
+      <div className="mb-1 h-3 w-full rounded bg-surface-3" />
+      <div className="mb-4 h-3 w-2/3 rounded bg-surface-3" />
+      <div className="h-3 w-1/3 rounded bg-surface-3" />
     </div>
   );
 }
@@ -235,7 +235,7 @@ export function TicketListView({
         <div className="relative min-w-[200px] flex-1">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"
           />
 
           <input
@@ -247,7 +247,7 @@ export function TicketListView({
               )
             }
             placeholder="Buscar por asunto o descripción..."
-            className="w-full rounded-lg border border-zinc-800 bg-zinc-900 py-2 pl-9 pr-3 text-sm text-white outline-none transition-colors placeholder:text-zinc-600 focus:border-zinc-600"
+            className="w-full rounded-lg border border-line bg-surface-2 py-2 pl-9 pr-3 text-sm text-ink outline-none transition-colors placeholder:text-ink-3 focus:border-line-strong"
           />
         </div>
 
@@ -256,7 +256,7 @@ export function TicketListView({
           onClick={onRefetch}
           disabled={loading}
           aria-label="Recargar tickets"
-          className="rounded-lg border border-zinc-800 p-2 text-zinc-600 transition-colors hover:bg-zinc-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg border border-line p-2 text-ink-3 transition-colors hover:bg-surface-3 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
         >
           <RefreshCw
             size={15}
@@ -298,8 +298,8 @@ export function TicketListView({
 
                 filtroEstado ===
                   filtro.value
-                  ? 'border-white bg-white text-black'
-                  : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+                  ? 'border-brand bg-brand text-on-brand'
+                  : 'border-line text-ink-3 hover:border-line-strong hover:text-ink-2'
               )}
             >
               {filtro.label}
@@ -307,7 +307,7 @@ export function TicketListView({
           )
         )}
 
-        <div className="mx-1 hidden w-px bg-zinc-800 sm:block" />
+        <div className="mx-1 hidden w-px bg-surface-3 sm:block" />
 
         {FILTROS_CATEGORIA.map(
           (filtro) => (
@@ -324,8 +324,8 @@ export function TicketListView({
 
                 filtroCategoria ===
                   filtro.value
-                  ? 'border-white bg-white text-black'
-                  : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+                  ? 'border-brand bg-brand text-on-brand'
+                  : 'border-line text-ink-3 hover:border-line-strong hover:text-ink-2'
               )}
             >
               {filtro.label}
@@ -336,10 +336,10 @@ export function TicketListView({
 
       {/* Contador */}
       {!loading && (
-        <p className="text-sm text-zinc-600">
+        <p className="text-sm text-ink-3">
           {cantidadAbiertos > 0 ? (
             <>
-              <span className="font-semibold text-yellow-400">
+              <span className="font-semibold text-yellow-700 dark:text-yellow-400">
                 {cantidadAbiertos}
               </span>{' '}
               ticket
@@ -357,7 +357,7 @@ export function TicketListView({
 
           {ticketsFiltrados.length !==
             tickets.length && (
-            <span className="ml-1 text-zinc-700">
+            <span className="ml-1 text-ink-3">
               ·{' '}
               {
                 ticketsFiltrados.length
@@ -374,7 +374,7 @@ export function TicketListView({
 
       {/* Error */}
       {error && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-400">
           {error}
         </div>
       )}
@@ -413,10 +413,10 @@ export function TicketListView({
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <Inbox
               size={40}
-              className="mb-4 text-zinc-800"
+              className="mb-4 text-ink-3"
             />
 
-            <p className="font-medium text-zinc-500">
+            <p className="font-medium text-ink-3">
               {tickets.length === 0
                 ? isDeveloper
                   ? 'No hay tickets de soporte pendientes.'

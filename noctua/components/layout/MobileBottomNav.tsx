@@ -45,7 +45,7 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-30 flex items-stretch bg-[#0e0e0e]/95 backdrop-blur-xl border-t border-[#1d2b21]"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-30 flex items-stretch bg-surface/95 backdrop-blur-xl border-t border-line"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       role="navigation"
       aria-label="Navegación rápida"
@@ -53,7 +53,7 @@ export function MobileBottomNav() {
       <Link
         href="/dashboard"
         aria-current={isInicioActive ? 'page' : undefined}
-        className={cn('flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium', isInicioActive ? 'text-[#7ed957]' : 'text-[#708375]')}
+        className={cn('flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium', isInicioActive ? 'text-brand' : 'text-ink-3')}
       >
         <Home size={20} strokeWidth={isInicioActive ? 2.4 : 1.9} />
         Inicio
@@ -67,7 +67,7 @@ export function MobileBottomNav() {
             key={seccion}
             href={href}
             aria-current={isActive ? 'page' : undefined}
-            className={cn('flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium truncate px-1', isActive ? 'text-[#7ed957]' : 'text-[#708375]')}
+            className={cn('flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium truncate px-1', isActive ? 'text-brand' : 'text-ink-3')}
           >
             <Icon size={20} strokeWidth={isActive ? 2.4 : 1.9} />
             {LABEL_POR_SECCION[seccion]}
@@ -80,7 +80,7 @@ export function MobileBottomNav() {
         onClick={toggleMobileNav}
         aria-expanded={mobileNavOpen}
         aria-label="Más secciones"
-        className={cn('flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium', mobileNavOpen ? 'text-[#7ed957]' : 'text-[#708375]')}
+        className={cn('flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium', mobileNavOpen ? 'text-brand' : 'text-ink-3')}
       >
         <Menu size={20} strokeWidth={mobileNavOpen ? 2.4 : 1.9} />
         Más

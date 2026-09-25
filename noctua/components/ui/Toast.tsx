@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, CheckCircle, Info, X, XCircle } from 'lucide-react';
-import { cn } from '@/hooks/lib/utils';
 import {
   useNotificationsStore,
   type Notification,
@@ -41,30 +40,22 @@ function ToastItem({ item }: { item: Notification }) {
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 20, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-      className={cn(
-        'pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-2xl text-sm font-medium max-w-xs backdrop-blur-md',
-        item.type === 'success' && 'bg-[#0d1f0d]/90 border-green-800/60 text-green-300',
-        item.type === 'error' && 'bg-[#1f0d0d]/90 border-red-800/60 text-red-300',
-        item.type === 'info' && 'bg-[#0d151f]/90 border-blue-800/60 text-blue-300',
-        item.type === 'warning' && 'bg-[#1f1a0d]/90 border-yellow-800/60 text-yellow-300'
-      )}
+      initial={{ opacity: 0, transform: 'translateY(16px) scale(0.97)' }}
+      animate={{ opacity: 1, transform: 'translateY(0px) scale(1)', transition: { duration: 0.32, ease: [0.23, 1, 0.32, 1] } }}
+      exit={{ opacity: 0, transform: 'translateY(12px) scale(0.98)', transition: { duration: 0.18 } }}
+      className="pointer-events-auto flex items-start gap-3 max-w-sm rounded-2xl border border-line bg-surface px-4 py-3 text-sm text-ink shadow-float"
       role="status"
     >
       <ToastIcon type={item.type} />
 
       <div className="flex-1 overflow-hidden">
-        <p className="font-bold text-[10px] uppercase tracking-widest opacity-60 mb-0.5">
-          {item.title}
-        </p>
-        {item.message && <p className="line-clamp-2 leading-snug">{item.message}</p>}
+        <p className="font-medium text-ink">{item.title}</p>
+        {item.message && <p className="mt-0.5 line-clamp-2 leading-snug text-ink-3">{item.message}</p>}
       </div>
 
       <button
         onClick={() => removeNotification(item.id)}
-        className="flex-shrink-0 p-1 hover:bg-white/5 rounded-lg transition-colors opacity-50 hover:opacity-100"
+        className="flex-shrink-0 grid h-7 w-7 place-items-center rounded-lg text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink"
         aria-label="Cerrar notificación"
       >
         <X size={14} />
@@ -76,14 +67,14 @@ function ToastItem({ item }: { item: Notification }) {
 function ToastIcon({ type }: { type: Notification['type'] }) {
   switch (type) {
     case 'success':
-      return <CheckCircle size={18} className="text-green-400 flex-shrink-0" />;
+      return <CheckCircle size={18} className="text-green-700 dark:text-green-400 flex-shrink-0" />;
     case 'error':
-      return <XCircle size={18} className="text-red-400 flex-shrink-0" />;
+      return <XCircle size={18} className="text-red-700 dark:text-red-400 flex-shrink-0" />;
     case 'warning':
-      return <AlertTriangle size={18} className="text-yellow-400 flex-shrink-0" />;
+      return <AlertTriangle size={18} className="text-yellow-700 dark:text-yellow-400 flex-shrink-0" />;
     case 'info':
     default:
-      return <Info size={18} className="text-blue-400 flex-shrink-0" />;
+      return <Info size={18} className="text-blue-700 dark:text-blue-400 flex-shrink-0" />;
   }
 }
 

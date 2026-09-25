@@ -60,7 +60,7 @@ export const MesaContextMenu = memo(function MesaContextMenu({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.88, y: -8 }}
       transition={{ type: 'spring', stiffness: 380, damping: 26 }}
-      className="fixed z-[9998] w-60 rounded-2xl overflow-hidden shadow-2xl"
+      className="fixed z-[9998] w-60 rounded-2xl overflow-hidden shadow-float"
       style={{
         left:             safeX,
         top:              safeY,
@@ -71,8 +71,8 @@ export const MesaContextMenu = memo(function MesaContextMenu({
       }}
     >
       {/* Encabezado */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-        <span className="text-white font-bold text-sm tracking-wide">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-ink/5">
+        <span className="text-ink font-bold text-sm tracking-wide">
           Mesa {mesa.numero}
         </span>
         <div className="flex items-center gap-2">
@@ -81,7 +81,7 @@ export const MesaContextMenu = memo(function MesaContextMenu({
           />
           <button
             onClick={onClose}
-            className="text-zinc-500 hover:text-white transition-colors p-0.5"
+            className="text-ink-3 hover:text-ink transition-colors p-0.5"
             aria-label="Cerrar menú"
           >
             <X size={14} />
@@ -97,10 +97,10 @@ export const MesaContextMenu = memo(function MesaContextMenu({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="overflow-hidden border-b border-white/5"
+            className="overflow-hidden border-b border-ink/5"
           >
             <div className="px-3 py-2 flex flex-col gap-1">
-              <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-semibold mb-1">
+              <p className="text-[10px] text-ink-3 uppercase tracking-widest font-semibold mb-1">
                 Cambiar a
               </p>
               {ESTADOS_CAMBIO.map((estado) => (
@@ -110,7 +110,7 @@ export const MesaContextMenu = memo(function MesaContextMenu({
                     onAction('cambiar_estado', mesa, estado);
                     setShowEstados(false);
                   }}
-                  className={`flex items-center gap-2 text-sm text-zinc-200 hover:text-white px-2 py-2 rounded-lg hover:bg-white/5 transition-colors min-h-[40px] ${
+                  className={`flex items-center gap-2 text-sm text-ink hover:text-ink px-2 py-2 rounded-lg hover:bg-ink/5 transition-colors min-h-[40px] ${
                     mesa.estado === estado ? 'opacity-50 cursor-default' : ''
                   }`}
                   disabled={mesa.estado === estado}
@@ -171,7 +171,7 @@ export const MesaContextMenu = memo(function MesaContextMenu({
         )}
 
         {/* Divisor */}
-        <div className="h-px bg-white/5 mx-3 my-1" />
+        <div className="h-px bg-ink/5 mx-3 my-1" />
 
         <MenuItem
           label="Cancelar"
@@ -200,11 +200,11 @@ function MenuItem({ label, icon, onClick, highlight, danger, muted, active }: Me
     <button
       onClick={onClick}
       className={`flex items-center gap-3 px-4 py-3 text-sm font-medium min-h-[52px] w-full text-left transition-colors
-        ${highlight ? 'text-amber-400 hover:bg-amber-500/10' : ''}
-        ${danger    ? 'text-red-400 hover:bg-red-500/10'    : ''}
-        ${muted     ? 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5' : ''}
-        ${!highlight && !danger && !muted ? 'text-zinc-200 hover:text-white hover:bg-white/5' : ''}
-        ${active    ? 'bg-white/5' : ''}
+        ${highlight ? 'text-amber-700 dark:text-amber-400 hover:bg-amber-500/10' : ''}
+        ${danger    ? 'text-red-700 dark:text-red-400 hover:bg-red-500/10'    : ''}
+        ${muted     ? 'text-ink-3 hover:text-ink-2 hover:bg-ink/5' : ''}
+        ${!highlight && !danger && !muted ? 'text-ink hover:text-ink hover:bg-ink/5' : ''}
+        ${active    ? 'bg-ink/5' : ''}
       `}
     >
       <span className="text-base leading-none w-5 text-center flex-shrink-0">{icon}</span>

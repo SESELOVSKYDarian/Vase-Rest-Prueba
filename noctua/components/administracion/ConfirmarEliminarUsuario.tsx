@@ -23,8 +23,8 @@ function ConfirmarEliminarUsuarioBase({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Eliminar usuario" size="sm">
       <div className="space-y-4">
-        <p className="text-[#BCB9B9] text-sm leading-relaxed">
-          ¿Estás seguro de que deseas eliminar a <span className="text-white font-semibold">{usuario?.nombre}</span>? Esta acción no se puede deshacer.
+        <p className="text-ink-2 text-sm leading-relaxed">
+          ¿Estás seguro de que deseas eliminar a <span className="text-ink font-semibold">{usuario?.nombre}</span>? Esta acción no se puede deshacer.
         </p>
         <div className="flex gap-2">
           <Button variant="ghost" onClick={onClose} disabled={eliminando} className="flex-1">Cancelar</Button>

@@ -45,19 +45,19 @@ export const MesaMergeBar = memo(function MesaMergeBar({
     >
       {/* Mesas seleccionadas + contador */}
       <div className="px-4 pt-3 pb-1 flex items-center gap-2 flex-wrap">
-        <span className="text-amber-400 text-xs font-semibold uppercase tracking-widest">
+        <span className="text-amber-700 dark:text-amber-400 text-xs font-semibold uppercase tracking-widest">
           {hint}
         </span>
 
         {count > 0 && (
           <div className="flex items-center gap-1.5 flex-wrap">
-            <Link2 size={14} className="text-zinc-600 flex-shrink-0" />
+            <Link2 size={14} className="text-ink-3 flex-shrink-0" />
             {selectedNums.map((num) => (
               <div
                 key={num}
                 className="flex items-center gap-1 bg-amber-600/20 border border-amber-500/40 rounded-lg px-3 py-1.5"
               >
-                <span className="text-white font-black text-base leading-none">{num}</span>
+                <span className="text-ink font-semibold text-base leading-none">{num}</span>
               </div>
             ))}
           </div>
@@ -75,7 +75,7 @@ export const MesaMergeBar = memo(function MesaMergeBar({
         <button
           onClick={onCancel}
           disabled={isLoading}
-          className="flex items-center justify-center gap-1.5 px-5 py-2.5 text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded-xl text-sm font-medium transition-colors min-h-[48px] flex-1 disabled:opacity-40"
+          className="flex items-center justify-center gap-1.5 px-5 py-2.5 text-ink-3 hover:text-ink border border-line hover:border-line-strong rounded-xl text-sm font-medium transition-colors min-h-[48px] flex-1 disabled:opacity-40"
         >
           <X size={15} />
           Cancelar
@@ -85,8 +85,8 @@ export const MesaMergeBar = memo(function MesaMergeBar({
           disabled={!canConfirm}
           className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all min-h-[48px] flex-[2]
             ${canConfirm
-              ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/40'
-              : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+              ? 'bg-brand hover:bg-brand-strong text-on-brand shadow-card'
+              : 'bg-surface-3 text-ink-3 cursor-not-allowed'
             }`}
         >
           {isLoading ? <Loader2 size={15} className="animate-spin" /> : <Link2 size={15} />}

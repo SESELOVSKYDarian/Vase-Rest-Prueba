@@ -1,31 +1,40 @@
 .dashboard {
   min-height: 100vh;
-  background: var(--color-background);
-  color: var(--color-text);
+  background: var(--canvas);
+  color: var(--ink);
 }
 
+/* Desplazamiento según el ancho del Sidebar: drawer (<1024), riel de íconos (lg), etiquetas (xl). */
 .main {
-  margin-left: 80px;
+  margin-left: 0;
   min-height: 100vh;
 }
 
 .content {
-  padding: 104px 56px 64px;
+  padding: 96px clamp(20px, 3.2vw, 56px) 64px;
 }
 
 .content > * {
-  width: min(100%, 1720px);
+  width: min(100%, 1480px);
   margin-left: auto;
   margin-right: auto;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 1024px) {
   .main {
-    margin-left: 0;
+    margin-left: 76px;
   }
+}
 
+@media (min-width: 1280px) {
+  .main {
+    margin-left: 248px;
+  }
+}
+
+@media (max-width: 768px) {
   .content {
-    padding: 80px 20px 32px;
+    padding: 88px 16px 32px;
   }
 }
 

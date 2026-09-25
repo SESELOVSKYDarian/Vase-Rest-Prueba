@@ -51,6 +51,8 @@ export interface DeliveryApp {
 }
 
 export interface ThemeConfig {
+  /** Acento de marca curado (ver config/theme.ts). Los `colors` de abajo son legado y ya no se aplican. */
+  accent?: import('@/config/theme').AccentId;
   colors: {
     primary: string;
     accent: string;

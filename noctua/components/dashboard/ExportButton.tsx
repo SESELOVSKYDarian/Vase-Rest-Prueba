@@ -41,19 +41,19 @@ export function ExportButton({ data, dateRange, targetRef }: ExportButtonProps) 
         type="button"
         disabled={disabled}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-[#D9D9D9] disabled:cursor-not-allowed disabled:opacity-40"
+        className="inline-flex items-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-40"
       >
         {exporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
         Exportar
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-48 overflow-hidden rounded-lg border border-[#1a1a1a] bg-[#0d0d0d] shadow-2xl">
-          <button type="button" onClick={handleCSV} className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-[#BCB9B9] hover:bg-white/5 hover:text-white">
+        <div className="absolute right-0 z-20 mt-2 w-48 overflow-hidden rounded-lg border border-line bg-surface shadow-float">
+          <button type="button" onClick={handleCSV} className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-ink-2 hover:bg-ink/5 hover:text-ink">
             <FileSpreadsheet size={15} />
             Exportar CSV
           </button>
-          <button type="button" onClick={handlePDF} className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-[#BCB9B9] hover:bg-white/5 hover:text-white">
+          <button type="button" onClick={handlePDF} className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-ink-2 hover:bg-ink/5 hover:text-ink">
             <FileText size={15} />
             Exportar PDF
           </button>

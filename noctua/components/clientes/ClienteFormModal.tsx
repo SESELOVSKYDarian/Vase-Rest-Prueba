@@ -29,58 +29,58 @@ export function ClienteFormModal({ isOpen, onClose, onSubmit, isSaving, clienteT
     <Modal isOpen={isOpen} onClose={onClose} title={clienteToEdit ? 'Editar cliente' : 'Nuevo cliente'} size="md">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="text-white text-sm font-medium mb-1 block">Nombre</label>
+          <label className="text-ink text-sm font-medium mb-1 block">Nombre</label>
           <input
             type="text"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             required
             autoFocus
-            className="w-full bg-[#151515] border border-[#252525] rounded-lg px-3 py-2 text-white"
+            className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-ink"
             placeholder="Nombre y apellido"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-white text-sm font-medium mb-1 block">Teléfono</label>
+            <label className="text-ink text-sm font-medium mb-1 block">Teléfono</label>
             <input
               type="tel"
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
-              className="w-full bg-[#151515] border border-[#252525] rounded-lg px-3 py-2 text-white"
+              className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-ink"
               placeholder="Opcional"
             />
           </div>
           <div>
-            <label className="text-white text-sm font-medium mb-1 block">Email</label>
+            <label className="text-ink text-sm font-medium mb-1 block">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-[#151515] border border-[#252525] rounded-lg px-3 py-2 text-white"
+              className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-ink"
               placeholder="Opcional"
             />
           </div>
         </div>
 
         <div>
-          <label className="text-white text-sm font-medium mb-1 block">Documento</label>
+          <label className="text-ink text-sm font-medium mb-1 block">Documento</label>
           <input
             type="text"
             value={documento}
             onChange={(e) => setDocumento(e.target.value)}
-            className="w-full bg-[#151515] border border-[#252525] rounded-lg px-3 py-2 text-white"
+            className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-ink"
             placeholder="DNI / CUIT (opcional)"
           />
         </div>
 
         <div>
-          <label className="text-white text-sm font-medium mb-1 block">Observaciones</label>
+          <label className="text-ink text-sm font-medium mb-1 block">Observaciones</label>
           <textarea
             value={observaciones}
             onChange={(e) => setObservaciones(e.target.value)}
-            className="w-full bg-[#151515] border border-[#252525] rounded-lg px-3 py-2 text-white h-20"
+            className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-ink h-20"
             placeholder="Notas internas (opcional)"
           />
         </div>

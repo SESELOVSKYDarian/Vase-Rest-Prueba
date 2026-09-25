@@ -20,7 +20,7 @@ import { formatCurrency, formatDateInput } from '@/utils/formatters';
 import { TurnoMozosCard } from '@/components/dashboard/TurnoMozosCard';
 
 const ChartSkeleton = () => (
-  <div className="h-80 animate-pulse rounded-lg border border-[#1a1a1a] bg-[#080808]" />
+  <div className="h-80 animate-pulse rounded-lg border border-line bg-canvas" />
 );
 
 const SalesLineChart = dynamic(
@@ -111,9 +111,9 @@ export default function AnalyticsPage() {
   if (usuario?.rol && usuario.rol !== 'admin') {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="rounded-lg border border-[#1a1a1a] bg-[#080808] p-8 text-center">
-          <h1 className="text-xl font-bold text-white">Acceso restringido</h1>
-          <p className="mt-2 text-sm text-[#676B67]">Solo administradores pueden ver este dashboard.</p>
+        <div className="rounded-lg border border-line bg-canvas p-8 text-center">
+          <h1 className="text-xl font-bold text-ink">Acceso restringido</h1>
+          <p className="mt-2 text-sm text-ink-3">Solo administradores pueden ver este dashboard.</p>
         </div>
       </div>
     );
@@ -127,19 +127,19 @@ export default function AnalyticsPage() {
       <TurnoMozosCard />
       <header className="flex flex-col gap-7 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#676B67]">Analítica de ventas</p>
-          <h1 className="mt-3 text-4xl font-black tracking-tight text-white">Dashboard</h1>
-          <p className="mt-1 text-sm text-[#676B67]">Métricas de ingresos, pedidos, productos, pagos y reservas.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-ink-3">Analítica de ventas</p>
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-ink">Dashboard</h1>
+          <p className="mt-1 text-sm text-ink-3">Métricas de ingresos, pedidos, productos, pagos y reservas.</p>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="flex flex-wrap gap-2 rounded-2xl border border-[#1d2b21] bg-[#0e0e0e] p-2">
+          <div className="flex flex-wrap gap-2 rounded-2xl border border-line bg-surface p-2">
             {PRESETS.map((item) => (
               <button
                 key={item.value}
                 type="button"
                 onClick={() => handlePresetChange(item.value)}
-                className={preset === item.value ? 'rounded-xl bg-[#7ed957] px-4 py-2.5 text-sm font-semibold text-[#0e0e0e]' : 'rounded-xl px-4 py-2.5 text-sm font-semibold text-[#829487] hover:bg-[#7ed957]/10 hover:text-[#b7f397]'}
+                className={preset === item.value ? 'rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand' : 'rounded-xl px-4 py-2.5 text-sm font-semibold text-ink-3 hover:bg-brand/10 hover:text-brand-strong'}
               >
                 {item.label}
               </button>
@@ -147,14 +147,14 @@ export default function AnalyticsPage() {
           </div>
 
           {preset === 'personalizado' && (
-            <div className="flex flex-wrap gap-2 rounded-lg border border-[#1a1a1a] bg-[#080808] p-2">
-              <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[#676B67]">
+            <div className="flex flex-wrap gap-2 rounded-lg border border-line bg-canvas p-2">
+              <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-ink-3">
                 Desde
-                <input type="date" value={customFrom} onChange={(event) => setCustomFrom(event.target.value)} className="rounded-md border border-[#222] bg-[#111] px-2 py-1.5 text-sm text-white outline-none focus:border-[#555]" />
+                <input type="date" value={customFrom} onChange={(event) => setCustomFrom(event.target.value)} className="rounded-md border border-line bg-surface px-2 py-1.5 text-sm text-ink outline-none focus:border-line-strong" />
               </label>
-              <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[#676B67]">
+              <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-ink-3">
                 Hasta
-                <input type="date" value={customTo} onChange={(event) => setCustomTo(event.target.value)} className="rounded-md border border-[#222] bg-[#111] px-2 py-1.5 text-sm text-white outline-none focus:border-[#555]" />
+                <input type="date" value={customTo} onChange={(event) => setCustomTo(event.target.value)} className="rounded-md border border-line bg-surface px-2 py-1.5 text-sm text-ink outline-none focus:border-line-strong" />
               </label>
             </div>
           )}
@@ -162,7 +162,7 @@ export default function AnalyticsPage() {
           <button
             type="button"
             onClick={handleRefresh}
-            className="inline-flex items-center justify-center gap-2 rounded-md border border-[#1a1a1a] bg-[#080808] px-4 py-2 text-sm font-semibold text-[#BCB9B9] transition hover:bg-white/5 hover:text-white"
+            className="inline-flex items-center justify-center gap-2 rounded-md border border-line bg-canvas px-4 py-2 text-sm font-semibold text-ink-2 transition hover:bg-ink/5 hover:text-ink"
           >
             <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
             Actualizar
@@ -173,7 +173,7 @@ export default function AnalyticsPage() {
       </header>
 
       {error && (
-        <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300">
           Error al cargar los datos. Intentá de nuevo.
         </div>
       )}

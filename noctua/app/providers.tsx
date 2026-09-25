@@ -5,10 +5,14 @@ import { queryClient } from '@/hooks/lib/queryClient';
 import { ToastContainer } from '@/components/ui/Toast';
 import { useSuperAdmStore } from '@/store/superadmStore';
 import { useAuthStore } from '@/store/authStore';
+import { useThemeStore } from '@/store/themeStore';
+import { getAccent } from '@/config/theme';
 import { useEffect } from 'react';
 
 function ThemeApplier() {
-  const { config, initializeConfig } = useSuperAdmStore();
+  const accentId = useSuperAdmStore((s) => s.config.theme.accent);
+  const initializeConfig = useSuperAdmStore((s) => s.initializeConfig);
+  const hydrateTheme = useThemeStore((s) => s.hydrate);
   // Este provider vive en la raíz de la app y no remonta al navegar de /login a
   // /dashboard (mismo árbol de React) — depender del token hace que la carga real
   // (Postgres, autenticada) se reintente en cuanto el login termina, en vez de haber
@@ -17,22 +21,20 @@ function ThemeApplier() {
   const token = useAuthStore((s) => s.token);
 
   useEffect(() => {
+    hydrateTheme();
+  }, [hydrateTheme]);
+
+  useEffect(() => {
     if (token) initializeConfig();
   }, [token, initializeConfig]);
 
+  // Solo tono y croma: la luminosidad de cada modo la fija globals.css.
   useEffect(() => {
+    const accent = getAccent(accentId);
     const root = document.documentElement;
-    
-    // Apply colors
-    Object.entries(config.theme.colors).forEach(([key, value]) => {
-      root.style.setProperty(`--color-${key}`, value);
-    });
-    
-    // Apply typography
-    root.style.setProperty('--font-family', config.theme.typography.fontFamily);
-    root.style.setProperty('--font-size-base', `${config.theme.typography.baseSize}px`);
-    root.style.setProperty('--heading-weight', `${config.theme.typography.headingWeight}`);
-  }, [config.theme]);
+    root.style.setProperty('--brand-h', String(accent.hue));
+    root.style.setProperty('--brand-c', String(accent.chroma));
+  }, [accentId]);
 
   return null;
 }

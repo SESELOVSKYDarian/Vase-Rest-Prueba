@@ -155,28 +155,28 @@ export default function CuentaCorrienteDetallePage() {
 
   if (!autorizado) {
     return (
-      <div className="min-h-screen bg-black text-white p-6">
-        <h1 className="text-2xl font-black tracking-widest uppercase">Acceso restringido</h1>
+      <div className="min-h-screen bg-surface-2 text-ink p-6">
+        <h1 className="text-2xl font-semibold tracking-widest uppercase">Acceso restringido</h1>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 sm:p-6 space-y-6">
+    <div className="min-h-screen bg-surface-2 text-ink p-4 sm:p-6 space-y-6">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <Link href="/dashboard/facturas/cuentas-corrientes" className="text-sm text-[#676B67] hover:text-white">Cuentas corrientes</Link>
-          <h1 className="font-display text-2xl sm:text-3xl font-black tracking-[0.18em] uppercase">
+          <Link href="/dashboard/facturas/cuentas-corrientes" className="text-sm text-ink-3 hover:text-ink">Cuentas corrientes</Link>
+          <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[0.18em] uppercase">
             {detalle?.cliente.nombre || 'Cuenta corriente'}
           </h1>
-          <p className="text-sm text-[#676B67] mt-1">{detalle?.cliente.documento || 'Sin documento'}</p>
+          <p className="text-sm text-ink-3 mt-1">{detalle?.cliente.documento || 'Sin documento'}</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <button type="button" onClick={() => void exportar()} disabled={exportando || !detalle} className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-50">
+          <button type="button" onClick={() => void exportar()} disabled={exportando || !detalle} className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-50">
             <Download size={16} />
             Exportar movimientos
           </button>
-          <button type="button" onClick={() => void cargar()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#0d0d0d] px-4 py-3 text-sm font-bold text-[#BCB9B9] hover:bg-[#151515] disabled:opacity-50">
+          <button type="button" onClick={() => void cargar()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl border border-line-strong bg-surface px-4 py-3 text-sm font-bold text-ink-2 hover:bg-surface-2 disabled:opacity-50">
             <RefreshCcw size={16} />
             Actualizar
           </button>
@@ -184,72 +184,72 @@ export default function CuentaCorrienteDetallePage() {
       </header>
 
       {error && (
-        <section className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+        <section className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-200">
           {error}
         </section>
       )}
 
       <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5">
-          <p className="text-sm text-[#676B67]">Saldo</p>
-          <p className={detalle && detalle.saldo < 0 ? 'mt-2 font-mono text-2xl font-black text-emerald-300' : 'mt-2 font-mono text-2xl font-black'}>
+        <div className="rounded-2xl border border-line bg-canvas p-5">
+          <p className="text-sm text-ink-3">Saldo</p>
+          <p className={detalle && detalle.saldo < 0 ? 'mt-2 font-mono text-2xl font-semibold text-emerald-700 dark:text-emerald-300' : 'mt-2 font-mono text-2xl font-semibold'}>
             {formatearARS(detalle?.saldo || 0)}
           </p>
         </div>
-        <div className="rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5">
-          <p className="text-sm text-[#676B67]">Debitos</p>
-          <p className="mt-2 font-mono text-2xl font-black">{formatearARS(detalle?.totalDebitado || 0)}</p>
+        <div className="rounded-2xl border border-line bg-canvas p-5">
+          <p className="text-sm text-ink-3">Debitos</p>
+          <p className="mt-2 font-mono text-2xl font-semibold">{formatearARS(detalle?.totalDebitado || 0)}</p>
         </div>
-        <div className="rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5">
-          <p className="text-sm text-[#676B67]">Creditos</p>
-          <p className="mt-2 font-mono text-2xl font-black">{formatearARS(detalle?.totalAcreditado || 0)}</p>
+        <div className="rounded-2xl border border-line bg-canvas p-5">
+          <p className="text-sm text-ink-3">Creditos</p>
+          <p className="mt-2 font-mono text-2xl font-semibold">{formatearARS(detalle?.totalAcreditado || 0)}</p>
         </div>
-        <div className="rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5">
-          <p className="text-sm text-[#676B67]">Facturas pendientes</p>
-          <p className="mt-2 font-mono text-2xl font-black">{detalle?.facturasPendientes.length || 0}</p>
+        <div className="rounded-2xl border border-line bg-canvas p-5">
+          <p className="text-sm text-ink-3">Facturas pendientes</p>
+          <p className="mt-2 font-mono text-2xl font-semibold">{detalle?.facturasPendientes.length || 0}</p>
         </div>
       </section>
 
       <section className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <div className="rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5 space-y-3">
-          <h2 className="font-black tracking-widest uppercase text-sm">Registrar pago</h2>
+        <div className="rounded-2xl border border-line bg-canvas p-5 space-y-3">
+          <h2 className="text-base text-ink font-medium">Registrar pago</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input type="number" placeholder="Importe" value={pago.importe} onChange={(event) => setPago((current) => ({ ...current, importe: event.target.value }))} className="rounded-xl border border-[#2a2a2a] bg-black px-4 py-3 text-sm text-white" />
-            <input type="date" value={pago.fechaPago} onChange={(event) => setPago((current) => ({ ...current, fechaPago: event.target.value }))} className="rounded-xl border border-[#2a2a2a] bg-black px-4 py-3 text-sm text-white" />
-            <input placeholder="Medio de pago" value={pago.medioPago} onChange={(event) => setPago((current) => ({ ...current, medioPago: event.target.value }))} className="rounded-xl border border-[#2a2a2a] bg-black px-4 py-3 text-sm text-white" />
-            <input placeholder="Referencia" value={pago.referencia} onChange={(event) => setPago((current) => ({ ...current, referencia: event.target.value }))} className="rounded-xl border border-[#2a2a2a] bg-black px-4 py-3 text-sm text-white" />
-            <input placeholder="Observaciones" value={pago.observaciones} onChange={(event) => setPago((current) => ({ ...current, observaciones: event.target.value }))} className="sm:col-span-2 rounded-xl border border-[#2a2a2a] bg-black px-4 py-3 text-sm text-white" />
+            <input type="number" placeholder="Importe" value={pago.importe} onChange={(event) => setPago((current) => ({ ...current, importe: event.target.value }))} className="rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-ink" />
+            <input type="date" value={pago.fechaPago} onChange={(event) => setPago((current) => ({ ...current, fechaPago: event.target.value }))} className="rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-ink" />
+            <input placeholder="Medio de pago" value={pago.medioPago} onChange={(event) => setPago((current) => ({ ...current, medioPago: event.target.value }))} className="rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-ink" />
+            <input placeholder="Referencia" value={pago.referencia} onChange={(event) => setPago((current) => ({ ...current, referencia: event.target.value }))} className="rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-ink" />
+            <input placeholder="Observaciones" value={pago.observaciones} onChange={(event) => setPago((current) => ({ ...current, observaciones: event.target.value }))} className="sm:col-span-2 rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-ink" />
           </div>
-          <button type="button" onClick={() => void registrarPago()} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-black disabled:opacity-40">
+          <button type="button" onClick={() => void registrarPago()} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-on-brand hover:bg-brand-strong disabled:opacity-40">
             <Save size={16} />
             Registrar pago
           </button>
         </div>
 
-        <div className="rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5 space-y-3">
-          <h2 className="font-black tracking-widest uppercase text-sm">Ajuste manual</h2>
+        <div className="rounded-2xl border border-line bg-canvas p-5 space-y-3">
+          <h2 className="text-base text-ink font-medium">Ajuste manual</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <select value={ajuste.tipo} onChange={(event) => setAjuste((current) => ({ ...current, tipo: event.target.value as 'DEBIT' | 'CREDIT' }))} className="rounded-xl border border-[#2a2a2a] bg-black px-4 py-3 text-sm text-white">
+            <select value={ajuste.tipo} onChange={(event) => setAjuste((current) => ({ ...current, tipo: event.target.value as 'DEBIT' | 'CREDIT' }))} className="rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-ink">
               <option value="DEBIT">Debito</option>
               <option value="CREDIT">Credito</option>
             </select>
-            <input type="number" placeholder="Importe" value={ajuste.importe} onChange={(event) => setAjuste((current) => ({ ...current, importe: event.target.value }))} className="rounded-xl border border-[#2a2a2a] bg-black px-4 py-3 text-sm text-white" />
-            <input placeholder="Motivo obligatorio" value={ajuste.motivo} onChange={(event) => setAjuste((current) => ({ ...current, motivo: event.target.value }))} className="sm:col-span-2 rounded-xl border border-[#2a2a2a] bg-black px-4 py-3 text-sm text-white" />
+            <input type="number" placeholder="Importe" value={ajuste.importe} onChange={(event) => setAjuste((current) => ({ ...current, importe: event.target.value }))} className="rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-ink" />
+            <input placeholder="Motivo obligatorio" value={ajuste.motivo} onChange={(event) => setAjuste((current) => ({ ...current, motivo: event.target.value }))} className="sm:col-span-2 rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-ink" />
           </div>
-          <button type="button" onClick={() => void registrarAjuste()} disabled={saving} className="inline-flex items-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#0d0d0d] px-4 py-3 text-sm font-black text-white disabled:opacity-40">
+          <button type="button" onClick={() => void registrarAjuste()} disabled={saving} className="inline-flex items-center gap-2 rounded-xl border border-line-strong bg-surface px-4 py-3 text-sm font-semibold text-ink disabled:opacity-40">
             <Save size={16} />
             Registrar ajuste
           </button>
         </div>
       </section>
 
-      <section className="rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5">
+      <section className="rounded-2xl border border-line bg-canvas p-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
-          <h2 className="font-black tracking-widest uppercase text-sm">Movimientos</h2>
+          <h2 className="text-base text-ink font-medium">Movimientos</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <input type="date" value={desde} onChange={(event) => setDesde(event.target.value)} className="rounded-xl border border-[#2a2a2a] bg-black px-3 py-2 text-sm text-white" />
-            <input type="date" value={hasta} onChange={(event) => setHasta(event.target.value)} className="rounded-xl border border-[#2a2a2a] bg-black px-3 py-2 text-sm text-white" />
-            <select value={tipoFiltro} onChange={(event) => setTipoFiltro(event.target.value)} className="rounded-xl border border-[#2a2a2a] bg-black px-3 py-2 text-sm text-white">
+            <input type="date" value={desde} onChange={(event) => setDesde(event.target.value)} className="rounded-xl border border-line-strong bg-surface-2 px-3 py-2 text-sm text-ink" />
+            <input type="date" value={hasta} onChange={(event) => setHasta(event.target.value)} className="rounded-xl border border-line-strong bg-surface-2 px-3 py-2 text-sm text-ink" />
+            <select value={tipoFiltro} onChange={(event) => setTipoFiltro(event.target.value)} className="rounded-xl border border-line-strong bg-surface-2 px-3 py-2 text-sm text-ink">
               <option value="">Todos</option>
               <option value="DEBIT">Debitos</option>
               <option value="CREDIT">Creditos</option>
@@ -260,7 +260,7 @@ export default function CuentaCorrienteDetallePage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[860px] text-sm">
             <thead>
-              <tr className="border-b border-[#1a1a1a] text-left text-[#676B67]">
+              <tr className="border-b border-line text-left text-ink-3">
                 <th className="py-3">Fecha</th>
                 <th className="py-3">Tipo</th>
                 <th className="py-3">Origen</th>
@@ -272,7 +272,7 @@ export default function CuentaCorrienteDetallePage() {
             </thead>
             <tbody>
               {movimientosFiltrados.map((movimiento) => (
-                <tr key={movimiento.id} className="border-b border-[#111]">
+                <tr key={movimiento.id} className="border-b border-line">
                   <td className="py-3">{movimiento.fecha?.slice(0, 10)}</td>
                   <td className="py-3">{movimiento.tipo}</td>
                   <td className="py-3">{movimiento.origen}</td>

@@ -129,12 +129,12 @@ export function PedidoListoAlerta() {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 100, scale: 0.88 }}
             transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-            className="pointer-events-auto relative flex items-center gap-3 bg-[#0a0a0a] border-2 border-orange-500/70 rounded-2xl px-4 py-3.5 shadow-2xl shadow-black/70 min-w-[260px] max-w-[320px] overflow-hidden"
+            className="pointer-events-auto relative flex items-center gap-3 bg-canvas border-2 border-orange-500/70 rounded-2xl px-4 py-3.5 shadow-float min-w-[260px] max-w-[320px] overflow-hidden"
           >
             {/* Ícono animado */}
             <div className="relative flex-shrink-0">
               <div className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center">
-                <ChefHat size={18} className="text-orange-400" />
+                <ChefHat size={18} className="text-orange-700 dark:text-orange-400" />
               </div>
               {/* Pulso exterior */}
               <span className="absolute inset-0 rounded-xl border border-orange-500/40 animate-ping" />
@@ -143,21 +143,21 @@ export function PedidoListoAlerta() {
             {/* Contenido */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <Bell size={11} className="text-orange-400 flex-shrink-0" />
-                <span className="text-orange-400 text-[10px] font-semibold tracking-widest uppercase">
+                <Bell size={11} className="text-orange-700 dark:text-orange-400 flex-shrink-0" />
+                <span className="text-orange-700 dark:text-orange-400 text-[10px] font-semibold tracking-widest uppercase">
                   Pedido Listo
                 </span>
               </div>
-              <p className="text-white font-black text-lg leading-tight mt-0.5">
+              <p className="text-ink font-semibold text-lg leading-tight mt-0.5">
                 Mesa {alerta.numeroMesa}
               </p>
-              <p className="text-zinc-500 text-xs truncate">{alerta.zona}</p>
+              <p className="text-ink-3 text-xs truncate">{alerta.zona}</p>
             </div>
 
             {/* Botón cerrar */}
             <button
               onClick={() => dismiss(alerta.id)}
-              className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
+              className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-ink-3 hover:text-ink-2 hover:bg-surface-3 transition-colors"
               aria-label="Cerrar notificación"
             >
               <X size={13} />

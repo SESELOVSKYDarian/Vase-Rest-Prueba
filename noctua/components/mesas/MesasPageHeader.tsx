@@ -71,33 +71,34 @@ export function MesasPageHeader({
     <div className="mb-5 flex flex-col gap-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Mesas</h1>
-          <p className="text-sm text-[#8b938d]">Gestiona tu salón en tiempo real</p>
+          <h1 className="text-2xl font-bold text-ink">Mesas</h1>
+          <p className="text-sm text-ink-3">Gestiona tu salón en tiempo real</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative flex h-11 w-72 max-w-full items-center rounded-full border border-[#252525] bg-[#151515] px-4 transition-colors focus-within:border-[#7ed957]/50">
-            <Search size={16} className="mr-2 flex-shrink-0 text-[#676b67]" />
+        <div className="flex w-full items-center gap-2 sm:w-auto sm:gap-3">
+          <div className="relative flex h-11 w-72 min-w-0 flex-1 sm:flex-none max-w-full items-center rounded-full border border-line bg-surface-2 px-4 transition-colors focus-within:border-brand/50">
+            <Search size={16} className="mr-2 flex-shrink-0 text-ink-3" />
             <input
               ref={searchRef}
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
               placeholder="Buscar mesa, zona o comensal..."
-              className="w-full border-0 bg-transparent text-sm text-white outline-none placeholder:text-[#676b67]"
+              className="w-full border-0 bg-transparent text-sm text-ink outline-none placeholder:text-ink-3"
               aria-label="Buscar mesa, zona o comensal"
             />
-            <kbd className="hidden flex-shrink-0 items-center gap-0.5 rounded-md border border-[#2a2a2a] bg-[#0e0e0e] px-1.5 py-0.5 text-[10px] text-[#676b67] sm:inline-flex">⌘K</kbd>
+            <kbd className="hidden flex-shrink-0 items-center gap-0.5 rounded-md border border-line-strong bg-surface px-1.5 py-0.5 text-[10px] text-ink-3 sm:inline-flex">⌘K</kbd>
           </div>
 
           <button
             type="button"
             onClick={onToggleEditorMode}
-            className={`flex h-11 items-center gap-2 rounded-full px-4 text-sm font-medium transition-colors ${
-              editorMode === 'edit' ? 'bg-[#7ed957] text-[#0e0e0e]' : 'bg-[#151515] text-[#c1c8c2] hover:bg-[#1c1c1c]'
+            aria-label={editorMode === 'edit' ? 'Salir de edición' : 'Editar plano'}
+            className={`pressable flex h-11 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-medium transition-colors ${
+              editorMode === 'edit' ? 'bg-brand text-on-brand' : 'bg-surface-2 text-ink-2 hover:bg-surface-2'
             }`}
           >
             {editorMode === 'edit' ? <Eye size={15} /> : <Pencil size={15} />}
-            <span>{editorMode === 'edit' ? 'Salir de edición' : 'Editar plano'}</span>
+            <span className="hidden sm:inline">{editorMode === 'edit' ? 'Salir de edición' : 'Editar plano'}</span>
           </button>
 
           <button
@@ -105,7 +106,7 @@ export function MesasPageHeader({
             onClick={onToggleFullscreen}
             aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
             title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-[#151515] text-[#c1c8c2] transition-colors hover:bg-[#1c1c1c]"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-2 text-ink-2 transition-colors hover:bg-surface-2"
           >
             {isFullscreen ? <Minimize size={17} /> : <Maximize size={17} />}
           </button>
@@ -121,11 +122,11 @@ export function MesasPageHeader({
               type="button"
               onClick={() => onFilterChange(tab.key)}
               className={`flex h-9 items-center gap-2 rounded-full px-4 text-sm font-medium transition-colors ${
-                active ? 'bg-[#7ed957] text-[#0e0e0e]' : 'bg-[#151515] text-[#8b938d] hover:bg-[#1c1c1c] hover:text-white'
+                active ? 'bg-brand text-on-brand' : 'bg-surface-2 text-ink-3 hover:bg-surface-2 hover:text-ink'
               }`}
             >
               <span>{tab.label}</span>
-              <span className={`rounded-full px-1.5 text-xs font-semibold ${active ? 'bg-black/15' : 'bg-white/5'}`}>
+              <span className={`rounded-full px-1.5 text-xs font-semibold ${active ? 'bg-on-brand/20' : 'bg-ink/5'}`}>
                 {counts[tab.key]}
               </span>
             </button>

@@ -35,7 +35,7 @@ function SortableStatus({ status, onUpdate, onDelete }: any) {
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-4 p-4 bg-[#101010] border border-[#252525] rounded-xl mb-3"
+      className="flex items-center gap-4 p-4 bg-surface border border-line rounded-xl mb-3"
     >
       <div {...attributes} {...listeners}><DragHandle /></div>
 
@@ -62,7 +62,7 @@ function SortableStatus({ status, onUpdate, onDelete }: any) {
         Vista previa
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-white">
+      <label className="flex items-center gap-2 text-sm text-ink">
         Terminal
         <input
           type="checkbox"
@@ -72,7 +72,7 @@ function SortableStatus({ status, onUpdate, onDelete }: any) {
         />
       </label>
 
-      <button onClick={() => onDelete(status.id)} className="text-red-400 hover:text-red-300">
+      <button onClick={() => onDelete(status.id)} className="text-red-700 dark:text-red-400 hover:text-red-600">
         <Trash2 size={20} />
       </button>
     </div>
@@ -106,9 +106,9 @@ export default function ConfiguracionCocinaPage() {
   if (usuario?.rol && usuario.rol !== 'admin') {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="rounded-lg border border-[#1a1a1a] bg-[#080808] p-8 text-center">
-          <h1 className="text-xl font-bold text-white">Acceso restringido</h1>
-          <p className="mt-2 text-sm text-[#676B67]">Solo administradores pueden configurar los estados de cocina.</p>
+        <div className="rounded-lg border border-line bg-canvas p-8 text-center">
+          <h1 className="text-xl font-bold text-ink">Acceso restringido</h1>
+          <p className="mt-2 text-sm text-ink-3">Solo administradores pueden configurar los estados de cocina.</p>
         </div>
       </div>
     );
@@ -138,15 +138,15 @@ export default function ConfiguracionCocinaPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Estados de Cocina</h1>
-          <p className="text-[#676b67]">Gestiona los estados de los pedidos de cocina</p>
+          <h1 className="text-3xl font-bold text-ink mb-2">Estados de Cocina</h1>
+          <p className="text-ink-3">Gestiona los estados de los pedidos de cocina</p>
         </div>
         {isDirty && (
           <div className="flex gap-3">
-            <button onClick={discardChanges} className="px-4 py-2 rounded-lg border border-[#252525] text-white">
+            <button onClick={discardChanges} className="px-4 py-2 rounded-lg border border-line text-ink">
               Descartar
             </button>
-            <button onClick={saveAll} disabled={isSaving} className="px-6 py-2 rounded-lg bg-violet-600 text-white">
+            <button onClick={saveAll} disabled={isSaving} className="px-6 py-2 rounded-lg bg-brand text-on-brand">
               {isSaving ? 'Guardando...' : 'Guardar cambios'}
             </button>
           </div>
@@ -154,7 +154,7 @@ export default function ConfiguracionCocinaPage() {
       </div>
 
       {isDirty && (
-        <div className="mb-6 px-4 py-3 bg-yellow-500/20 border border-yellow-500/30 rounded-xl text-yellow-300">
+        <div className="mb-6 px-4 py-3 bg-yellow-500/20 border border-yellow-500/30 rounded-xl text-yellow-700 dark:text-yellow-300">
           Hay cambios sin guardar
         </div>
       )}
@@ -174,7 +174,7 @@ export default function ConfiguracionCocinaPage() {
 
         <DragOverlay>
           {activeId ? (
-            <div className="p-4 bg-[#151515] border-2 border-violet-500 rounded-xl shadow-2xl">
+            <div className="p-4 bg-surface-2 border-2 border-brand rounded-xl shadow-float">
               Arrastrando estado...
             </div>
           ) : null}
@@ -182,22 +182,22 @@ export default function ConfiguracionCocinaPage() {
       </DndContext>
 
       {adding ? (
-        <div className="flex items-center gap-4 p-4 bg-[#101010] border border-violet-500/50 rounded-xl mt-4">
+        <div className="flex items-center gap-4 p-4 bg-surface border border-brand/50 rounded-xl mt-4">
           <input
             value={newName} onChange={(e) => setNewName(e.target.value)}
-            className="bg-[#0d0d0d] border border-[#252525] rounded px-3 py-2 text-white"
+            className="bg-surface border border-line rounded px-3 py-2 text-ink"
           />
-          <button onClick={() => setAdding(false)} className="px-4 py-2 rounded-lg border border-[#252525] text-white">
+          <button onClick={() => setAdding(false)} className="px-4 py-2 rounded-lg border border-line text-ink">
             Cancelar
           </button>
-          <button onClick={handleAdd} className="px-4 py-2 rounded-lg bg-violet-600 text-white">
+          <button onClick={handleAdd} className="px-4 py-2 rounded-lg bg-brand text-on-brand">
             Añadir
           </button>
         </div>
       ) : (
         <button
           onClick={() => setAdding(true)}
-          className="mt-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-[#101010] border border-dashed border-[#252525] text-[#676b67] hover:text-violet-400"
+          className="mt-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-surface border border-dashed border-line text-ink-3 hover:text-brand"
         >
           <Plus size={20} />
           Añadir estado

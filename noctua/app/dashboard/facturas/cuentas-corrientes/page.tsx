@@ -51,44 +51,44 @@ export default function CuentasCorrientesPage() {
 
   if (!autorizado) {
     return (
-      <div className="min-h-screen bg-black text-white p-6">
-        <h1 className="text-2xl font-black tracking-widest uppercase">Acceso restringido</h1>
+      <div className="min-h-screen bg-surface-2 text-ink p-6">
+        <h1 className="text-2xl font-semibold tracking-widest uppercase">Acceso restringido</h1>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 sm:p-6 space-y-6">
+    <div className="min-h-screen bg-surface-2 text-ink p-4 sm:p-6 space-y-6">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-black tracking-[0.18em] uppercase">Cuentas corrientes</h1>
-          <p className="text-sm text-[#676B67] mt-1">Saldos calculados desde movimientos contables.</p>
+          <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-[0.18em] uppercase">Cuentas corrientes</h1>
+          <p className="text-sm text-ink-3 mt-1">Saldos calculados desde movimientos contables.</p>
         </div>
         <button
           type="button"
           onClick={() => void cargar()}
           disabled={loading}
-          className="inline-flex items-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#0d0d0d] px-4 py-3 text-sm font-bold text-[#BCB9B9] hover:bg-[#151515] disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-xl border border-line-strong bg-surface px-4 py-3 text-sm font-bold text-ink-2 hover:bg-surface-2 disabled:opacity-50"
         >
           <RefreshCcw size={16} />
           Actualizar
         </button>
       </header>
 
-      <section className="rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5">
+      <section className="rounded-2xl border border-line bg-canvas p-5">
         <label className="relative block">
-          <Search className="absolute left-4 top-1/2 mt-1 text-[#676B67]" size={18} />
-          <span className="text-xs font-bold uppercase tracking-widest text-[#676B67]">Buscar cliente</span>
+          <Search className="absolute left-4 top-1/2 mt-1 text-ink-3" size={18} />
+          <span className="text-xs font-bold uppercase tracking-widest text-ink-3">Buscar cliente</span>
           <input
             value={busqueda}
             onChange={(event) => setBusqueda(event.target.value)}
-            className="mt-2 w-full rounded-xl border border-[#2a2a2a] bg-black py-3 pl-11 pr-4 text-sm text-white focus:outline-none focus:border-white/40"
+            className="mt-2 w-full rounded-xl border border-line-strong bg-surface-2 py-3 pl-11 pr-4 text-sm text-ink focus:outline-none focus:border-ink/40"
           />
         </label>
       </section>
 
       {error && (
-        <section className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+        <section className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-200">
           {error}
         </section>
       )}
@@ -101,39 +101,39 @@ export default function CuentasCorrientesPage() {
             <Link
               key={cuenta.cuentaCorrienteId}
               href={`/dashboard/facturas/cuentas-corrientes/${cuenta.cliente.id}`}
-              className="rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5 transition hover:border-white/20"
+              className="rounded-2xl border border-line bg-canvas p-5 transition hover:border-ink/20"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-black text-white">{cuenta.cliente.nombre}</h2>
-                  <p className="text-sm text-[#676B67]">{cuenta.cliente.documento || 'Sin documento'}</p>
+                  <h2 className="text-lg font-semibold text-ink">{cuenta.cliente.nombre}</h2>
+                  <p className="text-sm text-ink-3">{cuenta.cliente.documento || 'Sin documento'}</p>
                 </div>
-                <ArrowUpRight size={18} className="text-[#676B67]" />
+                <ArrowUpRight size={18} className="text-ink-3" />
               </div>
 
               <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                 <div>
-                  <p className="text-[#676B67]">Saldo</p>
-                  <p className={saldoAFavor ? 'font-mono font-black text-emerald-300' : 'font-mono font-black text-white'}>
+                  <p className="text-ink-3">Saldo</p>
+                  <p className={saldoAFavor ? 'font-mono font-semibold text-emerald-700 dark:text-emerald-300' : 'font-mono font-semibold text-ink'}>
                     {formatearARS(cuenta.saldo)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[#676B67]">Pendientes</p>
-                  <p className="font-mono font-black">{cuenta.cantidadFacturasPendientes}</p>
+                  <p className="text-ink-3">Pendientes</p>
+                  <p className="font-mono font-semibold">{cuenta.cantidadFacturasPendientes}</p>
                 </div>
                 <div>
-                  <p className="text-[#676B67]">Vencida</p>
-                  <p className="font-mono font-black">{formatearARS(cuenta.deudaVencida)}</p>
+                  <p className="text-ink-3">Vencida</p>
+                  <p className="font-mono font-semibold">{formatearARS(cuenta.deudaVencida)}</p>
                 </div>
                 <div>
-                  <p className="text-[#676B67]">Estado</p>
-                  <p className="font-black capitalize">{cuenta.estado}</p>
+                  <p className="text-ink-3">Estado</p>
+                  <p className="font-semibold capitalize">{cuenta.estado}</p>
                 </div>
               </div>
 
               {cuenta.ultimoMovimiento && (
-                <p className="mt-4 text-xs text-[#676B67]">
+                <p className="mt-4 text-xs text-ink-3">
                   Ultimo movimiento: {cuenta.ultimoMovimiento.descripcion}
                 </p>
               )}
@@ -143,7 +143,7 @@ export default function CuentasCorrientesPage() {
       </section>
 
       {!loading && cuentasFiltradas.length === 0 && (
-        <p className="text-sm text-[#676B67]">No hay cuentas corrientes para mostrar.</p>
+        <p className="text-sm text-ink-3">No hay cuentas corrientes para mostrar.</p>
       )}
     </div>
   );

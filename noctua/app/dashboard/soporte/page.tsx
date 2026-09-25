@@ -33,21 +33,21 @@ export default function SoportePage() {
     <div className="space-y-6">
       {/* Encabezado */}
       <header className="flex items-start gap-4">
-        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900">
+        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-line bg-surface-2">
           <Headphones
             size={20}
-            className="text-zinc-400"
+            className="text-ink-3"
           />
         </div>
 
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-white">
+          <h1 className="text-2xl font-semibold tracking-tight text-ink">
             {isDeveloper
               ? 'Tickets de soporte'
               : 'Soporte'}
           </h1>
 
-          <p className="mt-0.5 text-sm text-zinc-500">
+          <p className="mt-0.5 text-sm text-ink-3">
             {isDeveloper
               ? 'Revisá, respondé y actualizá los tickets enviados por los administradores.'
               : 'Abrí un ticket si encontrás un problema o tenés una consulta. Nuestro equipo te responderá dentro del horario de atención.'}
@@ -61,12 +61,12 @@ export default function SoportePage() {
       {/* Mensaje para roles sin permiso */}
       {!isAdmin && !isDeveloper && (
         <section className="rounded-xl border border-red-500/30 bg-red-500/10 p-4">
-          <p className="text-sm font-semibold text-red-300">
+          <p className="text-sm font-semibold text-red-700 dark:text-red-300">
             No tenés permisos para acceder al
             sistema de soporte.
           </p>
 
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-ink-3">
             Esta sección está disponible
             solamente para administradores y
             desarrolladores.

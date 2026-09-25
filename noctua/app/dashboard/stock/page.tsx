@@ -87,16 +87,16 @@ export default function StockPage() {
         <p style={{ color: 'var(--color-text-secondary)' }} className="text-sm">{texts.subtitle}</p>
       </div>
 
-      <div className="flex rounded-xl bg-[#0d110e] p-1 w-fit">
+      <div className="flex rounded-xl bg-surface p-1 w-fit">
         <button
           onClick={() => setTab('ajuste')}
-          className={`flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors ${tab === 'ajuste' ? 'bg-[#7ed957] text-[#0e0e0e]' : 'text-[#829487] hover:text-white'}`}
+          className={`flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors ${tab === 'ajuste' ? 'bg-brand text-on-brand' : 'text-ink-3 hover:text-ink'}`}
         >
           <Package size={15} />Ajuste rápido
         </button>
         <button
           onClick={() => setTab('gestion')}
-          className={`flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors ${tab === 'gestion' ? 'bg-[#7ed957] text-[#0e0e0e]' : 'text-[#829487] hover:text-white'}`}
+          className={`flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors ${tab === 'gestion' ? 'bg-brand text-on-brand' : 'text-ink-3 hover:text-ink'}`}
         >
           <Settings size={15} />Gestionar ingredientes
         </button>
@@ -144,7 +144,7 @@ export default function StockPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-surface)' }}
-                  className="border border-[#1a1a1a] rounded-xl overflow-hidden"
+                  className="border border-line rounded-xl overflow-hidden"
                 >
                   <table className="w-full">
                     <thead style={{ backgroundColor: 'var(--color-surface)' }}>

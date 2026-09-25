@@ -1,17 +1,18 @@
 /**
- * Colores hex de estado de mesa — para uso en SVG y filtros de sombra.
+ * Colores de estado de mesa — tonos semánticos suavizados para que convivan con el lienzo
+ * cálido del sistema (claro y oscuro). Para uso en SVG/canvas.
  * Debe coincidir exactamente con COLORES_ESTADO_MESA de hooks/lib/constants.ts.
  */
 import type { EstadoMesa } from '@/types/mesa';
 
 export const MESA_ESTADO_HEX: Record<EstadoMesa, string> = {
-  libre:            '#22c55e', // green-500
-  ocupada:          '#ef4444', // red-500
-  esperando_pedido: '#3b82f6', // blue-500
-  pedido_listo:     '#f97316', // orange-500 — "Lista"
-  esperando_pago:   '#facc15', // yellow-400
-  problema:         '#db2777', // pink-600 (distinto de ocupada, que ya usa rojo)
-  para_cobrar:      '#a855f7', // purple-500
+  libre:            '#3f9d6a',
+  ocupada:          '#cf5a43',
+  esperando_pedido: '#4b7fc4',
+  pedido_listo:     '#df7f37',
+  esperando_pago:   '#cfa12e',
+  problema:         '#c24779',
+  para_cobrar:      '#8a64c8',
 };
 
 /** Estados que implican personas sentadas (cambia color de sillas) */

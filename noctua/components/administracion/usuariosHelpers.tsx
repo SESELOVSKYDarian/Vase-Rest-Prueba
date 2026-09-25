@@ -11,13 +11,13 @@ export const ROL_LABELS: Record<RolUsuario, string> = {
 };
 
 export const ROL_COLORS: Record<RolUsuario, string> = {
-  admin: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-  mozo: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  cocina: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-  cajero: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-  stock: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  delivery: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
-  desarrollador: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+  admin: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20',
+  mozo: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
+  cocina: 'bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20',
+  cajero: 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20',
+  stock: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20',
+  delivery: 'bg-pink-500/10 text-pink-700 dark:text-pink-400 border-pink-500/20',
+  desarrollador: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border-cyan-500/20',
 };
 
 export function obtenerMensajeError(error: unknown, fallback: string) {

@@ -29,9 +29,9 @@ export function ConfirmDialog({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
       <div className="space-y-4">
-        <p className="text-[#BCB9B9] text-sm leading-relaxed">{message}</p>
+        <p className="text-ink-2 text-sm leading-relaxed">{message}</p>
         {dangerMessage && (
-          <p className="text-red-400 text-xs leading-relaxed bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+          <p className="text-red-700 dark:text-red-400 text-xs leading-relaxed bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
             {dangerMessage}
           </p>
         )}

@@ -148,13 +148,13 @@ export default function MesasPage() {
       {error && <p className="mb-2 text-sm text-red-500">{error}</p>}
 
       {isLoading && mesas.length === 0 && (
-        <div className="text-[#BCB9B9]">
+        <div className="text-ink-2">
           Cargando mesas desde el backend...
         </div>
       )}
 
       {/* Plano de planta de mesas */}
-      <div ref={floorWrapperRef} className="relative flex min-h-0 flex-1 flex-col bg-[#0b0f0c]">
+      <div ref={floorWrapperRef} className="relative flex min-h-0 flex-1 flex-col bg-canvas">
         <MesasFloorPlan
           mesas={mesas}
           mesasSeleccionadas={mesasSeleccionadas}
@@ -171,7 +171,7 @@ export default function MesasPage() {
       <AnimatePresence>
   {mesaAEliminar && (
     <motion.div
-      className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center px-4"
+      className="fixed inset-0 bg-scrim backdrop-blur-sm z-50 flex items-center justify-center px-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -181,49 +181,49 @@ export default function MesasPage() {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.92, y: 20 }}
         transition={{ type: "spring", stiffness: 260, damping: 22 }}
-        className="w-full max-w-md bg-[#080808] border border-[#1f1f1f] rounded-2xl shadow-2xl p-6"
+        className="w-full max-w-md bg-canvas border border-line rounded-2xl shadow-float p-6"
       >
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center">
-            <span className="text-red-400 text-2xl font-black">!</span>
+            <span className="text-red-700 dark:text-red-400 text-2xl font-semibold">!</span>
           </div>
 
           <div className="flex-1">
-            <h2 className="text-white text-lg font-black tracking-widest uppercase">
+            <h2 className="text-ink text-lg font-medium">
               Eliminar mesa
             </h2>
 
-            <p className="text-[#BCB9B9] text-sm mt-2 leading-relaxed">
+            <p className="text-ink-2 text-sm mt-2 leading-relaxed">
               ¿Seguro que querés eliminar la mesa{" "}
-              <span className="text-white font-bold">
+              <span className="text-ink font-bold">
                 N° {mesaAEliminar.numero}
               </span>
               ?
             </p>
 
-            <p className="text-[#676B67] text-xs mt-2 leading-relaxed">
+            <p className="text-ink-3 text-xs mt-2 leading-relaxed">
               Esta acción eliminará la mesa del sistema si no tiene pedidos o
               reservas asociadas.
             </p>
           </div>
         </div>
 
-        <div className="mt-6 bg-black border border-[#1a1a1a] rounded-xl p-4">
+        <div className="mt-6 bg-surface-2 border border-line rounded-xl p-4">
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-[#676B67] text-xs uppercase font-semibold">
+              <p className="text-ink-3 text-xs uppercase font-semibold">
                 Ubicación
               </p>
-              <p className="text-white font-semibold">
+              <p className="text-ink font-semibold">
                 {mesaAEliminar.zona}
               </p>
             </div>
 
             <div>
-              <p className="text-[#676B67] text-xs uppercase font-semibold">
+              <p className="text-ink-3 text-xs uppercase font-semibold">
                 Capacidad
               </p>
-              <p className="text-white font-semibold">
+              <p className="text-ink font-semibold">
                 {mesaAEliminar.capacidad} personas
               </p>
             </div>

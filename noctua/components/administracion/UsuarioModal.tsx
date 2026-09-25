@@ -147,8 +147,8 @@ function UsuarioModalBase({
     }
   };
 
-  const inputCls = 'w-full bg-[#111] border border-[#2a2a2a] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-[#3a3a3a] focus:outline-none focus:border-[#555] transition-colors';
-  const labelCls = 'block text-xs text-[#676B67] font-semibold tracking-widest uppercase mb-1.5';
+  const inputCls = 'w-full bg-surface border border-line-strong rounded-xl px-3 py-2.5 text-sm text-ink placeholder:text-ink-3 focus:outline-none focus:border-line-strong transition-colors';
+  const labelCls = 'block text-xs text-ink-3 font-semibold tracking-widest uppercase mb-1.5';
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={esEdicion ? `Editar - ${usuarioEditar?.nombre}` : 'Nuevo Usuario'} size="md">
@@ -165,7 +165,7 @@ function UsuarioModalBase({
 
         <div>
           <label htmlFor="form-password" className={labelCls}>
-            Contraseña {esEdicion && <span className="text-[#444] font-normal normal-case tracking-normal">(dejar vacío para no cambiar)</span>}
+            Contraseña {esEdicion && <span className="text-ink-3 font-normal normal-case tracking-normal">(dejar vacío para no cambiar)</span>}
           </label>
           <div className="relative">
             <input
@@ -176,7 +176,7 @@ function UsuarioModalBase({
               placeholder={esEdicion ? '********' : 'Mínimo 4 caracteres'}
               className={`${inputCls} pr-10`}
             />
-            <button type="button" onClick={() => setShowPass((value) => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#676B67] hover:text-white transition-colors" aria-label="Mostrar u ocultar contraseña">
+            <button type="button" onClick={() => setShowPass((value) => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 hover:text-ink transition-colors" aria-label="Mostrar u ocultar contraseña">
               {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
@@ -194,14 +194,14 @@ function UsuarioModalBase({
           </select>
         </div>
 
-        <div className="flex items-center justify-between bg-[#111] border border-[#1e1e1e] rounded-xl px-4 py-3">
-          <span className="text-sm text-[#BCB9B9] font-medium">Cuenta activa</span>
+        <div className="flex items-center justify-between bg-surface border border-line rounded-xl px-4 py-3">
+          <span className="text-sm text-ink-2 font-medium">Cuenta activa</span>
           <Toggle checked={form.activo} onChange={() => setForm((current) => ({ ...current, activo: !current.activo }))} aria-label="Activar o desactivar cuenta" />
         </div>
 
         <AnimatePresence>
           {error && (
-            <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="text-red-400 text-xs font-medium py-2 px-3 bg-red-500/10 rounded-lg border border-red-500/20" role="alert">
+            <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="text-red-700 dark:text-red-400 text-xs font-medium py-2 px-3 bg-red-500/10 rounded-lg border border-red-500/20" role="alert">
               {error}
             </motion.p>
           )}

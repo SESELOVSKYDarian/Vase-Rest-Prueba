@@ -150,7 +150,7 @@ export function MesaTouchOverlay({
             transition={{ duration: 0.25 }}
             className="absolute inset-0 flex items-center justify-center pointer-events-none z-[7]"
           >
-            <span className="text-2xl text-white/70 drop-shadow-lg">
+            <span className="text-2xl text-ink/70 drop-shadow-lg">
               {swipeDir === 'right' ? '→' : '←'}
             </span>
           </motion.div>

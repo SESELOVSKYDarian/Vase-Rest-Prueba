@@ -14,13 +14,13 @@ interface PaymentMethodsChartProps {
 export function PaymentMethodsChart({ data, loading, error }: PaymentMethodsChartProps) {
   const total = data.reduce((sum, item) => sum + item.total, 0);
 
-  if (loading) return <div className="h-80 rounded-lg border border-[#1a1a1a] bg-[#080808] animate-pulse" />;
+  if (loading) return <div className="h-80 rounded-lg border border-line bg-canvas animate-pulse" />;
   if (error) return <EmptyPayment message="Error al cargar los datos. Intentá de nuevo." />;
   if (data.length === 0) return <EmptyPayment message="Sin datos para el período seleccionado" />;
 
   return (
-    <section className="rounded-2xl border border-[#1d2b21] bg-[#0e0e0e] p-7">
-      <h2 className="text-sm font-bold uppercase tracking-widest text-[#BCB9B9]">Métodos de pago</h2>
+    <section className="rounded-2xl border border-line bg-surface p-7">
+      <h2 className="text-base text-ink text-ink-2 font-medium">Métodos de pago</h2>
       <div className="mt-5 grid gap-4 lg:grid-cols-[220px_1fr]">
         <div className="relative h-56">
           <ResponsiveContainer width="100%" height="100%">
@@ -38,8 +38,8 @@ export function PaymentMethodsChart({ data, loading, error }: PaymentMethodsChar
             </PieChart>
           </ResponsiveContainer>
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-xs uppercase tracking-widest text-[#676B67]">Total</span>
-            <span className="text-lg font-bold text-white">{formatCurrency(total)}</span>
+            <span className="text-xs uppercase tracking-widest text-ink-3">Total</span>
+            <span className="text-lg font-bold text-ink">{formatCurrency(total)}</span>
           </div>
         </div>
         <div className="space-y-3">
@@ -47,11 +47,11 @@ export function PaymentMethodsChart({ data, loading, error }: PaymentMethodsChar
             <div key={item.method} className="flex items-center justify-between gap-3 rounded-md bg-white/[0.02] px-3 py-2">
               <div className="flex items-center gap-2">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: paymentColor(item.method) }} />
-                <span className="text-sm text-[#BCB9B9]">{normalizePaymentMethod(item.method)}</span>
+                <span className="text-sm text-ink-2">{normalizePaymentMethod(item.method)}</span>
               </div>
               <div className="text-right">
-                <p className="text-sm font-semibold text-white">{formatCurrency(item.total)}</p>
-                <p className="text-xs text-[#676B67]">{item.percentage.toFixed(1)}%</p>
+                <p className="text-sm font-semibold text-ink">{formatCurrency(item.total)}</p>
+                <p className="text-xs text-ink-3">{item.percentage.toFixed(1)}%</p>
               </div>
             </div>
           ))}
@@ -68,9 +68,9 @@ function paymentColor(method: string): string {
 
 function EmptyPayment({ message }: { message: string }) {
   return (
-    <section className="rounded-lg border border-[#1a1a1a] bg-[#080808] p-5">
-      <h2 className="text-sm font-bold uppercase tracking-widest text-[#BCB9B9]">Métodos de pago</h2>
-      <div className="mt-5 flex h-72 items-center justify-center text-sm text-[#676B67]">{message}</div>
+    <section className="rounded-lg border border-line bg-canvas p-5">
+      <h2 className="text-base text-ink text-ink-2 font-medium">Métodos de pago</h2>
+      <div className="mt-5 flex h-72 items-center justify-center text-sm text-ink-3">{message}</div>
     </section>
   );
 }

@@ -9,10 +9,10 @@ interface Props {
 }
 
 const CONFIG: Record<TicketCategoria, { label: string; emoji: string; className: string }> = {
-  bug:      { label: 'Bug',      emoji: '🐛', className: 'bg-red-500/10 text-red-400 border-red-500/30' },
-  consulta: { label: 'Consulta', emoji: '💬', className: 'bg-blue-500/10 text-blue-400 border-blue-500/30' },
-  mejora:   { label: 'Mejora',   emoji: '✨', className: 'bg-purple-500/10 text-purple-400 border-purple-500/30' },
-  urgente:  { label: 'Urgente',  emoji: '🚨', className: 'bg-orange-500/10 text-orange-400 border-orange-500/30' },
+  bug:      { label: 'Bug',      emoji: '🐛', className: 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30' },
+  consulta: { label: 'Consulta', emoji: '💬', className: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30' },
+  mejora:   { label: 'Mejora',   emoji: '✨', className: 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/30' },
+  urgente:  { label: 'Urgente',  emoji: '🚨', className: 'bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30' },
 };
 
 export function TicketCategoriaBadge({ categoria, className }: Props) {

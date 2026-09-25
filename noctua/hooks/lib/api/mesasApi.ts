@@ -72,9 +72,11 @@ export async function obtenerMesas(): Promise<Mesa[]> {
     estado: mapEstadoMesa(mesa),
     capacidad: mesa.capacidad ?? 0,
     forma: normalizarForma(mesa.forma),
+    // pos_x/pos_y son `numeric` en Postgres y el driver los devuelve como string:
+    // sin Number(), sumarles un offset concatena ("220" + 80 → "22080").
     posicion: {
-      x: mesa.pos_x || 0,
-      y: mesa.pos_y || 0,
+      x: Number(mesa.pos_x) || 0,
+      y: Number(mesa.pos_y) || 0,
     },
     mesasUnidas: [],
     personas: mesa.personas || undefined,
@@ -121,8 +123,8 @@ export async function crearMesa(data: {
       capacidad: newMesa.capacidad ?? 0,
       forma: normalizarForma(newMesa.forma),
       posicion: {
-        x: newMesa.pos_x || 0,
-        y: newMesa.pos_y || 0,
+        x: Number(newMesa.pos_x) || 0,
+        y: Number(newMesa.pos_y) || 0,
       },
       mesasUnidas: [],
     },
@@ -178,8 +180,8 @@ export async function actualizarMesa(
       capacidad: mesaActualizada.capacidad ?? 0,
       forma: normalizarForma(mesaActualizada.forma),
       posicion: {
-        x: mesaActualizada.pos_x || 0,
-        y: mesaActualizada.pos_y || 0,
+        x: Number(mesaActualizada.pos_x) || 0,
+        y: Number(mesaActualizada.pos_y) || 0,
       },
       mesasUnidas: [],
       personas: undefined,
@@ -242,8 +244,8 @@ export async function actualizarEstadoMesa(id: string, estado: EstadoMesa) {
       estado: mapEstadoMesa(mesaActualizada),
       capacidad: mesaActualizada.capacidad ?? 0,
       posicion: {
-        x: mesaActualizada.pos_x || 0,
-        y: mesaActualizada.pos_y || 0,
+        x: Number(mesaActualizada.pos_x) || 0,
+        y: Number(mesaActualizada.pos_y) || 0,
       },
       mesasUnidas: [],
       personas: undefined,

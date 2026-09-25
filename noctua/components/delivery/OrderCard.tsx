@@ -18,18 +18,18 @@ export function OrderCard({ order, onStatusChange }: OrderCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-4 space-y-3"
+      className="bg-canvas border border-line rounded-xl p-4 space-y-3"
     >
       <div className="flex items-start justify-between">
         <div>
-          <h4 className="text-white font-semibold text-sm">{order.customer.name}</h4>
-          <p className="text-[#676b67] text-xs">{order.externalId}</p>
+          <h4 className="text-ink font-semibold text-sm">{order.customer.name}</h4>
+          <p className="text-ink-3 text-xs">{order.externalId}</p>
         </div>
         <OrderStatusBadge status={order.status} />
       </div>
 
       {isUrgent && (
-        <div className="flex items-center gap-2 text-red-400 text-xs">
+        <div className="flex items-center gap-2 text-red-700 dark:text-red-400 text-xs">
           <span className="animate-pulse">⚠️</span>
           Pedido urgente!
         </div>
@@ -38,16 +38,16 @@ export function OrderCard({ order, onStatusChange }: OrderCardProps) {
       <div className="space-y-2">
         {order.items.map(item => (
           <div key={item.id} className="flex items-center justify-between text-sm">
-            <span className="text-white">
+            <span className="text-ink">
               {item.quantity}x {item.dishName}
             </span>
-            <span className="text-[#bcb9b9]">{formatARS(item.quantity * item.price)}</span>
+            <span className="text-ink-2">{formatARS(item.quantity * item.price)}</span>
           </div>
         ))}
       </div>
 
-      <div className="flex items-center justify-between pt-2 border-t border-[#1a1a1a]">
-        <span className="text-lg font-bold text-white">{formatARS(order.total)}</span>
+      <div className="flex items-center justify-between pt-2 border-t border-line">
+        <span className="text-lg font-bold text-ink">{formatARS(order.total)}</span>
         <div className="flex gap-2">
           {order.status === 'new' && (
             <button

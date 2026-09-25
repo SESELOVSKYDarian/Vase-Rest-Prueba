@@ -8,9 +8,9 @@ interface AvailabilityBadgeProps {
 
 export const AvailabilityBadge = ({ maxAvailable }: AvailabilityBadgeProps) => {
   const getStatus = () => {
-    if (maxAvailable === 0) return { label: 'Agotado', color: 'text-red-400 bg-red-500/20 border-red-500/30' };
-    if (maxAvailable <= 5) return { label: `${maxAvailable} disponibles`, color: 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30' };
-    return { label: `${maxAvailable} disponibles`, color: 'text-green-400 bg-green-500/20 border-green-500/30' };
+    if (maxAvailable === 0) return { label: 'Agotado', color: 'text-red-700 dark:text-red-400 bg-red-500/20 border-red-500/30' };
+    if (maxAvailable <= 5) return { label: `${maxAvailable} disponibles`, color: 'text-yellow-700 dark:text-yellow-400 bg-yellow-500/20 border-yellow-500/30' };
+    return { label: `${maxAvailable} disponibles`, color: 'text-green-700 dark:text-green-400 bg-green-500/20 border-green-500/30' };
   };
 
   const status = getStatus();

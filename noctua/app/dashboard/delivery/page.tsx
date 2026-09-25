@@ -44,8 +44,8 @@ export default function DeliveryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">{texts.title}</h1>
-        <div className="flex items-center justify-between gap-3"><p className="text-[#676b67] text-sm">{texts.subtitle}</p><button onClick={() => { setAppSeleccionada(null); setConfiguracionAbierta(true); }} className="flex items-center gap-2 rounded-xl border border-[#304034] px-3 py-2 text-xs font-semibold text-[#b7c8bc] hover:border-[#7ed957] hover:text-[#b7f397]"><Plus size={15} />Agregar app</button></div>
+        <h1 className="text-2xl font-bold text-ink">{texts.title}</h1>
+        <div className="flex items-center justify-between gap-3"><p className="text-ink-3 text-sm">{texts.subtitle}</p><button onClick={() => { setAppSeleccionada(null); setConfiguracionAbierta(true); }} className="flex items-center gap-2 rounded-xl border border-line-strong px-3 py-2 text-xs font-semibold text-ink-2 hover:border-brand hover:text-brand-strong"><Plus size={15} />Agregar app</button></div>
       </div>
       <ConfiguracionIntegracionModal tipo="delivery" abierto={configuracionAbierta} appInicial={appSeleccionada} onClose={() => setConfiguracionAbierta(false)} />
 
@@ -65,7 +65,7 @@ export default function DeliveryPage() {
                 color={platformColorMap[app.name] || '#8b5cf6'}
                 pendingCount={getPendingCount(platformId)}
                 lastOrderTime={ordersByPlatform[platformId]?.[0]?.createdAt}
-              /><button onClick={() => { setAppSeleccionada(app); setConfiguracionAbierta(true); }} aria-label={`Editar ${app.name}`} className="absolute right-4 top-4 rounded-lg p-2 text-[#829487] opacity-0 transition group-hover:opacity-100 hover:bg-white/10 hover:text-white"><MoreHorizontal size={19} /></button></div>
+              /><button onClick={() => { setAppSeleccionada(app); setConfiguracionAbierta(true); }} aria-label={`Editar ${app.name}`} className="absolute right-4 top-4 rounded-lg p-2 text-ink-3 opacity-0 transition group-hover:opacity-100 hover:bg-ink/10 hover:text-ink"><MoreHorizontal size={19} /></button></div>
             </motion.div>
           );
         })}
@@ -74,12 +74,12 @@ export default function DeliveryPage() {
       {inactiveApps.length > 0 && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {inactiveApps.map((app) => (
-            <div key={app.id} className="flex items-center justify-between rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6 opacity-60">
+            <div key={app.id} className="flex items-center justify-between rounded-xl border border-line bg-canvas p-6 opacity-60">
               <div className="flex items-center gap-3">
-                <span className="font-semibold text-white">{app.name}</span>
-                <span className="rounded-full bg-[#252525] px-2 py-0.5 text-xs font-bold text-[#676b67]">Inactiva</span>
+                <span className="font-semibold text-ink">{app.name}</span>
+                <span className="rounded-full bg-surface-3 px-2 py-0.5 text-xs font-bold text-ink-3">Inactiva</span>
               </div>
-              <button onClick={() => { setAppSeleccionada(app); setConfiguracionAbierta(true); }} aria-label={`Editar ${app.name}`} className="rounded-lg p-2 text-[#829487] hover:bg-white/10 hover:text-white"><MoreHorizontal size={19} /></button>
+              <button onClick={() => { setAppSeleccionada(app); setConfiguracionAbierta(true); }} aria-label={`Editar ${app.name}`} className="rounded-lg p-2 text-ink-3 hover:bg-ink/10 hover:text-ink"><MoreHorizontal size={19} /></button>
             </div>
           ))}
         </div>

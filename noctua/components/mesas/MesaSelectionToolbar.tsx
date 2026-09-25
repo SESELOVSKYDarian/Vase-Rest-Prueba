@@ -37,11 +37,11 @@ export const MesaSelectionToolbar = memo(function MesaSelectionToolbar({
     <div className="flex flex-col gap-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center">
       {/* Etiqueta del plano — siempre visible */}
       <div className="flex items-center gap-2 sm:justify-self-start">
-        <span className="text-[10px] font-mono tracking-[0.3em] uppercase text-zinc-500">
+        <span className="text-[10px] font-mono tracking-[0.3em] uppercase text-ink-3">
           Plano de planta
         </span>
-        <span className="text-zinc-700 text-[10px]">·</span>
-        <span className="text-[10px] font-mono text-zinc-600">{mesaCount} mesas</span>
+        <span className="text-ink-3 text-[10px]">·</span>
+        <span className="text-[10px] font-mono text-ink-3">{mesaCount} mesas</span>
       </div>
 
       {/* Grupo de acciones centrado */}
@@ -54,8 +54,8 @@ export const MesaSelectionToolbar = memo(function MesaSelectionToolbar({
           className={cn(
             BTN_BASE,
             isSelectionMode
-              ? 'bg-red-500/15 border-red-500/50 text-red-400 hover:bg-red-500/25'
-              : 'bg-amber-600/15 border-amber-600/40 text-amber-300 hover:bg-amber-600/25'
+              ? 'bg-red-500/15 border-red-500/50 text-red-700 dark:text-red-400 hover:bg-red-500/25'
+              : 'bg-amber-600/15 border-amber-600/40 text-amber-700 dark:text-amber-300 hover:bg-amber-600/25'
           )}
         >
           {isSelectionMode ? <X size={16} /> : <Link2 size={16} />}
@@ -69,7 +69,7 @@ export const MesaSelectionToolbar = memo(function MesaSelectionToolbar({
           title="Restablecer todas las posiciones a la grilla automática"
           className={cn(
             BTN_BASE,
-            'bg-transparent border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200'
+            'bg-transparent border-line text-ink-3 hover:border-line-strong hover:text-ink'
           )}
         >
           <RotateCcw size={16} className={resetting ? 'animate-spin' : ''} />
@@ -84,8 +84,8 @@ export const MesaSelectionToolbar = memo(function MesaSelectionToolbar({
           className={cn(
             BTN_BASE,
             editMode
-              ? 'bg-amber-600/15 border-amber-500/40 text-amber-400'
-              : 'bg-transparent border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200'
+              ? 'bg-amber-600/15 border-amber-500/40 text-amber-700 dark:text-amber-400'
+              : 'bg-transparent border-line text-ink-3 hover:border-line-strong hover:text-ink'
           )}
         >
           {editMode ? <Lock size={16} /> : <Move size={16} />}

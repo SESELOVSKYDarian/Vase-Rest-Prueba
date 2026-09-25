@@ -25,8 +25,8 @@ export function SalesLineChart({ data, loading, error }: SalesLineChartProps) {
   if (data.length === 0) return <EmptyChart message="Sin datos para el período seleccionado" />;
 
   return (
-    <section className="rounded-2xl border border-[#1d2b21] bg-[#0e0e0e] p-7">
-      <h2 className="text-sm font-bold uppercase tracking-widest text-[#BCB9B9]">Ingresos en el tiempo</h2>
+    <section className="rounded-2xl border border-line bg-surface p-7">
+      <h2 className="text-base text-ink text-ink-2 font-medium">Ingresos en el tiempo</h2>
       <div className="mt-7 h-80">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ left: 6, right: 16, top: 12, bottom: 0 }}>
@@ -52,14 +52,14 @@ export function SalesLineChart({ data, loading, error }: SalesLineChartProps) {
 }
 
 function ChartSkeleton() {
-  return <div className="h-[378px] rounded-lg border border-[#1a1a1a] bg-[#080808] animate-pulse" />;
+  return <div className="h-[378px] rounded-lg border border-line bg-canvas animate-pulse" />;
 }
 
 function EmptyChart({ message }: { message: string }) {
   return (
-    <section className="rounded-2xl border border-[#1d2b21] bg-[#0e0e0e] p-7">
-      <h2 className="text-sm font-bold uppercase tracking-widest text-[#BCB9B9]">Ingresos en el tiempo</h2>
-      <div className="mt-5 flex h-80 items-center justify-center text-sm text-[#676B67]">{message}</div>
+    <section className="rounded-2xl border border-line bg-surface p-7">
+      <h2 className="text-base text-ink text-ink-2 font-medium">Ingresos en el tiempo</h2>
+      <div className="mt-5 flex h-80 items-center justify-center text-sm text-ink-3">{message}</div>
     </section>
   );
 }

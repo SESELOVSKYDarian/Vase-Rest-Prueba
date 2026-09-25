@@ -60,13 +60,13 @@ const CATEGORIA_ACTIVE: Record<
   TicketCategoria,
   string
 > = {
-  bug: 'border-red-500 bg-red-500/10 text-red-300',
+  bug: 'border-red-500 bg-red-500/10 text-red-700 dark:text-red-300',
   consulta:
-    'border-blue-500 bg-blue-500/10 text-blue-300',
+    'border-blue-500 bg-blue-500/10 text-blue-700 dark:text-blue-300',
   mejora:
-    'border-purple-500 bg-purple-500/10 text-purple-300',
+    'border-violet-500 bg-violet-500/10 text-violet-700 dark:text-violet-300',
   urgente:
-    'border-orange-500 bg-orange-500/10 text-orange-300',
+    'border-orange-500 bg-orange-500/10 text-orange-700 dark:text-orange-300',
 };
 
 export function NuevoTicketModal({
@@ -195,7 +195,7 @@ export function NuevoTicketModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-scrim backdrop-blur-sm"
             onClick={handleClose}
           />
 
@@ -226,19 +226,19 @@ export function NuevoTicketModal({
                 duration: 0.2,
                 ease: 'easeOut',
               }}
-              className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-[#0d0d0d] shadow-2xl"
+              className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-float"
               onClick={(event) =>
                 event.stopPropagation()
               }
             >
               {/* Encabezado */}
-              <div className="flex flex-shrink-0 items-center justify-between border-b border-zinc-800 px-5 py-4 sm:px-6 sm:py-5">
+              <div className="flex flex-shrink-0 items-center justify-between border-b border-line px-5 py-4 sm:px-6 sm:py-5">
                 <div className="pr-4">
-                  <h2 className="text-lg font-bold tracking-tight text-white">
+                  <h2 className="text-lg font-bold tracking-tight text-ink">
                     Nuevo ticket de soporte
                   </h2>
 
-                  <p className="mt-0.5 text-xs text-zinc-500">
+                  <p className="mt-0.5 text-xs text-ink-3">
                     Describí el problema o
                     consulta con el mayor detalle
                     posible.
@@ -250,7 +250,7 @@ export function NuevoTicketModal({
                   onClick={handleClose}
                   disabled={submitting}
                   aria-label="Cerrar"
-                  className="flex-shrink-0 rounded-lg p-1 text-zinc-600 transition-colors hover:bg-zinc-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex-shrink-0 rounded-lg p-1 text-ink-3 transition-colors hover:bg-surface-3 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <X size={18} />
                 </button>
@@ -267,16 +267,16 @@ export function NuevoTicketModal({
                     <div className="flex items-start gap-2.5">
                       <AlertTriangle
                         size={18}
-                        className="mt-0.5 flex-shrink-0 text-yellow-400"
+                        className="mt-0.5 flex-shrink-0 text-yellow-700 dark:text-yellow-400"
                       />
 
                       <div>
-                        <p className="text-sm font-semibold text-yellow-300">
+                        <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">
                           Fuera del horario de
                           atención
                         </p>
 
-                        <p className="mt-1 text-xs leading-relaxed text-zinc-400">
+                        <p className="mt-1 text-xs leading-relaxed text-ink-3">
                           Podés enviar el ticket
                           normalmente. Será
                           registrado ahora y
@@ -287,7 +287,7 @@ export function NuevoTicketModal({
                           .
                         </p>
 
-                        <p className="mt-2 text-[11px] text-zinc-600">
+                        <p className="mt-2 text-[11px] text-ink-3">
                           Horario de Argentina
                         </p>
                       </div>
@@ -298,11 +298,11 @@ export function NuevoTicketModal({
                 {/* Aviso dentro del horario */}
                 {horarioSoporte.abierto && (
                   <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-3">
-                    <p className="text-sm font-semibold text-green-300">
+                    <p className="text-sm font-semibold text-green-700 dark:text-green-300">
                       Soporte en línea
                     </p>
 
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs text-ink-3">
                       Actualmente nos encontramos
                       dentro del horario de
                       atención.
@@ -314,10 +314,10 @@ export function NuevoTicketModal({
                 <div>
                   <label
                     htmlFor="ticket-asunto"
-                    className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-zinc-400"
+                    className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-ink-3"
                   >
                     Asunto{' '}
-                    <span className="font-normal normal-case tracking-normal text-zinc-600">
+                    <span className="font-normal normal-case tracking-normal text-ink-3">
                       ({asunto.length}/120)
                     </span>
                   </label>
@@ -355,17 +355,17 @@ export function NuevoTicketModal({
                         : undefined
                     }
                     className={cn(
-                      'w-full rounded-lg border bg-zinc-900 px-3 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-zinc-600 disabled:cursor-not-allowed disabled:opacity-60',
+                      'w-full rounded-lg border bg-surface-2 px-3 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-3 disabled:cursor-not-allowed disabled:opacity-60',
                       errores.asunto
                         ? 'border-red-500 focus:border-red-400'
-                        : 'border-zinc-700 focus:border-zinc-500'
+                        : 'border-line focus:border-line-strong'
                     )}
                   />
 
                   {errores.asunto && (
                     <p
                       id="ticket-asunto-error"
-                      className="mt-1 text-xs text-red-400"
+                      className="mt-1 text-xs text-red-700 dark:text-red-400"
                     >
                       {errores.asunto}
                     </p>
@@ -374,7 +374,7 @@ export function NuevoTicketModal({
 
                 {/* Categoría */}
                 <div>
-                  <p className="mb-2 block text-xs font-semibold uppercase tracking-widest text-zinc-400">
+                  <p className="mb-2 block text-xs font-semibold uppercase tracking-widest text-ink-3">
                     Categoría
                   </p>
 
@@ -408,7 +408,7 @@ export function NuevoTicketModal({
                               ? CATEGORIA_ACTIVE[
                                   opcion.value
                                 ]
-                              : 'border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'
+                              : 'border-line bg-surface-2/50 text-ink-3 hover:border-line-strong hover:text-ink-2'
                           )}
                         >
                           <span className="text-lg leading-none">
@@ -430,7 +430,7 @@ export function NuevoTicketModal({
                   </div>
 
                   {errores.categoria && (
-                    <p className="mt-1 text-xs text-red-400">
+                    <p className="mt-1 text-xs text-red-700 dark:text-red-400">
                       {errores.categoria}
                     </p>
                   )}
@@ -440,10 +440,10 @@ export function NuevoTicketModal({
                 <div>
                   <label
                     htmlFor="ticket-descripcion"
-                    className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-zinc-400"
+                    className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-ink-3"
                   >
                     Descripción{' '}
-                    <span className="font-normal normal-case tracking-normal text-zinc-600">
+                    <span className="font-normal normal-case tracking-normal text-ink-3">
                       ({descripcion.length}/1000)
                     </span>
                   </label>
@@ -483,17 +483,17 @@ export function NuevoTicketModal({
                         : undefined
                     }
                     className={cn(
-                      'w-full resize-none rounded-lg border bg-zinc-900 px-3 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-zinc-600 disabled:cursor-not-allowed disabled:opacity-60',
+                      'w-full resize-none rounded-lg border bg-surface-2 px-3 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-3 disabled:cursor-not-allowed disabled:opacity-60',
                       errores.descripcion
                         ? 'border-red-500 focus:border-red-400'
-                        : 'border-zinc-700 focus:border-zinc-500'
+                        : 'border-line focus:border-line-strong'
                     )}
                   />
 
                   {errores.descripcion && (
                     <p
                       id="ticket-descripcion-error"
-                      className="mt-1 text-xs text-red-400"
+                      className="mt-1 text-xs text-red-700 dark:text-red-400"
                     >
                       {errores.descripcion}
                     </p>

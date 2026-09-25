@@ -87,10 +87,10 @@ export default function AdministracionPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Shield size={20} className="text-[#676B67]" />
+          <Shield size={20} className="text-ink-3" />
           <div>
-            <h1 className="text-white font-bold text-xl">Administración</h1>
-            <p className="text-[#676B67] text-xs mt-0.5">
+            <h1 className="text-ink font-bold text-xl">Administración</h1>
+            <p className="text-ink-3 text-xs mt-0.5">
               {tab === 'equipo' ? `Gestión de usuarios - ${usuarios.length} usuarios registrados` : 'Datos generales del negocio'}
             </p>
           </div>
@@ -103,11 +103,11 @@ export default function AdministracionPage() {
         )}
       </div>
 
-      <div className="flex rounded-xl bg-[#0d110e] p-1 w-fit">
-        <button onClick={() => setTab('equipo')} className={`flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors ${tab === 'equipo' ? 'bg-[#7ed957] text-[#0e0e0e]' : 'text-[#829487] hover:text-white'}`}>
+      <div className="flex rounded-xl bg-surface p-1 w-fit">
+        <button onClick={() => setTab('equipo')} className={`flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors ${tab === 'equipo' ? 'bg-brand text-on-brand' : 'text-ink-3 hover:text-ink'}`}>
           <Shield size={15} />Equipo
         </button>
-        <button onClick={() => setTab('negocio')} className={`flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors ${tab === 'negocio' ? 'bg-[#7ed957] text-[#0e0e0e]' : 'text-[#829487] hover:text-white'}`}>
+        <button onClick={() => setTab('negocio')} className={`flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors ${tab === 'negocio' ? 'bg-brand text-on-brand' : 'text-ink-3 hover:text-ink'}`}>
           <Building2 size={15} />Negocio
         </button>
       </div>
@@ -148,26 +148,26 @@ export default function AdministracionPage() {
 function NegocioTab() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      <div className="bg-[#101010] border border-[#252525] rounded-xl p-6">
-        <h2 className="text-xl font-semibold text-white mb-4">Información del negocio</h2>
+      <div className="bg-surface border border-line rounded-xl p-6">
+        <h2 className="text-xl font-semibold text-ink mb-4">Información del negocio</h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-[#676b67] text-sm mb-2">Nombre del negocio</label>
-            <input type="text" defaultValue="Vase Rest" className="w-full bg-[#0d0d0d] border border-[#252525] rounded-lg px-4 py-2 text-white" />
+            <label className="block text-ink-3 text-sm mb-2">Nombre del negocio</label>
+            <input type="text" defaultValue="Vase Rest" className="w-full bg-surface border border-line rounded-lg px-4 py-2 text-ink" />
           </div>
           <div>
-            <label className="block text-[#676b67] text-sm mb-2">Dirección</label>
-            <input type="text" defaultValue="Calle Principal 123" className="w-full bg-[#0d0d0d] border border-[#252525] rounded-lg px-4 py-2 text-white" />
+            <label className="block text-ink-3 text-sm mb-2">Dirección</label>
+            <input type="text" defaultValue="Calle Principal 123" className="w-full bg-surface border border-line rounded-lg px-4 py-2 text-ink" />
           </div>
           <div>
-            <label className="block text-[#676b67] text-sm mb-2">Teléfono</label>
-            <input type="text" defaultValue="+54 9 11 1234-5678" className="w-full bg-[#0d0d0d] border border-[#252525] rounded-lg px-4 py-2 text-white" />
+            <label className="block text-ink-3 text-sm mb-2">Teléfono</label>
+            <input type="text" defaultValue="+54 9 11 1234-5678" className="w-full bg-surface border border-line rounded-lg px-4 py-2 text-ink" />
           </div>
         </div>
       </div>
 
-      <div className="bg-[#101010] border border-amber-500/20 rounded-xl p-6">
-        <h2 className="text-xl font-semibold text-white mb-2">Vista previa</h2>
+      <div className="bg-surface border border-amber-500/20 rounded-xl p-6">
+        <h2 className="text-xl font-semibold text-ink mb-2">Vista previa</h2>
         <p className="text-sm text-amber-300/80">
           Esta sección todavía no está conectada a datos reales — los cambios que hagas acá no se guardan.
         </p>

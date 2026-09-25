@@ -19,10 +19,10 @@ export const StockHeader = ({ onOpenModal }: StockHeaderProps) => {
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <Package size={24} className="text-white" />
-          <h1 className="text-2xl font-bold text-white">Inventario</h1>
+          <Package size={24} className="text-ink" />
+          <h2 className="text-lg font-medium text-ink">Ingredientes y productos</h2>
         </div>
-        <p className="text-[#676B67] text-sm">
+        <p className="text-ink-3 text-sm">
           Gestiona tu inventario de ingredientes y productos
         </p>
       </div>
@@ -30,12 +30,12 @@ export const StockHeader = ({ onOpenModal }: StockHeaderProps) => {
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-4 text-sm">
           <div className="text-right">
-            <p className="text-2xl font-bold text-white">{totalIngredients}</p>
-            <p className="text-[#676B67] text-xs">Productos totales</p>
+            <p className="text-2xl font-bold text-ink">{totalIngredients}</p>
+            <p className="text-ink-3 text-xs">Productos totales</p>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-yellow-400">{lowStockIngredients.length}</p>
-            <p className="text-[#676B67] text-xs">Bajo stock</p>
+            <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-400">{lowStockIngredients.length}</p>
+            <p className="text-ink-3 text-xs">Bajo stock</p>
           </div>
         </div>
 
@@ -43,7 +43,7 @@ export const StockHeader = ({ onOpenModal }: StockHeaderProps) => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onOpenModal}
-          className="flex items-center gap-2 px-4 py-2.5 bg-white text-black rounded-xl text-sm font-bold hover:bg-[#e5e5e5] transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-brand text-on-brand rounded-xl text-sm font-bold hover:bg-brand-strong transition-colors"
         >
           <Plus size={18} />
           Añadir producto

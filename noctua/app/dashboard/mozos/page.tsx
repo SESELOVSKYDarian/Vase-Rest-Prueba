@@ -3,8 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import { useMozosStore } from '@/store/mozosStore';
-import { Plus, Edit2, Trash2, Users, RefreshCcw, Clock, MapPin, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, RefreshCcw, Clock, MapPin, Loader2 } from 'lucide-react';
 import type { Mozo, NombreZona, NombreTurno } from '@/types/mozos';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 const ZONAS: NombreZona[] = ['Zona Terraza', 'Zona Principal', 'Zona Cava', 'Zona Privada'];
 const TURNOS: NombreTurno[] = ['Turno Mañana', 'Turno Tarde', 'Turno Vespertino'];
@@ -134,23 +135,23 @@ export default function MozosPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Gestión de Mozos</h1>
-            <p className="text-[#676B67]">Administra los mozos, turnos y zonas</p>
+            <h1 className="text-3xl font-bold text-ink mb-2">Gestión de Mozos</h1>
+            <p className="text-ink-3">Administra los mozos, turnos y zonas</p>
           </div>
           {showSavedIndicator && (
             <div className="transition-all duration-300">
-              <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-300 text-sm font-semibold">✓ Guardado</span>
+              <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-700 dark:text-green-300 text-sm font-semibold">✓ Guardado</span>
             </div>
           )}
           {error && (
             <div className="transition-all duration-300">
-              <span className="px-3 py-1 rounded-full bg-red-500/20 text-red-300 text-sm font-semibold">{error}</span>
+              <span className="px-3 py-1 rounded-full bg-red-500/20 text-red-700 dark:text-red-300 text-sm font-semibold">{error}</span>
             </div>
           )}
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="px-4 py-2 rounded-lg bg-violet-600 text-white flex items-center gap-2 hover:bg-violet-700 disabled:opacity-50"
+          className="px-4 py-2 rounded-lg bg-brand text-on-brand flex items-center gap-2 hover:bg-brand-strong disabled:opacity-50"
           disabled={isLoading}
         >
           {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
@@ -160,13 +161,13 @@ export default function MozosPage() {
 
       {/* Daily Overrides */}
       {selectedDate && (
-        <div className="bg-[#080808] border border-[#1a1a1a] rounded-xl p-6">
+        <div className="bg-canvas border border-line rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <Clock size={20} className="text-violet-400" />
+              <Clock size={20} className="text-brand" />
               <div>
-                <h2 className="text-xl font-bold text-white">Cambios del día</h2>
-                <p className="text-[#676B67]">Modifica la asignación para este día y turno</p>
+                <h2 className="text-xl font-bold text-ink">Cambios del día</h2>
+                <p className="text-ink-3">Modifica la asignación para este día y turno</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -174,12 +175,12 @@ export default function MozosPage() {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="bg-[#151515] border border-[#252525] rounded-lg px-3 py-2 text-white"
+                className="bg-surface-2 border border-line rounded-lg px-3 py-2 text-ink"
               />
               <select
                 value={selectedTurno}
                 onChange={(e) => setSelectedTurno(e.target.value as NombreTurno)}
-                className="bg-[#151515] border border-[#252525] rounded-lg px-3 py-2 text-white"
+                className="bg-surface-2 border border-line rounded-lg px-3 py-2 text-ink"
               >
                 {TURNOS.map((turno) => (
                   <option key={turno} value={turno}>{turno}</option>
@@ -204,35 +205,35 @@ export default function MozosPage() {
               const originalMozo = getCicloMozo(zona, selectedTurno);
 
               return (
-                <div key={zona} className="bg-[#151515] border border-[#252525] rounded-lg p-4">
+                <div key={zona} className="bg-surface-2 border border-line rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <MapPin size={16} className="text-violet-400" />
-                    <p className="text-white font-semibold">{zona}</p>
+                    <MapPin size={16} className="text-brand" />
+                    <p className="text-ink font-semibold">{zona}</p>
                   </div>
 
                   {overrideMozo && (
-                    <div className="mb-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs">
+                    <div className="mb-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs">
                       Reemplazo activo
                     </div>
                   )}
 
                   <div className="mb-3">
-                    <p className="text-[#676B67] text-xs uppercase">Original:</p>
+                    <p className="text-ink-3 text-xs uppercase">Original:</p>
                     {originalMozo ? (
-                      <p className="text-white">{originalMozo.nombre} {originalMozo.apellido}</p>
+                      <p className="text-ink">{originalMozo.nombre} {originalMozo.apellido}</p>
                     ) : (
-                      <p className="text-[#676B67]">No asignado</p>
+                      <p className="text-ink-3">No asignado</p>
                     )}
                   </div>
 
                   <div>
-                    <p className="text-[#676B67] text-xs uppercase mb-1">
+                    <p className="text-ink-3 text-xs uppercase mb-1">
                       {overrideMozo ? 'Reemplazo:' : 'Cambiar por:'}
                     </p>
                     <select
                       value={currentOverride || ''}
                       onChange={(e) => setDailyOverride(selectedDate, selectedTurno, zona, e.target.value || null)}
-                      className="w-full bg-[#080808] border border-[#252525] rounded-lg px-3 py-2 text-white"
+                      className="w-full bg-canvas border border-line rounded-lg px-3 py-2 text-ink"
                     >
                       <option value="">Restablecer al original</option>
                       {mozos
@@ -255,36 +256,36 @@ export default function MozosPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {isLoading && mozos.length === 0 ? (
           <div className="col-span-full flex items-center justify-center py-12">
-            <Loader2 size={64} className="text-[#676B67] animate-spin" />
+            <Loader2 size={64} className="text-ink-3 animate-spin" />
           </div>
         ) : (
           mozos.map((mozo) => (
             <div
               key={mozo.id}
-              className={`bg-[#151515] border rounded-xl p-6 transition-all ${
-                mozo.activo ? 'border-[#252525] hover:border-violet-500/50' : 'border-[#252525] opacity-60'
+              className={`bg-surface-2 border rounded-xl p-6 transition-all ${
+                mozo.activo ? 'border-line hover:border-brand/50' : 'border-line opacity-60'
               }`}
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold text-xl">
+                  <div className="w-12 h-12 rounded-full bg-brand flex items-center justify-center text-on-brand font-bold text-xl">
                     {mozo.nombre.charAt(0)}{mozo.apellido.charAt(0)}
                   </div>
                   <div>
-                    <h3 className="text-white font-semibold text-lg">{mozo.nombre} {mozo.apellido}</h3>
-                    <p className="text-[#676B67] text-sm">{mozo.zona}</p>
+                    <h3 className="text-ink font-semibold text-lg">{mozo.nombre} {mozo.apellido}</h3>
+                    <p className="text-ink-3 text-sm">{mozo.zona}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleOpenModal(mozo)}
-                    className="text-[#676B67] hover:text-white"
+                    className="text-ink-3 hover:text-ink"
                   >
                     <Edit2 size={18} />
                   </button>
                   <button
                     onClick={() => handleDeleteMozo(mozo)}
-                    className="text-[#676B67] hover:text-red-400"
+                    className="text-ink-3 hover:text-red-600"
                     disabled={isDeleting === mozo.id}
                   >
                     {isDeleting === mozo.id ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
@@ -294,12 +295,12 @@ export default function MozosPage() {
 
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#676B67]">Posición Ciclo:</span>
-                  <span className="text-white">#{mozo.posicionCiclo}</span>
+                  <span className="text-ink-3">Posición Ciclo:</span>
+                  <span className="text-ink">#{mozo.posicionCiclo}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#676B67]">Estado:</span>
-                  <span className={`font-semibold ${mozo.activo ? 'text-green-400' : 'text-red-400'}`}>
+                  <span className="text-ink-3">Estado:</span>
+                  <span className={`font-semibold ${mozo.activo ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
                     {mozo.activo ? 'Activo' : 'Inactivo'}
                   </span>
                 </div>
@@ -309,24 +310,21 @@ export default function MozosPage() {
         )}
 
         {!isLoading && mozos.length === 0 && (
-          <div className="col-span-full text-center py-12">
-            <Users size={64} className="text-[#676B67] mx-auto mb-4" />
-            <p className="text-[#676B67]">No hay mozos registrados</p>
-          </div>
+          <EmptyState className="col-span-full" title="Todavía no hay mozos" hint="Sumá al equipo de salón para asignarlos por zona y turno." />
         )}
       </div>
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-end z-50">
-          <div className="w-full max-w-lg h-full bg-[#080808] border-l border-[#1a1a1a] p-8 overflow-y-auto">
+        <div className="fixed inset-0 bg-scrim flex items-center justify-end z-50">
+          <div className="w-full max-w-lg h-full bg-canvas border-l border-line p-8 overflow-y-auto">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-ink">
                 {editingMozo ? 'Editar Mozo' : 'Nuevo Mozo'}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-[#676B67] hover:text-white"
+                className="text-ink-3 hover:text-ink"
               >
                 <Trash2 size={24} />
               </button>
@@ -334,29 +332,29 @@ export default function MozosPage() {
 
             <div className="space-y-6">
               <div>
-                <label className="block text-sm text-[#676B67] mb-2">Nombre</label>
+                <label className="block text-sm text-ink-3 mb-2">Nombre</label>
                 <input
                   type="text"
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                  className="w-full bg-[#101010] border border-[#252525] rounded-lg px-4 py-3 text-white"
+                  className="w-full bg-surface border border-line rounded-lg px-4 py-3 text-ink"
                 />
               </div>
               <div>
-                <label className="block text-sm text-[#676B67] mb-2">Apellido</label>
+                <label className="block text-sm text-ink-3 mb-2">Apellido</label>
                 <input
                   type="text"
                   value={formData.apellido}
                   onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
-                  className="w-full bg-[#101010] border border-[#252525] rounded-lg px-4 py-3 text-white"
+                  className="w-full bg-surface border border-line rounded-lg px-4 py-3 text-ink"
                 />
               </div>
               <div>
-                <label className="block text-sm text-[#676B67] mb-2">Zona</label>
+                <label className="block text-sm text-ink-3 mb-2">Zona</label>
                 <select
                   value={formData.zona}
                   onChange={(e) => setFormData({ ...formData, zona: e.target.value as NombreZona })}
-                  className="w-full bg-[#101010] border border-[#252525] rounded-lg px-4 py-3 text-white"
+                  className="w-full bg-surface border border-line rounded-lg px-4 py-3 text-ink"
                 >
                   {ZONAS.map((zona) => (
                     <option key={zona} value={zona}>{zona}</option>
@@ -364,14 +362,14 @@ export default function MozosPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-[#676B67] mb-2">Posición en Ciclo (0-11)</label>
+                <label className="block text-sm text-ink-3 mb-2">Posición en Ciclo (0-11)</label>
                 <input
                   type="number"
                   min="0"
                   max="11"
                   value={formData.posicionCiclo}
                   onChange={(e) => setFormData({ ...formData, posicionCiclo: parseInt(e.target.value) || 0 })}
-                  className="w-full bg-[#101010] border border-[#252525] rounded-lg px-4 py-3 text-white"
+                  className="w-full bg-surface border border-line rounded-lg px-4 py-3 text-ink"
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -382,12 +380,12 @@ export default function MozosPage() {
                   onChange={(e) => setFormData({ ...formData, activo: e.target.checked })}
                   className="w-4 h-4"
                 />
-                <label htmlFor="activo" className="text-white">Activo</label>
+                <label htmlFor="activo" className="text-ink">Activo</label>
               </div>
 
               <button
                 onClick={handleSaveMozo}
-                className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2"
+                className="w-full bg-brand hover:bg-brand-strong text-on-brand font-bold py-4 rounded-xl flex items-center justify-center gap-2"
                 disabled={isLoading}
               >
                 {isLoading ? <Loader2 size={18} className="animate-spin" /> : null}
@@ -400,26 +398,26 @@ export default function MozosPage() {
 
       {/* Delete Confirmation Modal */}
       {mozoToDelete && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="w-full max-w-md bg-[#080808] border border-[#1a1a1a] rounded-2xl p-8">
+        <div className="fixed inset-0 bg-scrim flex items-center justify-center z-50">
+          <div className="w-full max-w-md bg-canvas border border-line rounded-2xl p-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-red-400">
+              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-red-700 dark:text-red-400">
                 <Trash2 size={24} />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">Eliminar Mozo</h3>
-                <p className="text-[#676B67]">Esta acción no se puede deshacer.</p>
+                <h3 className="text-xl font-bold text-ink">Eliminar Mozo</h3>
+                <p className="text-ink-3">Esta acción no se puede deshacer.</p>
               </div>
             </div>
 
-            <p className="text-white mb-8">
-              ¿Estás seguro de que quieres eliminar a <span className="font-semibold text-violet-400">{mozoToDelete.nombre} {mozoToDelete.apellido}</span>?
+            <p className="text-ink mb-8">
+              ¿Estás seguro de que quieres eliminar a <span className="font-semibold text-brand">{mozoToDelete.nombre} {mozoToDelete.apellido}</span>?
             </p>
 
             <div className="flex gap-3">
               <button
                 onClick={() => setMozoToDelete(null)}
-                className="flex-1 bg-[#151515] hover:bg-[#252525] text-white font-semibold py-3 rounded-xl transition"
+                className="flex-1 bg-surface-2 hover:bg-surface-3 text-ink font-semibold py-3 rounded-xl transition"
                 disabled={isDeleting === mozoToDelete.id}
               >
                 Cancelar

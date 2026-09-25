@@ -23,15 +23,15 @@ function PedidoSelectorBase({
   onSeleccionarPedido,
 }: PedidoSelectorProps) {
   return (
-    <section className="rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5">
+    <section className="rounded-2xl border border-line bg-canvas p-5">
       <div className="flex items-center gap-2 mb-4">
-        <Receipt size={18} className="text-[#676B67]" />
-        <h2 className="font-black tracking-widest uppercase text-sm">Seleccionar pedido</h2>
+        <Receipt size={18} className="text-ink-3" />
+        <h2 className="text-base text-ink font-medium">Seleccionar pedido</h2>
       </div>
 
       {pedidos.length === 0 ? (
-        <div className="rounded-xl border border-[#1a1a1a] bg-black/40 p-6 text-center">
-          <p className="text-[#676B67] font-semibold">No hay pedidos listos para cobrar.</p>
+        <div className="rounded-xl border border-line bg-surface-2 p-6 text-center">
+          <p className="text-ink-3 font-semibold">No hay pedidos listos para cobrar.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -47,11 +47,11 @@ function PedidoSelectorBase({
                   onClick={() => onSeleccionarPedido(pedido.id)}
                   className={cn(
                     'flex flex-col gap-2 rounded-xl border p-4 text-left transition-colors',
-                    seleccionado ? 'border-white bg-white/5' : 'border-[#2a2a2a] bg-black hover:border-[#3a3a3a]'
+                    seleccionado ? 'border-brand bg-brand-soft ring-1 ring-brand' : 'border-line bg-surface hover:border-line-strong'
                   )}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-black">Mesa {pedido.mesa?.numero || '-'}</span>
+                    <span className="text-lg font-semibold">Mesa {pedido.mesa?.numero || '-'}</span>
                     <span className="font-mono text-sm font-bold">{formatearARS(pedido.total)}</span>
                   </div>
                   <StatusChip tone={TONO_ESTADO_COCINA[pedido.estado as EstadoCocina] ?? 'info'} label={pedido.estado} />
@@ -61,25 +61,25 @@ function PedidoSelectorBase({
           </div>
 
           {pedidoSeleccionado && (
-            <div className="rounded-2xl border border-[#1a1a1a] bg-black/50 p-4">
+            <div className="rounded-2xl border border-line bg-surface-2/60 p-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <div>
-                  <h3 className="text-xl font-black">Mesa {pedidoSeleccionado.mesa?.numero || '-'}</h3>
-                  <p className="text-xs text-[#676B67] uppercase tracking-widest">
+                  <h3 className="text-xl font-semibold">Mesa {pedidoSeleccionado.mesa?.numero || '-'}</h3>
+                  <p className="text-xs text-ink-3 uppercase tracking-widest">
                     {pedidoSeleccionado.mesa?.zona || 'Sin zona'} | {pedidoSeleccionado.estado}
                   </p>
                 </div>
-                <p className="text-2xl font-black font-mono">{formatearARS(pedidoSeleccionado.total)}</p>
+                <p className="text-2xl font-semibold font-mono">{formatearARS(pedidoSeleccionado.total)}</p>
               </div>
 
               <div className="space-y-2">
                 {pedidoSeleccionado.items.map((item: PedidoFacturaItem) => (
-                  <div key={item.id} className="flex items-center justify-between gap-4 border-b border-[#111] pb-2">
+                  <div key={item.id} className="flex items-center justify-between gap-4 border-b border-line pb-2">
                     <div>
                       <p className="text-sm font-bold">{item.cantidad} x {item.producto?.nombre || 'Producto'}</p>
-                      {item.notas && <p className="text-xs text-yellow-400">{item.notas}</p>}
+                      {item.notas && <p className="text-xs text-yellow-700 dark:text-yellow-400">{item.notas}</p>}
                     </div>
-                    <p className="text-sm font-mono text-[#BCB9B9]">{formatearARS(item.subtotal)}</p>
+                    <p className="text-sm font-mono text-ink-2">{formatearARS(item.subtotal)}</p>
                   </div>
                 ))}
               </div>

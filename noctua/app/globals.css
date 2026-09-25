@@ -1,81 +1,344 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@100..900&family=Geist:wght@100..900&family=Roboto:wght@100;300;400;500;700;900&family=Poppins:wght@100;200;300;400;500;600;700;800;900&family=Lato:wght@100;300;400;700;900&family=Nunito:wght@200..1000&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+@import "@fontsource-variable/instrument-sans/wght.css";
+@import "@fontsource/instrument-serif/400.css";
+@import "@fontsource/instrument-serif/400-italic.css";
 
 @import "tailwindcss";
 
+/* `dark:` sigue el tema elegido en la app (data-theme), no el del sistema operativo. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Sistema de diseño Vase Rest — "mesa servida"
+   Lienzo cálido tipo lino, texto tinta y UN solo acento (verde salvia de la marca),
+   usado con moderación (60-30-10). Neutros teñidos hacia el tono cálido de la marca:
+   nunca gris puro ni negro/blanco puro. Profundidad en oscuro por superficie, no sombra.
+   ───────────────────────────────────────────────────────────────────────────── */
+
 :root {
-  --color-primary: #7ed957;
-  --color-accent: #b7f397;
-  --color-background: #080808;
-  --color-surface: #151515;
-  --color-text: #ffffff;
-  --color-textSecondary: #676b67;
-  --color-danger: #dc2626;
-  --color-success: #7ed957;
-  --color-warning: #fbbf24;
-  --font-family: 'IBM Plex Sans';
-  --font-size-base: 16px;
-  --heading-weight: 700;
+  /* Acento de marca: tono + croma. Se puede cambiar desde Diseño (ver config/theme.ts);
+     los niveles de luminosidad los fija cada modo, así el contraste nunca se rompe. */
+  --brand-h: 150;
+  --brand-c: 0.115;
+}
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --canvas: oklch(0.972 0.007 85);
+  --surface: oklch(0.994 0.003 85);
+  --surface-2: oklch(0.952 0.008 85);
+  --surface-3: oklch(0.918 0.01 85);
+  --line: oklch(0.902 0.01 85);
+  --line-strong: oklch(0.835 0.013 85);
+
+  --ink: oklch(0.235 0.014 70);
+  --ink-2: oklch(0.43 0.014 70);
+  --ink-3: oklch(0.545 0.012 70);
+
+  --brand: oklch(0.53 var(--brand-c) var(--brand-h));
+  --brand-strong: oklch(0.43 calc(var(--brand-c) * 0.92) var(--brand-h));
+  --brand-soft: oklch(0.935 calc(var(--brand-c) * 0.35) var(--brand-h));
+  --on-brand: oklch(0.985 0.012 var(--brand-h));
+
+  --scrim: oklch(0.2 0.015 70 / 0.42);
+
+  --shadow-sm: 0 1px 2px oklch(0.3 0.02 70 / 0.06);
+  --shadow-md: 0 1px 2px oklch(0.3 0.02 70 / 0.05), 0 6px 18px -6px oklch(0.3 0.02 70 / 0.1);
+  --shadow-lg: 0 2px 6px oklch(0.3 0.02 70 / 0.05), 0 24px 48px -16px oklch(0.3 0.02 70 / 0.18);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --canvas: oklch(0.172 0.008 70);
+  --surface: oklch(0.205 0.009 70);
+  --surface-2: oklch(0.238 0.01 70);
+  --surface-3: oklch(0.275 0.011 70);
+  --line: oklch(0.285 0.011 70);
+  --line-strong: oklch(0.355 0.012 70);
+
+  --ink: oklch(0.948 0.008 85);
+  --ink-2: oklch(0.795 0.01 85);
+  --ink-3: oklch(0.655 0.011 85);
+
+  --brand: oklch(0.755 calc(var(--brand-c) * 1.08) var(--brand-h));
+  --brand-strong: oklch(0.84 calc(var(--brand-c) * 0.87) var(--brand-h));
+  --brand-soft: oklch(0.29 calc(var(--brand-c) * 0.4) var(--brand-h));
+  --on-brand: oklch(0.2 0.03 var(--brand-h));
+
+  --scrim: oklch(0.08 0.01 70 / 0.62);
+
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.3);
+  --shadow-md: 0 1px 2px oklch(0 0 0 / 0.3), 0 8px 20px -8px oklch(0 0 0 / 0.5);
+  --shadow-lg: 0 2px 6px oklch(0 0 0 / 0.3), 0 24px 48px -16px oklch(0 0 0 / 0.6);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-on-brand: var(--on-brand);
+  --color-scrim: var(--scrim);
+
+  --shadow-soft: var(--shadow-sm);
+  --shadow-card: var(--shadow-md);
+  --shadow-float: var(--shadow-lg);
 }
 
 @theme {
-  --font-display: 'Bebas Neue', sans-serif;
-  --font-sans: 'IBM Plex Sans', sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-mono: "Instrument Sans Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.375rem;
+
+  /* Curvas: ease-out fuerte para entradas/salidas, in-out para movimiento en pantalla,
+     curva tipo iOS para drawers. Nunca ease-in en UI. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --animate-rise: rise 420ms var(--ease-out) both;
+  --animate-fade: fade 240ms var(--ease-out) both;
+  --animate-draw: draw 900ms var(--ease-out) both;
+  --animate-breathe: breathe 2.4s ease-in-out infinite;
 }
 
-* {
-  box-sizing: border-box;
+/* Fuera de @theme para que existan siempre (las usan utilidades propias, no solo animate-*) */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes draw {
+  from { stroke-dashoffset: var(--path-length, 1); }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
 }
 
-html, body {
-  background-color: var(--color-background);
-  color: var(--color-text);
-  font-family: var(--font-family, 'IBM Plex Sans'), sans-serif;
-  font-size: var(--font-size-base);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Alias de los tokens viejos: pantallas que todavía usan var(--color-*) inline
+   siguen funcionando y adoptan el tema actual. */
+:root {
+  --color-background: var(--canvas);
+  --color-surface: var(--surface);
+  --color-text: var(--ink);
+  --color-textSecondary: var(--ink-3);
+  --color-text-secondary: var(--ink-3);
+  --color-primary: var(--brand);
+  --color-accent: var(--brand-strong);
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: var(--heading-weight);
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.5;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 240ms ease, color 240ms ease;
+  }
+
+  ::selection {
+    background: color-mix(in oklch, var(--brand) 22%, transparent);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  label[for],
+  select {
+    cursor: pointer;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--ink-3);
+    opacity: 1;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  input,
+  select,
+  textarea {
+    color-scheme: inherit;
+  }
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-::-webkit-scrollbar-track {
-  background: #0a0a0a;
-}
-::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
-  border-radius: 2px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #3a3a3a;
+/* Títulos de página: sin capa, a propósito — gana sobre utilidades sueltas (text-2xl,
+   uppercase, tracking-widest, font-black) que cada pantalla fue poniendo por su cuenta,
+   y deja a TODAS las pantallas con la misma jerarquía editorial. La serif solo tiene
+   peso 400: sin síntesis de negrita falsa. */
+h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: clamp(1.9rem, 1.45rem + 1.1vw, 2.6rem);
+  line-height: 1.04;
+  letter-spacing: -0.012em;
+  text-transform: none;
+  color: var(--ink);
 }
 
-/* Font utility classes */
+/* Precios, contadores y tablas: números tabulares en la misma sans, no monoespaciada. */
+.font-mono,
+.tabular {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
 .font-display {
   font-family: var(--font-display);
-}
-.font-mono {
-  font-family: var(--font-mono);
+  font-weight: 400;
+  font-synthesis: none;
 }
 
-/* KDS pulse animation for overdue timers */
-@keyframes pulse-red {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+/* Scrollbars finos y teñidos */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
 }
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Presión táctil: respuesta inmediata (on press, no on release). */
+@utility pressable {
+  transition: transform 140ms var(--ease-out), background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+}
+
+/* Entrada escalonada de hijos: cada hijo sube 10px con 45ms de desfase. */
+@utility stagger {
+  & > * {
+    animation: rise 420ms var(--ease-out) both;
+  }
+  & > *:nth-child(1) { animation-delay: 0ms; }
+  & > *:nth-child(2) { animation-delay: 45ms; }
+  & > *:nth-child(3) { animation-delay: 90ms; }
+  & > *:nth-child(4) { animation-delay: 135ms; }
+  & > *:nth-child(5) { animation-delay: 180ms; }
+  & > *:nth-child(6) { animation-delay: 225ms; }
+  & > *:nth-child(7) { animation-delay: 270ms; }
+  & > *:nth-child(n + 8) { animation-delay: 300ms; }
+}
+
+/* Superficie base de tarjeta: papel sobre lino, borde hairline, sombra casi invisible. */
+@utility card {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Ilustraciones de línea (components/ui/Illustrations.tsx) */
+.illustration-stroke {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 1100ms var(--ease-out) forwards;
+  animation-delay: var(--d, 0ms);
+}
+.illustration-steam path {
+  animation: steam 3.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: bottom center;
+}
+.illustration-steam path:nth-child(2) { animation-delay: 0.5s; }
+.illustration-steam path:nth-child(3) { animation-delay: 1s; }
+.illustration-pop {
+  animation: pop 500ms var(--ease-out) 700ms both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes steam {
+  0%, 100% { opacity: 0.15; transform: translateY(4px) scaleY(0.92); }
+  50% { opacity: 0.9; transform: translateY(-3px) scaleY(1); }
+}
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ThemeToggle: sol ↔ luna */
+.theme-toggle svg * {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 420ms var(--ease-out), opacity 300ms var(--ease-out);
+}
+.theme-toggle__cut {
+  transform: translate(12px, -12px);
+}
+.theme-toggle[data-mode="dark"] .theme-toggle__cut {
+  transform: translate(4.5px, -4.5px);
+}
+.theme-toggle[data-mode="dark"] .theme-toggle__core {
+  transform: scale(1.55);
+}
+.theme-toggle[data-mode="dark"] .theme-toggle__rays {
+  opacity: 0;
+  transform: rotate(-40deg) scale(0.6);
+}
+
+/* Contenedores con scroll en los timers vencidos del KDS */
 .animate-pulse-red {
-  animation: pulse-red 1s ease-in-out infinite;
+  animation: breathe 1.2s ease-in-out infinite;
 }
 
-/* Focus ring reset for dark theme */
-*:focus-visible {
-  outline: 2px solid #7ed957;
-  outline-offset: 2px;
-  border-radius: 4px;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -50,38 +50,39 @@ export function Modal({ isOpen, onClose, title, children, className, size = 'md'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-scrim backdrop-blur-[2px] z-50"
             onClick={onClose}
             aria-hidden="true"
           />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={title}>
+          {/* En mobile entra como hoja desde abajo (al alcance del pulgar); en desktop, centrado. */}
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true" aria-label={title}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 12 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 12 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
+              initial={{ opacity: 0, transform: 'translateY(24px) scale(0.98)' }}
+              animate={{ opacity: 1, transform: 'translateY(0px) scale(1)' }}
+              exit={{ opacity: 0, transform: 'translateY(16px) scale(0.98)', transition: { duration: 0.16 } }}
+              transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
               className={cn(
-                'relative w-full bg-[#0d0d0d] border border-[#222] rounded-xl shadow-2xl',
+                'relative w-full max-h-[92dvh] overflow-y-auto bg-surface border border-line rounded-t-2xl sm:rounded-2xl shadow-float',
                 sizes[size],
                 className
               )}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-[#1e1e1e]">
-                <h2 className="text-white font-bold text-lg tracking-tight">{title}</h2>
+              <div className="sticky top-0 z-10 flex items-center justify-between gap-4 bg-surface px-6 pt-5 pb-3">
+                <h2 className="text-ink font-semibold text-lg tracking-tight">{title}</h2>
                 <button
                   ref={firstFocusRef}
                   onClick={onClose}
                   aria-label="Cerrar modal"
-                  className="text-[#676B67] hover:text-white transition-colors p-1 rounded"
+                  className="pressable -mr-2 grid h-9 w-9 place-items-center rounded-lg text-ink-3 hover:bg-surface-2 hover:text-ink"
                 >
                   <X size={18} />
                 </button>
               </div>
               {/* Body */}
-              <div className="px-6 py-4">{children}</div>
+              <div className="px-6 pb-6 pt-1">{children}</div>
             </motion.div>
           </div>
         </>

@@ -12,7 +12,7 @@ export const ExpirationBadge = ({ ingredient }: ExpirationBadgeProps) => {
     if (!ingredient.expirationDate || !ingredient.hasExpiration) {
       return {
         label: 'Sin vencimiento',
-        className: 'bg-gray-500/20 text-gray-400 border border-gray-500/30',
+        className: 'bg-surface-2/20 text-ink-3 border border-line-strong/30',
         animate: false
       };
     }
@@ -27,25 +27,25 @@ export const ExpirationBadge = ({ ingredient }: ExpirationBadgeProps) => {
     if (diffDays < 0) {
       return {
         label: 'Vencido',
-        className: 'bg-red-500/30 text-red-400 border border-red-500/40',
+        className: 'bg-red-500/30 text-red-700 dark:text-red-400 border border-red-500/40',
         animate: true
       };
     } else if (diffDays <= 2) {
       return {
         label: `${diffDays} día${diffDays !== 1 ? 's' : ''}`,
-        className: 'bg-red-500/30 text-red-400 border border-red-500/40',
+        className: 'bg-red-500/30 text-red-700 dark:text-red-400 border border-red-500/40',
         animate: true
       };
     } else if (diffDays <= 5) {
       return {
         label: `${diffDays} días`,
-        className: 'bg-yellow-500/30 text-yellow-400 border border-yellow-500/40',
+        className: 'bg-yellow-500/30 text-yellow-700 dark:text-yellow-400 border border-yellow-500/40',
         animate: false
       };
     } else {
       return {
         label: `${diffDays} días`,
-        className: 'bg-green-500/20 text-green-400 border border-green-500/30',
+        className: 'bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30',
         animate: false
       };
     }

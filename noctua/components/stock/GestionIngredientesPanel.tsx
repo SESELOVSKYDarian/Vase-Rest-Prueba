@@ -7,7 +7,7 @@ import type { Ingredient, StockFilter } from '@/types/stock';
 
 const getExpirationStatus = (ingredient: Ingredient) => {
   if (!ingredient.expirationDate || !ingredient.hasExpiration) {
-    return { status: 'none', color: 'text-gray-500', label: '' };
+    return { status: 'none', color: 'text-ink-3', label: '' };
   }
 
   const expirationDate = new Date(ingredient.expirationDate);
@@ -164,7 +164,7 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
 
   if (isLoading) {
     return (
-      <div className="min-h-[400px] flex items-center justify-center text-[#676b67]">
+      <div className="min-h-[400px] flex items-center justify-center text-ink-3">
         Cargando stock...
       </div>
     );
@@ -174,8 +174,8 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-white mb-1">Gestión de ingredientes</h2>
-          <p className="text-[#676b67] text-sm">Categorías, alta/baja y vencimientos</p>
+          <h2 className="text-xl font-semibold text-ink mb-1">Gestión de ingredientes</h2>
+          <p className="text-ink-3 text-sm">Categorías, alta/baja y vencimientos</p>
         </div>
         <button
           onClick={() => {
@@ -194,7 +194,7 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
               hasExpiration: false,
             });
           }}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-700"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-brand text-on-brand hover:bg-brand-strong"
         >
           <Plus size={18} />
           Nuevo Ingrediente
@@ -203,7 +203,7 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
 
       {expiringIngredients.length > 0 && (
         <div className="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl">
-          <div className="flex items-center gap-2 text-orange-400 mb-2">
+          <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400 mb-2">
             <AlertTriangle size={20} />
             <span className="font-semibold">Atención: {expiringIngredients.length} ingrediente{expiringIngredients.length !== 1 ? 's' : ''} próximos a vencer</span>
           </div>
@@ -227,7 +227,7 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
             placeholder="Buscar ingrediente..."
             value={searchQuery}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#0d0d0d] border border-[#252525] rounded-lg px-4 py-2 text-white"
+            className="w-full bg-surface border border-line rounded-lg px-4 py-2 text-ink"
           />
         </div>
         <div className="flex gap-2 overflow-x-auto">
@@ -237,8 +237,8 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
               onClick={() => setFilter(f as StockFilter)}
               className={`px-3 py-2 rounded-lg whitespace-nowrap ${
                 filter === f
-                  ? 'bg-violet-600 text-white'
-                  : 'bg-[#101010] text-[#676b67] hover:text-white'
+                  ? 'bg-brand text-on-brand'
+                  : 'bg-surface text-ink-3 hover:text-ink'
               }`}
             >
               {f === 'all' && 'Todos'}
@@ -252,9 +252,9 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
       </div>
 
       {(isAdding || editingIngredient) && (
-        <div className="mb-8 p-6 bg-[#101010] border border-[#252525] rounded-xl">
+        <div className="mb-8 p-6 bg-surface border border-line rounded-xl">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold text-white">
+            <h3 className="text-xl font-semibold text-ink">
               {editingIngredient ? 'Editar Ingrediente' : 'Nuevo Ingrediente'}
             </h3>
             <button
@@ -262,7 +262,7 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
                 setIsAdding(false);
                 setEditingIngredient(null);
               }}
-              className="text-[#676b67] hover:text-white"
+              className="text-ink-3 hover:text-ink"
             >
               <Trash2 size={18} />
             </button>
@@ -270,24 +270,24 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[#676b67] text-sm mb-2">Nombre del Ingrediente</label>
+              <label className="block text-ink-3 text-sm mb-2">Nombre del Ingrediente</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-[#0d0d0d] border border-[#252525] rounded-lg px-4 py-2 text-white"
+                className="w-full bg-surface border border-line rounded-lg px-4 py-2 text-ink"
               />
             </div>
 
             <div>
-              <label className="block text-[#676b67] text-sm mb-2">Categoría</label>
+              <label className="block text-ink-3 text-sm mb-2">Categoría</label>
               <div className="flex gap-2">
                 <input
                   type="text"
                   list="categoryList"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="flex-1 bg-[#0d0d0d] border border-[#252525] rounded-lg px-4 py-2 text-white"
+                  className="flex-1 bg-surface border border-line rounded-lg px-4 py-2 text-ink"
                 />
                 <datalist id="categoryList">
                   {categories.map((cat) => (
@@ -298,21 +298,21 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
             </div>
 
             <div>
-              <label className="block text-[#676b67] text-sm mb-2">Subcategoría (opcional)</label>
+              <label className="block text-ink-3 text-sm mb-2">Subcategoría (opcional)</label>
               <input
                 type="text"
                 value={formData.subcategory}
                 onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
-                className="w-full bg-[#0d0d0d] border border-[#252525] rounded-lg px-4 py-2 text-white"
+                className="w-full bg-surface border border-line rounded-lg px-4 py-2 text-ink"
               />
             </div>
 
             <div>
-              <label className="block text-[#676b67] text-sm mb-2">Unidad de Medida</label>
+              <label className="block text-ink-3 text-sm mb-2">Unidad de Medida</label>
               <select
                 value={formData.unit}
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value as 'unidades' | 'kg' | 'litros' | 'gramos' | 'atado' })}
-                className="w-full bg-[#0d0d0d] border border-[#252525] rounded-lg px-4 py-2 text-white"
+                className="w-full bg-surface border border-line rounded-lg px-4 py-2 text-ink"
               >
                 <option value="unidades">Unidades</option>
                 <option value="kg">Kilogramos (kg)</option>
@@ -323,27 +323,27 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
             </div>
 
             <div>
-              <label className="block text-[#676b67] text-sm mb-2">Stock Actual</label>
+              <label className="block text-ink-3 text-sm mb-2">Stock Actual</label>
               <input
                 type="number"
                 value={formData.stock}
                 onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
-                className="w-full bg-[#0d0d0d] border border-[#252525] rounded-lg px-4 py-2 text-white"
+                className="w-full bg-surface border border-line rounded-lg px-4 py-2 text-ink"
               />
             </div>
 
             <div>
-              <label className="block text-[#676b67] text-sm mb-2">Stock Mínimo</label>
+              <label className="block text-ink-3 text-sm mb-2">Stock Mínimo</label>
               <input
                 type="number"
                 value={formData.minStock}
                 onChange={(e) => setFormData({ ...formData, minStock: parseInt(e.target.value) || 0 })}
-                className="w-full bg-[#0d0d0d] border border-[#252525] rounded-lg px-4 py-2 text-white"
+                className="w-full bg-surface border border-line rounded-lg px-4 py-2 text-ink"
               />
             </div>
 
             <div>
-              <label className="block text-[#676b67] text-sm mb-2">Sin Vencimiento</label>
+              <label className="block text-ink-3 text-sm mb-2">Sin Vencimiento</label>
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -351,29 +351,29 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
                   onChange={(e) => setFormData({ ...formData, hasExpiration: !e.target.checked })}
                   className="w-4 h-4"
                 />
-                <span className="text-white">Este ingrediente no vence</span>
+                <span className="text-ink">Este ingrediente no vence</span>
               </div>
             </div>
 
             <div>
-              <label className="block text-[#676b67] text-sm mb-2">Fecha de Vencimiento</label>
+              <label className="block text-ink-3 text-sm mb-2">Fecha de Vencimiento</label>
               <input
                 type="date"
                 disabled={!formData.hasExpiration}
                 value={formData.expirationDate}
                 onChange={(e) => setFormData({ ...formData, expirationDate: e.target.value })}
-                className="w-full bg-[#0d0d0d] border border-[#252525] rounded-lg px-4 py-2 text-white disabled:opacity-50"
+                className="w-full bg-surface border border-line rounded-lg px-4 py-2 text-ink disabled:opacity-50"
               />
             </div>
 
             {!editingIngredient && (
               <div>
-                <label className="block text-[#676b67] text-sm mb-2">Precio (opcional)</label>
+                <label className="block text-ink-3 text-sm mb-2">Precio (opcional)</label>
                 <input
                   type="number"
                   value={formData.precio}
                   onChange={(e) => setFormData({ ...formData, precio: parseFloat(e.target.value) || 0 })}
-                  className="w-full bg-[#0d0d0d] border border-[#252525] rounded-lg px-4 py-2 text-white"
+                  className="w-full bg-surface border border-line rounded-lg px-4 py-2 text-ink"
                 />
               </div>
             )}
@@ -385,13 +385,13 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
                 setIsAdding(false);
                 setEditingIngredient(null);
               }}
-              className="px-4 py-2 rounded-lg border border-[#252525] text-white"
+              className="px-4 py-2 rounded-lg border border-line text-ink"
             >
               Cancelar
             </button>
             <button
               onClick={handleAddOrUpdate}
-              className="px-4 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-700"
+              className="px-4 py-2 rounded-lg bg-brand text-on-brand hover:bg-brand-strong"
             >
               {editingIngredient ? 'Guardar Cambios' : 'Agregar Ingrediente'}
             </button>
@@ -401,17 +401,17 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
 
       <div className="space-y-6">
         {filteredCategories.map((cat) => (
-          <div key={cat.id} className="bg-[#101010] border border-[#252525] rounded-xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#252525] flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-white">{cat.name}</h3>
-              <span className="text-[#676b67]">
+          <div key={cat.id} className="bg-surface border border-line rounded-xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-line flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-ink">{cat.name}</h3>
+              <span className="text-ink-3">
                 {cat.ingredients.length} ingrediente{cat.ingredients.length !== 1 ? 's' : ''}
               </span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left">
-                <thead className="text-[#676b67] text-xs uppercase border-b border-[#252525] bg-[#0d0d0d]">
+                <thead className="text-ink-3 text-xs uppercase border-b border-line bg-surface">
                   <tr>
                     <th className="px-6 py-3">Ingrediente</th>
                     {cat.ingredients.some(i => i.subcategory) && <th className="px-6 py-3">Subcategoría</th>}
@@ -422,22 +422,22 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
                     <th className="px-6 py-3 text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#252525]">
+                <tbody className="divide-y divide-line">
                   {cat.ingredients.map((ing) => {
                     const expStatus = getExpirationStatus(ing);
                     return (
-                      <tr key={ing.id} className="hover:bg-[#0d0d0d]">
-                        <td className="px-6 py-4 text-white font-medium">{ing.name}</td>
+                      <tr key={ing.id} className="hover:bg-surface">
+                        <td className="px-6 py-4 text-ink font-medium">{ing.name}</td>
                         {cat.ingredients.some(i => i.subcategory) && (
-                          <td className="px-6 py-4 text-[#676b67]">{ing.subcategory || '-'}</td>
+                          <td className="px-6 py-4 text-ink-3">{ing.subcategory || '-'}</td>
                         )}
                         <td className="px-6 py-4">
-                          <span className={ing.stock < ing.minStock ? 'text-red-400 font-semibold' : 'text-white'}>
+                          <span className={ing.stock < ing.minStock ? 'text-red-700 dark:text-red-400 font-semibold' : 'text-ink'}>
                             {ing.stock}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-[#676b67]">{ing.unit}</td>
-                        <td className="px-6 py-4 text-[#676b67]">{ing.minStock}</td>
+                        <td className="px-6 py-4 text-ink-3">{ing.unit}</td>
+                        <td className="px-6 py-4 text-ink-3">{ing.minStock}</td>
                         <td className="px-6 py-4">
                           {expStatus.status !== 'none' && (
                             <div className="flex items-center gap-1">
@@ -449,13 +449,13 @@ export const GestionIngredientesPanel = ({ isLoading = false }: GestionIngredien
                         <td className="px-6 py-4 text-right">
                           <button
                             onClick={() => handleEdit(ing)}
-                            className="mr-3 text-[#676b67] hover:text-white"
+                            className="mr-3 text-ink-3 hover:text-ink"
                           >
                             <Edit2 size={16} />
                           </button>
                           <button
                             onClick={() => removeIngredient(ing.id)}
-                            className="text-red-400 hover:text-red-300"
+                            className="text-red-700 dark:text-red-400 hover:text-red-600"
                           >
                             <Trash2 size={16} />
                           </button>

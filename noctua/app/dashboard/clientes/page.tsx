@@ -2,11 +2,12 @@
 
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Edit2, Trash2, Users } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
 import { ClienteFormModal } from '@/components/clientes/ClienteFormModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { clientesService } from '@/services/clientesService';
 import type { Cliente, ClienteInput } from '@/types/cliente';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function ClientesPage() {
   const queryClient = useQueryClient();
@@ -80,13 +81,13 @@ export default function ClientesPage() {
     <div className="p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-2">Clientes</h1>
-          <p className="text-[#676b67]">Base de clientes reales, usada por Reservas, Pedidos y Facturas.</p>
+          <h1 className="text-2xl font-bold text-ink mb-2">Clientes</h1>
+          <p className="text-ink-3">Base de clientes reales, usada por Reservas, Pedidos y Facturas.</p>
         </div>
         <button
           type="button"
           onClick={openCreate}
-          className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-500 flex items-center gap-2"
+          className="px-4 py-2 bg-brand text-on-brand rounded-lg hover:bg-brand-strong flex items-center gap-2"
         >
           <Plus size={16} />
           Nuevo cliente
@@ -94,35 +95,34 @@ export default function ClientesPage() {
       </div>
 
       {(mutationError || clientesQuery.error) && (
-        <div className="mb-6 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-200">
+        <div className="mb-6 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-200">
           {mutationError || (clientesQuery.error instanceof Error ? clientesQuery.error.message : null)}
         </div>
       )}
 
       <div className="relative mb-6 max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#676b67]" size={18} />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3" size={18} />
         <input
           type="text"
           placeholder="Buscar por nombre, teléfono, email o documento..."
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
-          className="w-full bg-[#151515] border border-[#252525] rounded-lg pl-10 pr-4 py-2 text-white"
+          className="w-full bg-surface-2 border border-line rounded-lg pl-10 pr-4 py-2 text-ink"
         />
       </div>
 
       {clientesQuery.isLoading ? (
-        <p className="text-[#676b67] text-center py-12">Cargando clientes reales...</p>
+        <p className="text-ink-3 text-center py-12">Cargando clientes…</p>
       ) : filteredClientes.length === 0 ? (
-        <div className="text-center py-16">
-          <Users size={32} className="mx-auto text-zinc-700 mb-3" />
-          <p className="text-[#676b67]">
-            {clientes.length === 0 ? 'Todavía no hay clientes cargados.' : 'No se encontraron clientes con ese criterio.'}
-          </p>
-        </div>
+        <EmptyState
+          variant={clientes.length === 0 ? 'empty' : 'search'}
+          title={clientes.length === 0 ? 'Todavía no hay clientes' : 'Ningún cliente coincide'}
+          hint={clientes.length === 0 ? 'Guardá a tus habituales para reservar y facturar más rápido.' : 'Buscá por nombre, teléfono o email.'}
+        />
       ) : (
-        <div className="bg-[#101010] border border-[#252525] rounded-xl overflow-hidden">
+        <div className="bg-surface border border-line rounded-xl overflow-hidden">
           <table className="w-full text-left">
-            <thead className="text-[#676b67] text-xs uppercase border-b border-[#252525] bg-[#0d0d0d]">
+            <thead className="text-ink-3 text-xs uppercase border-b border-line bg-surface">
               <tr>
                 <th className="px-6 py-3">Nombre</th>
                 <th className="px-6 py-3">Teléfono</th>
@@ -131,24 +131,24 @@ export default function ClientesPage() {
                 <th className="px-6 py-3 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#252525]">
+            <tbody className="divide-y divide-line">
               {filteredClientes.map((cliente) => (
-                <tr key={cliente.id} className="hover:bg-[#0d0d0d]">
-                  <td className="px-6 py-4 text-white font-medium">{cliente.nombre}</td>
-                  <td className="px-6 py-4 text-[#676b67]">{cliente.telefono || '-'}</td>
-                  <td className="px-6 py-4 text-[#676b67]">{cliente.email || '-'}</td>
-                  <td className="px-6 py-4 text-[#676b67]">{cliente.documento || '-'}</td>
+                <tr key={cliente.id} className="hover:bg-surface">
+                  <td className="px-6 py-4 text-ink font-medium">{cliente.nombre}</td>
+                  <td className="px-6 py-4 text-ink-3">{cliente.telefono || '-'}</td>
+                  <td className="px-6 py-4 text-ink-3">{cliente.email || '-'}</td>
+                  <td className="px-6 py-4 text-ink-3">{cliente.documento || '-'}</td>
                   <td className="px-6 py-4 text-right">
                     <button
                       onClick={() => openEdit(cliente)}
-                      className="mr-3 text-[#676b67] hover:text-white"
+                      className="mr-3 text-ink-3 hover:text-ink"
                       aria-label={`Editar ${cliente.nombre}`}
                     >
                       <Edit2 size={16} />
                     </button>
                     <button
                       onClick={() => setClienteToDelete(cliente)}
-                      className="text-red-400 hover:text-red-300"
+                      className="text-red-700 dark:text-red-400 hover:text-red-600"
                       aria-label={`Eliminar ${cliente.nombre}`}
                     >
                       <Trash2 size={16} />

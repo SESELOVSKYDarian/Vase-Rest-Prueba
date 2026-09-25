@@ -39,7 +39,7 @@ export const StockAdjuster = ({ ingredient }: StockAdjusterProps) => {
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={handleDecrement}
-        className="w-8 h-8 flex items-center justify-center bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-[#676b67] hover:text-white hover:bg-[#2a2a2a] transition-colors"
+        className="w-8 h-8 flex items-center justify-center bg-surface-3 border border-line-strong rounded-lg text-ink-3 hover:text-ink hover:bg-surface-3 transition-colors"
       >
         <Minus size={16} />
       </motion.button>
@@ -52,7 +52,7 @@ export const StockAdjuster = ({ ingredient }: StockAdjusterProps) => {
         min={0}
         max={9999}
         className={cn(
-          "w-20 text-center bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-2 py-1.5 text-sm text-white focus:outline-none focus:border-white transition-colors",
+          "w-20 text-center bg-canvas border border-line-strong rounded-lg px-2 py-1.5 text-sm text-ink focus:outline-none focus:border-brand transition-colors",
           ingredient.stock < ingredient.minStock ? "border-yellow-500" : "",
           ingredient.stock === 0 ? "border-red-500" : ""
         )}
@@ -61,7 +61,7 @@ export const StockAdjuster = ({ ingredient }: StockAdjusterProps) => {
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={handleIncrement}
-        className="w-8 h-8 flex items-center justify-center bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-[#676b67] hover:text-white hover:bg-[#2a2a2a] transition-colors"
+        className="w-8 h-8 flex items-center justify-center bg-surface-3 border border-line-strong rounded-lg text-ink-3 hover:text-ink hover:bg-surface-3 transition-colors"
       >
         <Plus size={16} />
       </motion.button>
@@ -69,7 +69,7 @@ export const StockAdjuster = ({ ingredient }: StockAdjusterProps) => {
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={() => removeIngredientStore(ingredient.id)}
-        className="w-8 h-8 flex items-center justify-center bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-[#676b67] hover:text-red-400 hover:bg-red-500/10 transition-colors"
+        className="w-8 h-8 flex items-center justify-center bg-surface-3 border border-line-strong rounded-lg text-ink-3 hover:text-red-600 hover:bg-red-500/10 transition-colors"
         title="Eliminar ingrediente"
       >
         <Trash2 size={16} />

@@ -10,6 +10,7 @@ import { PedidoOrderSummary } from '@/components/pedidos/PedidoOrderSummary';
 import { useNowTick, formatElapsedShort } from '@/hooks/useMesaTimer';
 import { formatARS } from '@/hooks/lib/utils';
 import { toast } from '@/components/ui/Toast';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 // Estados de pedido que consideramos "abiertos" (ya enviados pero aún en curso)
 const ESTADOS_ABIERTOS = ['pendiente', 'preparando', 'listo'];
@@ -125,14 +126,14 @@ function PedidoContent() {
   if (!mesaId) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
-        <ShoppingBag size={36} className="text-zinc-700" />
+        <ShoppingBag size={36} className="text-ink-3" />
         <div>
-          <p className="text-white font-semibold">No se indicó ninguna mesa</p>
-          <p className="text-[#676b67] text-sm mt-1">Elegí una mesa desde el plano para tomar su pedido.</p>
+          <p className="text-ink font-semibold">No se indicó ninguna mesa</p>
+          <p className="text-ink-3 text-sm mt-1">Elegí una mesa desde el plano para tomar su pedido.</p>
         </div>
         <button
           onClick={() => router.push('/dashboard/mesas')}
-          className="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold hover:bg-amber-500 transition-colors"
+          className="px-4 py-2 rounded-lg bg-brand text-on-brand text-sm font-semibold hover:bg-brand-strong transition-colors"
         >
           Ir al plano de mesas
         </button>
@@ -158,26 +159,26 @@ function PedidoContent() {
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
       {/* Header fijo con identidad de mesa — siempre visible */}
-      <div className="flex items-center gap-3 pb-3 border-b border-[#1a1a1a] flex-shrink-0">
+      <div className="flex items-center gap-3 pb-3 border-b border-line flex-shrink-0">
         <button
           onClick={() => router.push('/dashboard/mesas')}
-          className="p-2 rounded-lg bg-[#151515] text-white hover:bg-[#202020] transition-colors flex-shrink-0"
+          className="p-2 rounded-lg bg-surface-2 text-ink hover:bg-surface-3 transition-colors flex-shrink-0"
           aria-label="Volver al plano de mesas"
         >
           <ArrowLeft size={18} />
         </button>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-baseline gap-2">
-            <span className="text-amber-400 font-black text-2xl leading-none">Mesa {mesa?.numero ?? borrador?.numeroMesa ?? '—'}</span>
+            <span className="text-amber-700 dark:text-amber-400 font-semibold text-2xl leading-none">Mesa {mesa?.numero ?? borrador?.numeroMesa ?? '—'}</span>
           </div>
-          <span className="text-zinc-600 text-xs uppercase tracking-widest">{mesa?.zona ?? borrador?.zona}</span>
+          <span className="text-ink-3 text-xs uppercase tracking-widest">{mesa?.zona ?? borrador?.zona}</span>
           {comensales ? (
-            <span className="flex items-center gap-1 text-zinc-400 text-xs">
+            <span className="flex items-center gap-1 text-ink-3 text-xs">
               <Users size={12} /> {comensales}
             </span>
           ) : null}
           {elapsed && (
-            <span className="flex items-center gap-1 text-zinc-400 text-xs">
+            <span className="flex items-center gap-1 text-ink-3 text-xs">
               <Clock size={12} /> {elapsed}
             </span>
           )}
@@ -190,12 +191,12 @@ function PedidoContent() {
         <div className="flex flex-col min-h-0">
           {/* Búsqueda */}
           <div className="relative mb-3 flex-shrink-0">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3" />
             <input
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar producto..."
-              className="w-full bg-[#0d0d0d] border border-[#222] rounded-lg pl-9 pr-3 py-2 text-white text-sm outline-none focus:border-amber-500/50"
+              className="w-full bg-surface border border-line rounded-lg pl-9 pr-3 py-2 text-ink text-sm outline-none focus:border-amber-500/50"
             />
           </div>
 
@@ -210,13 +211,15 @@ function PedidoContent() {
           {/* Grid de productos */}
           <div className="flex-1 min-h-0 overflow-y-auto pb-24 lg:pb-2">
             {isLoading ? (
-              <p className="text-[#676b67] text-sm py-12 text-center">Cargando productos...</p>
+              <p className="text-ink-3 text-sm py-12 text-center">Cargando productos...</p>
             ) : isError ? (
-              <p className="text-red-400 text-sm py-12 text-center">No se pudieron cargar los productos.</p>
+              <p className="text-red-700 dark:text-red-400 text-sm py-12 text-center">No se pudieron cargar los productos.</p>
             ) : productosVisibles.length === 0 ? (
-              <p className="text-[#676b67] text-sm py-12 text-center">
-                {busqueda ? 'Sin resultados para tu búsqueda' : 'No hay productos en esta categoría'}
-              </p>
+              <EmptyState
+                variant={busqueda ? 'search' : 'empty'}
+                title={busqueda ? 'Sin resultados' : 'Nada en esta categoría'}
+                hint={busqueda ? 'Probá con otra palabra.' : 'Elegí otra categoría arriba.'}
+              />
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
                 {productosVisibles.map((p) => {
@@ -226,14 +229,14 @@ function PedidoContent() {
                       key={p.id}
                       onClick={() => disponible && handleAdd(p.id, p.nombre, p.precio)}
                       disabled={!disponible}
-                      className={`text-left bg-[#111] border border-[#222] rounded-xl p-3 transition-all ${
+                      className={`text-left bg-surface border border-line rounded-xl p-3 transition-all ${
                         disponible ? 'hover:border-amber-500/50 active:scale-[0.98]' : 'opacity-50 cursor-not-allowed'
                       }`}
                     >
-                      <p className="text-white text-sm font-semibold leading-tight line-clamp-2">{p.nombre}</p>
+                      <p className="text-ink text-sm font-semibold leading-tight line-clamp-2">{p.nombre}</p>
                       <div className="flex items-center justify-between mt-2">
-                        <span className="text-white font-bold text-sm">{formatARS(p.precio)}</span>
-                        {!disponible && <span className="text-[10px] text-red-400">Agotado</span>}
+                        <span className="text-ink font-bold text-sm">{formatARS(p.precio)}</span>
+                        {!disponible && <span className="text-[10px] text-red-700 dark:text-red-400">Agotado</span>}
                       </div>
                     </button>
                   );
@@ -244,7 +247,7 @@ function PedidoContent() {
         </div>
 
         {/* Resumen — columna derecha en desktop */}
-        <div className="hidden lg:flex flex-col min-h-0 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl overflow-hidden">
+        <div className="hidden lg:flex flex-col min-h-0 bg-canvas border border-line rounded-xl overflow-hidden">
           {summary}
         </div>
       </div>
@@ -254,20 +257,20 @@ function PedidoContent() {
         {/* Barra colapsada */}
         <button
           onClick={() => setSheetOpen((v) => !v)}
-          className="w-full flex items-center justify-between bg-[#0d0d0d] border-t border-[#222] px-4 py-3"
+          className="w-full flex items-center justify-between bg-surface border-t border-line px-4 py-3"
         >
-          <span className="flex items-center gap-2 text-white text-sm font-semibold">
-            <ShoppingBag size={16} className="text-amber-400" />
+          <span className="flex items-center gap-2 text-ink text-sm font-semibold">
+            <ShoppingBag size={16} className="text-amber-700 dark:text-amber-400" />
             {draftItems.length} por enviar
           </span>
-          <span className="flex items-center gap-2 text-white text-sm font-mono">
+          <span className="flex items-center gap-2 text-ink text-sm font-mono">
             {formatARS(borrador?.total ?? 0)}
             {sheetOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
           </span>
         </button>
         {/* Panel expandido */}
         {sheetOpen && (
-          <div className="bg-[#0a0a0a] border-t border-[#1a1a1a] max-h-[70vh] flex flex-col">
+          <div className="bg-canvas border-t border-line max-h-[70vh] flex flex-col">
             {summary}
           </div>
         )}
@@ -281,7 +284,7 @@ function CategoriaChip({ label, active, onClick }: { label: string; active: bool
     <button
       onClick={onClick}
       className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-        active ? 'bg-amber-600 text-white' : 'bg-[#151515] text-[#676b67] hover:text-white'
+        active ? 'bg-brand text-on-brand' : 'bg-surface-2 text-ink-3 hover:text-ink'
       }`}
     >
       {label}
@@ -291,7 +294,7 @@ function CategoriaChip({ label, active, onClick }: { label: string; active: bool
 
 export default function PedidoPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-[#676b67]">Cargando...</div>}>
+    <Suspense fallback={<div className="p-6 text-ink-3">Cargando...</div>}>
       <PedidoContent />
     </Suspense>
   );

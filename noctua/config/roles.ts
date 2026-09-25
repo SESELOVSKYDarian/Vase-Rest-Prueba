@@ -103,6 +103,25 @@ export const LABEL_POR_SECCION: Record<SeccionSistema, string> = {
   diseno:         'Diseño',
 };
 
+// Qué hay detrás de cada sección, en pocas palabras (Inicio, búsqueda global).
+export const DESCRIPCION_POR_SECCION: Record<SeccionSistema, string> = {
+  analytics:      'Ventas y métricas del negocio',
+  mesas:          'El salón en vivo',
+  pedidos:        'Tomar y enviar comandas',
+  cocina:         'Comandas por preparar',
+  cajero:         'Cobros y facturas',
+  historial:      'Pedidos ya cerrados',
+  stock:          'Ingredientes y existencias',
+  platos:         'Carta y promociones',
+  reservas:       'Agenda de reservas',
+  clientes:       'Tu base de clientes',
+  administracion: 'Usuarios y datos del local',
+  delivery:       'Apps de reparto',
+  soporte:        'Tickets y ayuda',
+  mozos:          'Equipo y turnos',
+  diseno:         'Apariencia del sistema',
+};
+
 // Todos los roles aterrizan en "Inicio" (/dashboard, ver Fase E) y desde ahí saltan
 // con un clic a su sección principal — Inicio ya no es un alias de /dashboard/analytics.
 export const HOME_POR_ROL: Record<RolSistema, string> = {

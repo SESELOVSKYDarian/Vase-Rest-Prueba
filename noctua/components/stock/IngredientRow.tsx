@@ -16,18 +16,18 @@ export const IngredientRow = ({ ingredient, index }: IngredientRowProps) => (
     initial={{ opacity: 0, x: -20 }}
     animate={{ opacity: 1, x: 0 }}
     transition={{ delay: index * 0.02 }}
-    className="border-b border-[#1a1a1a] hover:bg-[#111] transition-colors"
+    className="border-b border-line hover:bg-surface transition-colors"
   >
     <td className="px-4 py-3">
       <div>
-        <p className="text-white font-semibold text-sm">{ingredient.name}</p>
+        <p className="text-ink font-semibold text-sm">{ingredient.name}</p>
         {ingredient.subcategory && (
-          <p className="text-[#676b67] text-xs">{ingredient.subcategory}</p>
+          <p className="text-ink-3 text-xs">{ingredient.subcategory}</p>
         )}
       </div>
     </td>
     <td className="px-4 py-3">
-      <span className="text-[#676b67] text-sm">{ingredient.category}</span>
+      <span className="text-ink-3 text-sm">{ingredient.category}</span>
     </td>
     <td className="px-4 py-3">
       <StockAdjuster ingredient={ingredient} />
@@ -39,7 +39,7 @@ export const IngredientRow = ({ ingredient, index }: IngredientRowProps) => (
       <ExpirationBadge ingredient={ingredient} />
     </td>
     <td className="px-4 py-3">
-      <span className="text-[#3a3a3a] text-xs">
+      <span className="text-ink-3 text-xs">
         {new Date(ingredient.lastUpdated).toLocaleDateString('es-ES')}
       </span>
     </td>

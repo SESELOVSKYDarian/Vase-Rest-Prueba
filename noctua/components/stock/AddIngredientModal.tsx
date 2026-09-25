@@ -150,7 +150,7 @@ export const AddIngredientModal = ({ isOpen, onClose, categories }: AddIngredien
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4 bg-scrim backdrop-blur-sm"
           onClick={(e) => e.target === e.currentTarget && onClose()}
         >
           <motion.div
@@ -158,15 +158,15 @@ export const AddIngredientModal = ({ isOpen, onClose, categories }: AddIngredien
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="w-full max-w-md bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl overflow-hidden"
+            className="w-full max-w-md bg-canvas border border-line rounded-2xl shadow-float overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-[#1a1a1a]">
-              <h2 className="text-white font-bold text-lg">Añadir producto</h2>
+            <div className="flex items-center justify-between p-5 border-b border-line">
+              <h2 className="text-ink font-bold text-lg">Añadir producto</h2>
               <button
                 onClick={onClose}
-                className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#1a1a1a] text-[#676b67] hover:text-white hover:bg-[#2a2a2a] transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-3 text-ink-3 hover:text-ink hover:bg-surface-3 transition-colors"
               >
                 <X size={16} />
               </button>
@@ -175,7 +175,7 @@ export const AddIngredientModal = ({ isOpen, onClose, categories }: AddIngredien
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               {/* Name */}
               <div>
-                <label className="block text-xs font-semibold tracking-widest uppercase text-[#676b67] mb-1.5">
+                <label className="block text-xs font-semibold tracking-widest uppercase text-ink-3 mb-1.5">
                   Nombre del producto
                 </label>
                 <input
@@ -185,13 +185,13 @@ export const AddIngredientModal = ({ isOpen, onClose, categories }: AddIngredien
                   placeholder="Ej: Aceite de coco"
                   maxLength={60}
                   className={cn(
-                    "w-full bg-[#111] border rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-[#3a3a3a] focus:outline-none transition-colors",
-                    errors.name ? "border-red-500" : "border-[#2a2a2a] focus:border-white"
+                    "w-full bg-surface border rounded-xl px-4 py-2.5 text-sm text-ink placeholder:text-ink-3 focus:outline-none transition-colors",
+                    errors.name ? "border-red-500" : "border-line-strong focus:border-brand"
                   )}
                 />
-                {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
+                {errors.name && <p className="text-red-700 dark:text-red-400 text-xs mt-1">{errors.name}</p>}
                 {duplicateWarning && (
-                  <div className="flex items-start gap-2 mt-1 text-yellow-400 text-xs">
+                  <div className="flex items-start gap-2 mt-1 text-yellow-700 dark:text-yellow-400 text-xs">
                     <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
                     <span>Ya existe un ingrediente con ese nombre en esta categoría. ¿Querés añadirlo de todas formas?</span>
                   </div>
@@ -200,7 +200,7 @@ export const AddIngredientModal = ({ isOpen, onClose, categories }: AddIngredien
 
               {/* Category */}
               <div>
-                <label className="block text-xs font-semibold tracking-widest uppercase text-[#676b67] mb-1.5">
+                <label className="block text-xs font-semibold tracking-widest uppercase text-ink-3 mb-1.5">
                   Categoría / Tipo de producto
                 </label>
                 {isCreatingCategory ? (
@@ -210,12 +210,12 @@ export const AddIngredientModal = ({ isOpen, onClose, categories }: AddIngredien
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
                       placeholder="Nombre de la nueva categoría"
-                      className="w-full bg-[#111] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-[#3a3a3a] focus:outline-none focus:border-white transition-colors"
+                      className="w-full bg-surface border border-line-strong rounded-xl px-4 py-2.5 text-sm text-ink placeholder:text-ink-3 focus:outline-none focus:border-brand transition-colors"
                     />
                     <button
                       type="button"
                       onClick={() => setIsCreatingCategory(false)}
-                      className="text-xs text-[#676b67] hover:text-white underline"
+                      className="text-xs text-ink-3 hover:text-ink underline"
                     >
                       Volver a categorías existentes
                     </button>
@@ -225,7 +225,7 @@ export const AddIngredientModal = ({ isOpen, onClose, categories }: AddIngredien
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      className="w-full bg-[#111] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white transition-colors"
+                      className="w-full bg-surface border border-line-strong rounded-xl px-4 py-2.5 text-sm text-ink focus:outline-none focus:border-brand transition-colors"
                     >
                       {categories.map((cat) => (
                         <option key={cat.id} value={cat.name}>
@@ -236,20 +236,20 @@ export const AddIngredientModal = ({ isOpen, onClose, categories }: AddIngredien
                     <button
                       type="button"
                       onClick={() => setIsCreatingCategory(true)}
-                      className="flex items-center gap-1 text-xs text-[#bcb9b9] hover:text-white"
+                      className="flex items-center gap-1 text-xs text-ink-2 hover:text-ink"
                     >
                       <Plus size={14} />
                       Crear nueva categoría
                     </button>
                   </div>
                 )}
-                {errors.category && <p className="text-red-400 text-xs mt-1">{errors.category}</p>}
+                {errors.category && <p className="text-red-700 dark:text-red-400 text-xs mt-1">{errors.category}</p>}
               </div>
 
               {/* Quantity, Unit and Price */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold tracking-widest uppercase text-[#676b67] mb-1.5">
+                  <label className="block text-xs font-semibold tracking-widest uppercase text-ink-3 mb-1.5">
                     Stock actual
                   </label>
                   <input
@@ -258,12 +258,12 @@ export const AddIngredientModal = ({ isOpen, onClose, categories }: AddIngredien
                     onChange={(e) => setQuantity(parseFloat(e.target.value) || 0)}
                     min={0}
                     max={9999}
-                    className="w-full bg-[#111] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white transition-colors"
+                    className="w-full bg-surface border border-line-strong rounded-xl px-4 py-2.5 text-sm text-ink focus:outline-none focus:border-brand transition-colors"
                   />
-                  {errors.quantity && <p className="text-red-400 text-xs mt-1">{errors.quantity}</p>}
+                  {errors.quantity && <p className="text-red-700 dark:text-red-400 text-xs mt-1">{errors.quantity}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold tracking-widest uppercase text-[#676b67] mb-1.5">
+                  <label className="block text-xs font-semibold tracking-widest uppercase text-ink-3 mb-1.5">
                     Precio de venta ($)
                   </label>
                   <input
@@ -271,21 +271,21 @@ export const AddIngredientModal = ({ isOpen, onClose, categories }: AddIngredien
                     value={price}
                     onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
                     min={0}
-                    className="w-full bg-[#111] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white transition-colors"
+                    className="w-full bg-surface border border-line-strong rounded-xl px-4 py-2.5 text-sm text-ink focus:outline-none focus:border-brand transition-colors"
                   />
-                  {errors.price && <p className="text-red-400 text-xs mt-1">{errors.price}</p>}
+                  {errors.price && <p className="text-red-700 dark:text-red-400 text-xs mt-1">{errors.price}</p>}
                 </div>
               </div>
 
               {/* Unit */}
               <div>
-                <label className="block text-xs font-semibold tracking-widest uppercase text-[#676b67] mb-1.5">
+                <label className="block text-xs font-semibold tracking-widest uppercase text-ink-3 mb-1.5">
                   Unidad de medida
                 </label>
                 <select
                   value={unit}
                   onChange={(e) => setUnit(e.target.value as any)}
-                  className="w-full bg-[#111] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white transition-colors"
+                  className="w-full bg-surface border border-line-strong rounded-xl px-4 py-2.5 text-sm text-ink focus:outline-none focus:border-brand transition-colors"
                 >
                   <option value="unidades">Unidades</option>
                   <option value="kg">Kilogramos</option>
@@ -297,7 +297,7 @@ export const AddIngredientModal = ({ isOpen, onClose, categories }: AddIngredien
 
               {/* Expiration */}
               <div>
-                <label className="block text-xs font-semibold tracking-widest uppercase text-[#676b67] mb-1.5">
+                <label className="block text-xs font-semibold tracking-widest uppercase text-ink-3 mb-1.5">
                   Vencimiento
                 </label>
                 <div className="space-y-3">
@@ -316,7 +316,7 @@ export const AddIngredientModal = ({ isOpen, onClose, categories }: AddIngredien
                         }}
                         className="w-4 h-4 rounded"
                       />
-                      <span className="text-xs text-[#bcb9b9]">Sin vencimiento</span>
+                      <span className="text-xs text-ink-2">Sin vencimiento</span>
                     </label>
                   </div>
                   {hasExpiration && (
@@ -324,7 +324,7 @@ export const AddIngredientModal = ({ isOpen, onClose, categories }: AddIngredien
                       type="date"
                       value={expirationDate}
                       onChange={(e) => setExpirationDate(e.target.value)}
-                      className="w-full bg-[#111] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white transition-colors"
+                      className="w-full bg-surface border border-line-strong rounded-xl px-4 py-2.5 text-sm text-ink focus:outline-none focus:border-brand transition-colors"
                     />
                   )}
                 </div>
@@ -335,14 +335,14 @@ export const AddIngredientModal = ({ isOpen, onClose, categories }: AddIngredien
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 py-2.5 rounded-xl bg-[#111] border border-[#2a2a2a] text-sm text-[#676b67] hover:text-white hover:border-[#3a3a3a] transition-all"
+                  className="flex-1 py-2.5 rounded-xl bg-surface border border-line-strong text-sm text-ink-3 hover:text-ink hover:border-line-strong transition-all"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={(!isFormValid() && !duplicateWarning) || isSubmitting}
-                  className="flex-1 py-2.5 rounded-xl bg-white text-black text-sm font-bold hover:bg-[#e5e5e5] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 rounded-xl bg-brand text-on-brand text-sm font-bold hover:bg-brand-strong disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                 >
                   <Check size={16} />
                   {isSubmitting ? "Guardando..." : "Guardar producto"}

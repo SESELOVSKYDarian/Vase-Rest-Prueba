@@ -51,7 +51,7 @@ export function EditableRow({ value, onSave, children }: EditableRowProps) {
         onChange={(e) => setCurrentValue(e.target.value)}
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
-        className="bg-[#0d0d0d] border border-violet-500 rounded px-2 py-1 text-white focus:outline-none"
+        className="bg-surface border border-brand rounded px-2 py-1 text-ink focus:outline-none"
       />
     );
   }

@@ -27,9 +27,9 @@ export function ColorPickerField({ value, onChange, label }: ColorPickerFieldPro
 
   return (
     <div className="flex items-center gap-2">
-      {label && <span className="text-[#676b67] text-xs mr-2">{label}</span>}
+      {label && <span className="text-ink-3 text-xs mr-2">{label}</span>}
       <div
-        className="w-8 h-8 rounded-full border-2 border-[#252525] cursor-pointer overflow-hidden"
+        className="w-8 h-8 rounded-full border-2 border-line cursor-pointer overflow-hidden"
         style={{ backgroundColor: value }}
       >
         <input
@@ -43,7 +43,7 @@ export function ColorPickerField({ value, onChange, label }: ColorPickerFieldPro
         type="text"
         value={hex}
         onChange={handleHexChange}
-        className="w-24 bg-[#0d0d0d] border border-[#252525] rounded px-2 py-1 text-white text-sm font-mono"
+        className="w-24 bg-surface border border-line rounded px-2 py-1 text-ink text-sm font-mono"
         maxLength={7}
       />
     </div>

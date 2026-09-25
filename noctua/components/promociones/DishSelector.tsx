@@ -56,19 +56,19 @@ export function DishSelector({ platos, selectedDishIds, onChange, discountPercen
     <div className="space-y-3">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#676b67]" size={16} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3" size={16} />
           <input
             type="text"
             placeholder="Buscar plato..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg pl-10 pr-4 py-2 text-sm text-white"
+            className="w-full bg-canvas border border-line-strong rounded-lg pl-10 pr-4 py-2 text-sm text-ink"
           />
         </div>
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          className="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white"
+          className="bg-canvas border border-line-strong rounded-lg px-3 py-2 text-sm text-ink"
         >
           <option value="all">Todas</option>
           {categorias.map((nombre) => (
@@ -81,7 +81,7 @@ export function DishSelector({ platos, selectedDishIds, onChange, discountPercen
         <button
           type="button"
           onClick={handleSelectAllInCategory}
-          className="text-xs text-violet-400 hover:text-violet-300"
+          className="text-xs text-brand hover:text-brand"
         >
           {filteredDishes.every((d) => selectedDishIds.includes(d.id))
             ? 'Deseleccionar todos en la categoría'
@@ -89,14 +89,14 @@ export function DishSelector({ platos, selectedDishIds, onChange, discountPercen
         </button>
       )}
 
-      <div className="max-h-48 overflow-y-auto space-y-2 bg-[#0a0a0a] rounded-lg p-2 border border-[#2a2a2a]">
+      <div className="max-h-48 overflow-y-auto space-y-2 bg-canvas rounded-lg p-2 border border-line-strong">
         {filteredDishes.length === 0 && (
-          <p className="text-center text-[#676b67] text-sm py-4">No hay platos para mostrar</p>
+          <p className="text-center text-ink-3 text-sm py-4">No hay platos para mostrar</p>
         )}
         {filteredDishes.map((plato) => (
           <label
             key={plato.id}
-            className="flex items-center justify-between p-3 rounded-lg hover:bg-[#151515] cursor-pointer"
+            className="flex items-center justify-between p-3 rounded-lg hover:bg-surface-2 cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <input
@@ -106,13 +106,13 @@ export function DishSelector({ platos, selectedDishIds, onChange, discountPercen
                 className="rounded"
               />
               <div>
-                <div className="text-white text-sm">{plato.nombre}</div>
-                <div className="text-[#676b67] text-xs">{plato.categoriaNombre}</div>
+                <div className="text-ink text-sm">{plato.nombre}</div>
+                <div className="text-ink-3 text-xs">{plato.categoriaNombre}</div>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[#676b67] text-sm line-through">${plato.precio.toFixed(2)}</span>
-              <span className="text-green-400 text-sm font-medium">
+              <span className="text-ink-3 text-sm line-through">${plato.precio.toFixed(2)}</span>
+              <span className="text-green-700 dark:text-green-400 text-sm font-medium">
                 ${calculateDiscountedPrice(plato.precio).toFixed(2)}
               </span>
             </div>

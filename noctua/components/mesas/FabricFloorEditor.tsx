@@ -7,6 +7,31 @@ import type { Mesa } from '@/types/mesa';
 import { database } from '@/hooks/lib/databaseClient';
 import { MESA_ESTADO_HEX, ESTADOS_CON_PERSONAS } from '@/components/mesas/mesaEstadoColors';
 import { ZONAS_NAMES } from '@/hooks/lib/constants';
+import { useThemeStore } from '@/store/themeStore';
+import type { ThemeMode } from '@/config/theme';
+
+/** Paleta del plano por modo. Fabric pinta en <canvas> (no lee CSS vars), así que los
+ *  valores espejan a mano los tokens de globals.css: piso = canvas, mesa = surface,
+ *  número = ink. El color de estado sólo vive en el borde de la mesa y su badge. */
+const FLOOR_PALETTES = {
+  light: {
+    floor: '#f5f1ea', tableFill: '#fffdf9', insetFill: '#f5eee3', insetStroke: '#e4d8c6', label: '#2b251f',
+    badgeFill: '#fffdf9', badgeText: '#2b251f', zoneLabel: '#a39788', selection: '#2b251f', selectionStroke: '#fffdf9',
+    chairLeg: '#9c8166', chairSeat: '#e3cfb2', chairSeatStroke: '#bfa07a', chairBack: '#cdb08a', chairBackStroke: '#a9895f',
+    sofa: ['#cfdccf', '#e2ebe2', '#b9cbbb', '#c4d4c6', '#9fb4a3', '#a8bcab'], wall: '#d5cbbd', wallStroke: '#b8ab99',
+  },
+  dark: {
+    floor: '#1b1814', tableFill: '#27221d', insetFill: '#302923', insetStroke: '#473c32', label: '#f3ede4',
+    badgeFill: '#161310', badgeText: '#f3ede4', zoneLabel: '#71675c', selection: '#f3ede4', selectionStroke: '#1b1814',
+    chairLeg: '#4a3a2a', chairSeat: '#8a6d52', chairSeatStroke: '#c9a876', chairBack: '#6b5540', chairBackStroke: '#a98a65',
+    sofa: ['#26382e', '#3b5545', '#536f5d', '#405b49', '#8fa897', '#66806e'], wall: '#5b544b', wallStroke: '#8a8176',
+  },
+} as const;
+
+type FloorPalette = (typeof FLOOR_PALETTES)[ThemeMode];
+// Los constructores de muebles son funciones de módulo (fabric las llama al hidratar,
+// soltar y reconstruir); leen la paleta vigente en vez de recibirla por parámetro.
+let floor: FloorPalette = FLOOR_PALETTES.light;
 
 function findMesaForTableData(mesas: Mesa[], data: Record<string, unknown>): Mesa | undefined {
   return mesas.find((mesa) => mesa.id === String(data.mesaId) || mesa.numero === Number(data.mesaNumero));
@@ -42,21 +67,21 @@ function shapeToForma(shape: unknown): Mesa['forma'] {
 /** Arma los sub-objetos visuales de una mesa (superficie + inset + número + badge de comensales opcional). */
 function buildTableGroupObjects(numero: number, shape: FormaMesaFabric, color: string, comensales: string): FabricObject[] {
   const surface = shape === 'round'
-    ? new Circle({ left: 0, top: 0, originX: 'center', originY: 'center', radius: 46, fill: '#211b17', stroke: color, strokeWidth: 2.5 })
+    ? new Circle({ left: 0, top: 0, originX: 'center', originY: 'center', radius: 46, fill: floor.tableFill, stroke: color, strokeWidth: 2.5 })
     : shape === 'square'
-    ? new Rect({ left: 0, top: 0, originX: 'center', originY: 'center', width: 92, height: 92, rx: 14, ry: 14, fill: '#211b17', stroke: color, strokeWidth: 2.5 })
-    : new Rect({ left: 0, top: 0, originX: 'center', originY: 'center', width: 124, height: 78, rx: 18, ry: 18, fill: '#211b17', stroke: color, strokeWidth: 2.5 });
+    ? new Rect({ left: 0, top: 0, originX: 'center', originY: 'center', width: 92, height: 92, rx: 14, ry: 14, fill: floor.tableFill, stroke: color, strokeWidth: 2.5 })
+    : new Rect({ left: 0, top: 0, originX: 'center', originY: 'center', width: 124, height: 78, rx: 18, ry: 18, fill: floor.tableFill, stroke: color, strokeWidth: 2.5 });
   const inset = shape === 'round'
-    ? new Circle({ left: 0, top: 0, originX: 'center', originY: 'center', radius: 38, fill: '#30251e', stroke: '#564337', strokeWidth: 1 })
+    ? new Circle({ left: 0, top: 0, originX: 'center', originY: 'center', radius: 38, fill: floor.insetFill, stroke: floor.insetStroke, strokeWidth: 1 })
     : shape === 'square'
-    ? new Rect({ left: 0, top: 0, originX: 'center', originY: 'center', width: 76, height: 76, rx: 10, ry: 10, fill: '#30251e', stroke: '#564337', strokeWidth: 1 })
-    : new Rect({ left: 0, top: 0, originX: 'center', originY: 'center', width: 108, height: 62, rx: 13, ry: 13, fill: '#30251e', stroke: '#564337', strokeWidth: 1 });
-  const label = new Textbox(String(numero), { left: 0, top: 0, originX: 'center', originY: 'center', width: 44, fontSize: 26, fontWeight: '700', fill: '#fff', textAlign: 'center', selectable: false, evented: false });
+    ? new Rect({ left: 0, top: 0, originX: 'center', originY: 'center', width: 76, height: 76, rx: 10, ry: 10, fill: floor.insetFill, stroke: floor.insetStroke, strokeWidth: 1 })
+    : new Rect({ left: 0, top: 0, originX: 'center', originY: 'center', width: 108, height: 62, rx: 13, ry: 13, fill: floor.insetFill, stroke: floor.insetStroke, strokeWidth: 1 });
+  const label = new Textbox(String(numero), { left: 0, top: 0, originX: 'center', originY: 'center', width: 44, fontSize: 26, fontWeight: '600', fill: floor.label, fontFamily: 'Instrument Sans Variable, system-ui, sans-serif', textAlign: 'center', selectable: false, evented: false });
   const objects: FabricObject[] = [surface, inset, label];
   if (comensales) {
     objects.push(
-      new Rect({ left: -58, top: -58, originX: 'center', originY: 'center', width: 34, height: 20, rx: 10, ry: 10, fill: '#0e0e0eee', stroke: color, strokeWidth: 1 }),
-      new Textbox(comensales, { left: -58, top: -58, originX: 'center', originY: 'center', width: 32, fontSize: 11, fontWeight: '600', fill: '#fff', textAlign: 'center', selectable: false, evented: false }),
+      new Rect({ left: -58, top: -58, originX: 'center', originY: 'center', width: 34, height: 20, rx: 10, ry: 10, fill: floor.badgeFill, stroke: color, strokeWidth: 1 }),
+      new Textbox(comensales, { left: -58, top: -58, originX: 'center', originY: 'center', width: 32, fontSize: 11, fontWeight: '600', fill: floor.badgeText, fontFamily: 'Instrument Sans Variable, system-ui, sans-serif', textAlign: 'center', selectable: false, evented: false }),
     );
   }
   return objects;
@@ -82,8 +107,9 @@ function syncZoneLabels(canvas: Canvas) {
       left: pos.minX,
       top: Math.max(8, pos.minY - 34),
       fontSize: 13,
-      fontWeight: '700',
-      fill: '#3f4a43',
+      fontWeight: '600',
+      fill: floor.zoneLabel,
+      fontFamily: 'Instrument Sans Variable, system-ui, sans-serif',
       charSpacing: 120,
       selectable: false,
       evented: false,
@@ -105,7 +131,18 @@ function applyMesaVisual(object: FabricObject, mesa: Mesa) {
   const badgeRect = objects[3];
   const badgeText = objects[4] as Textbox | undefined;
   const label = comensalesLabel(mesa);
-  if (badgeRect && badgeRect.get('stroke') !== color) badgeRect.set({ stroke: color });
+  // El badge aparece/desaparece con el estado (ej. la mesa se ocupa, o el plano se dibujó
+  // antes de que llegaran las mesas reales): se agrega o quita sin recrear el grupo.
+  if (label && !badgeRect) {
+    const [, , , rect, text] = buildTableGroupObjects(mesa.numero, 'round', color, label);
+    // group.add() recibe coordenadas de escena: se lleva la esquina del badge (relativa al
+    // centro de la mesa) al plano del lienzo con la matriz del grupo.
+    const anchor = util.transformPoint(new Point(-58, -58), group.calcTransformMatrix());
+    [rect, text].forEach((part) => part.set({ left: anchor.x, top: anchor.y, angle: group.angle, scaleX: group.scaleX, scaleY: group.scaleY }));
+    group.add(rect, text);
+  } else if (!label && badgeRect) {
+    group.remove(...objects.slice(3));
+  }
   if (badgeText && label && badgeText.text !== label) badgeText.set({ text: label });
   group.set({ dirty: true });
 }
@@ -133,7 +170,7 @@ function getData(object: FabricObject): Record<string, unknown> {
 }
 
 function styleObject(object: FabricObject) {
-  object.set({ cornerColor: '#7ed957', cornerStrokeColor: '#101510', borderColor: '#7ed957', cornerSize: 10, transparentCorners: false, padding: 6 });
+  object.set({ cornerColor: floor.selectionStroke, cornerStrokeColor: floor.selection, borderColor: floor.selection, cornerSize: 9, cornerStyle: 'circle', transparentCorners: false, padding: 6 });
 }
 
 function setObjectData(object: FabricObject, data: Record<string, unknown>) {
@@ -142,15 +179,15 @@ function setObjectData(object: FabricObject, data: Record<string, unknown>) {
 
 /** Silla vista desde arriba: asiento + respaldo + 4 patas asomando en las esquinas, en tono madera. */
 function makeChair(x: number, y: number, tableId?: string) {
-  const legFill = '#4a3a2a';
+  const legFill = floor.chairLeg;
   const legs = [
     new Circle({ left: -13, top: -2, radius: 1.6, fill: legFill }),
     new Circle({ left: 9.8, top: -2, radius: 1.6, fill: legFill }),
     new Circle({ left: -13, top: 18.8, radius: 1.6, fill: legFill }),
     new Circle({ left: 9.8, top: 18.8, radius: 1.6, fill: legFill }),
   ];
-  const seat = new Rect({ left: -11, top: 0, width: 22, height: 22, rx: 6, ry: 6, fill: '#8a6d52', stroke: '#c9a876', strokeWidth: 1.5 });
-  const backrest = new Rect({ left: -9, top: -10, width: 18, height: 10, rx: 4, ry: 4, fill: '#6b5540', stroke: '#a98a65', strokeWidth: 1.25 });
+  const seat = new Rect({ left: -11, top: 0, width: 22, height: 22, rx: 6, ry: 6, fill: floor.chairSeat, stroke: floor.chairSeatStroke, strokeWidth: 1.5 });
+  const backrest = new Rect({ left: -9, top: -10, width: 18, height: 10, rx: 4, ry: 4, fill: floor.chairBack, stroke: floor.chairBackStroke, strokeWidth: 1.25 });
   const chair = new Group([...legs, seat, backrest], { left: x, top: y, objectCaching: false });
   setObjectData(chair, { kind: 'chair', tableId: tableId ?? null });
   styleObject(chair);
@@ -159,16 +196,88 @@ function makeChair(x: number, y: number, tableId?: string) {
 
 function makeSofa(x: number, y: number) {
   const sofa = new Group([
-    new Rect({ left: -52, top: -24, width: 104, height: 50, rx: 15, ry: 15, fill: '#26382e', stroke: '#8fa897', strokeWidth: 2 }),
-    new Rect({ left: -40, top: -15, width: 80, height: 34, rx: 11, ry: 11, fill: '#3b5545', stroke: '#66806e', strokeWidth: 1.25 }),
-    new Rect({ left: -43, top: -24, width: 86, height: 12, rx: 7, ry: 7, fill: '#536f5d', stroke: '#a9beaf', strokeWidth: 1.5 }),
-    new Rect({ left: -52, top: -15, width: 15, height: 39, rx: 8, ry: 8, fill: '#405b49', stroke: '#91aa99', strokeWidth: 1.5 }),
-    new Rect({ left: 37, top: -15, width: 15, height: 39, rx: 8, ry: 8, fill: '#405b49', stroke: '#91aa99', strokeWidth: 1.5 }),
-    new Rect({ left: -1, top: -12, width: 2, height: 28, rx: 1, ry: 1, fill: '#26382e' }),
+    new Rect({ left: -52, top: -24, width: 104, height: 50, rx: 15, ry: 15, fill: floor.sofa[0], stroke: floor.sofa[4], strokeWidth: 2 }),
+    new Rect({ left: -40, top: -15, width: 80, height: 34, rx: 11, ry: 11, fill: floor.sofa[1], stroke: floor.sofa[5], strokeWidth: 1.25 }),
+    new Rect({ left: -43, top: -24, width: 86, height: 12, rx: 7, ry: 7, fill: floor.sofa[2], stroke: floor.sofa[4], strokeWidth: 1.5 }),
+    new Rect({ left: -52, top: -15, width: 15, height: 39, rx: 8, ry: 8, fill: floor.sofa[3], stroke: floor.sofa[4], strokeWidth: 1.5 }),
+    new Rect({ left: 37, top: -15, width: 15, height: 39, rx: 8, ry: 8, fill: floor.sofa[3], stroke: floor.sofa[4], strokeWidth: 1.5 }),
+    new Rect({ left: -1, top: -12, width: 2, height: 28, rx: 1, ry: 1, fill: floor.sofa[0] }),
   ], { left: x, top: y, objectCaching: false });
   setObjectData(sofa, { kind: 'sofa' });
   styleObject(sofa);
   return sofa;
+}
+
+/** En fabric 7 `canvas.toJSON()` no acepta propiedades extra (ignora `['data']`): hay que
+ *  usar `toObject`, o se pierde el `data` de cada objeto (qué es mesa, silla, a qué mesa
+ *  pertenece) en cada guardado y en el historial de deshacer. */
+function serializeCanvas(canvas: Canvas): unknown {
+  return canvas.toObject(['data']);
+}
+
+/** Planos guardados antes del arreglo de `serializeCanvas` llegan sin `data`. Se reconoce
+ *  cada objeto por su forma (mesa = grupo con número, silla = 4 patas + 2 piezas, sillón =
+ *  6 piezas, pared = barra de 12px) y se descartan rótulos de zona viejos y copias de la
+ *  misma mesa que se acumulaban en cada carga (queda la de arriba, que es la que se veía). */
+function recoverUntaggedObjects(canvas: Canvas, mesas: Mesa[]) {
+  const objects = canvas.getObjects();
+  const lastTableByNumero = new Map<number, FabricObject>();
+  const untaggedTables: Array<{ object: FabricObject; numero: number }> = [];
+  objects.forEach((object) => {
+    if (getData(object).kind) return;
+    if (object.type === 'textbox' || object.type === 'Textbox') { canvas.remove(object); return; }
+    if (object instanceof Group) {
+      const children = object.getObjects();
+      const numberLabel = children.find((child) => child instanceof Textbox && /^\d+$/.test((child as Textbox).text ?? '')) as Textbox | undefined;
+      if (numberLabel) {
+        const numero = Number(numberLabel.text);
+        untaggedTables.push({ object, numero });
+        // Copias con coordenadas absurdas vienen del viejo bug de concatenación de strings.
+        const sane = Math.abs(object.left ?? 0) < 10000 && Math.abs(object.top ?? 0) < 10000;
+        if (sane) lastTableByNumero.set(numero, object);
+        return;
+      }
+      const circles = children.filter((child) => child instanceof Circle).length;
+      if (circles === 4 && children.length === 6) setObjectData(object, { kind: 'chair', tableId: null });
+      else if (circles === 0 && children.length === 6) setObjectData(object, { kind: 'sofa' });
+      return;
+    }
+    if (object instanceof Rect && Math.round(object.height ?? 0) === 12) setObjectData(object, { kind: 'wall' });
+  });
+  const taggedNumbers = new Set(objects.map((object) => Number(getData(object).mesaNumero)).filter(Boolean));
+  untaggedTables.forEach(({ object, numero }) => {
+    if (taggedNumbers.has(numero) || lastTableByNumero.get(numero) !== object) { canvas.remove(object); return; }
+    const mesa = mesas.find((candidate) => candidate.numero === numero);
+    const surface = (object as Group).getObjects()[0];
+    const shape: FormaMesaFabric = surface instanceof Circle ? 'round' : Math.abs((surface?.width ?? 0) - (surface?.height ?? 0)) < 4 ? 'square' : 'rectangular';
+    setObjectData(object, { kind: 'tableGroup', mesaId: mesa?.id ?? null, mesaNumero: numero, capacidad: 0, sectionId: mesa?.zona ?? '', shape });
+  });
+}
+
+/** Encuadra el salón al abrir: centra los muebles y reduce el zoom si no entran (nunca
+ *  agranda por encima de 100%). Deja aire arriba para la barra flotante del editor. */
+function fitToContent(canvas: Canvas): number | null {
+  const items = canvas.getObjects().filter((object) => Boolean(getData(object).kind));
+  if (items.length === 0) return null;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  items.forEach((object) => {
+    const rect = object.getBoundingRect();
+    minX = Math.min(minX, rect.left); minY = Math.min(minY, rect.top);
+    maxX = Math.max(maxX, rect.left + rect.width); maxY = Math.max(maxY, rect.top + rect.height);
+  });
+  const width = canvas.getWidth();
+  const height = canvas.getHeight();
+  const pad = 56;
+  const toolbar = 72;
+  const zoom = Math.max(0.3, Math.min(1, (width - pad * 2) / Math.max(1, maxX - minX), (height - pad * 2 - toolbar) / Math.max(1, maxY - minY)));
+  // Si ni al zoom mínimo entra (pantallas chicas), se ancla al borde izquierdo/superior
+  // para que la primera mesa quede visible y el resto se alcance deslizando.
+  const fitsX = (maxX - minX) * zoom <= width - pad * 2;
+  const fitsY = (maxY - minY) * zoom <= height - pad * 2 - toolbar;
+  const translateX = fitsX ? width / 2 - ((minX + maxX) / 2) * zoom : pad / 2 - minX * zoom;
+  const translateY = fitsY ? (height + toolbar) / 2 - ((minY + maxY) / 2) * zoom : toolbar - minY * zoom;
+  canvas.setViewportTransform([zoom, 0, 0, zoom, translateX, translateY]);
+  return zoom;
 }
 
 function refreshFurnitureDesign(canvas: Canvas, mesas: Mesa[], editing: boolean) {
@@ -189,7 +298,8 @@ function refreshFurnitureDesign(canvas: Canvas, mesas: Mesa[], editing: boolean)
       replacement.setCoords();
       return;
     }
-    if (data.kind !== 'chair' && data.kind !== 'sofa') return;
+    if (data.kind === 'wall') { object.set({ fill: floor.wall, stroke: floor.wallStroke }); styleObject(object); return; }
+    if (data.kind !== 'chair' && data.kind !== 'sofa') { styleObject(object); return; }
     const index = canvas.getObjects().indexOf(object);
     const replacement = data.kind === 'chair'
       ? makeChair(object.left ?? 0, object.top ?? 0)
@@ -209,6 +319,7 @@ function refreshFurnitureDesign(canvas: Canvas, mesas: Mesa[], editing: boolean)
 }
 
 export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaCapacity, onPreviewTableClick, onSaveMesaPosition, mode: controlledMode, onModeChange, visibleMesaIds }: FabricFloorEditorProps) {
+  const themeMode = useThemeStore((state) => state.mode);
   const canvasElement = useRef<HTMLCanvasElement>(null);
   const canvasRef = useRef<Canvas | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -243,6 +354,7 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
   const backgroundFileInput = useRef<HTMLInputElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const hydratedRef = useRef(false);
+  const fittedRef = useRef(false);
   const toolRef = useRef<Tool>('select');
   const editorModeRef = useRef<'edit' | 'preview'>('edit');
   const historyRef = useRef<string[]>([]);
@@ -258,7 +370,7 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
   const pushHistorySnapshot = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const snapshot = JSON.stringify((canvas.toJSON as unknown as (properties?: string[]) => unknown)(['data']));
+    const snapshot = JSON.stringify(serializeCanvas(canvas));
     const history = historyRef.current.slice(0, historyIndexRef.current + 1);
     if (history[history.length - 1] === snapshot) return;
     historyRef.current = [...history, snapshot].slice(-50);
@@ -271,6 +383,18 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
   useEffect(() => { mesasRef.current = mesas; }, [mesas]);
   useEffect(() => { updateCapacityRef.current = onUpdateMesaCapacity; }, [onUpdateMesaCapacity]);
   useEffect(() => { previewTableClickRef.current = onPreviewTableClick; }, [onPreviewTableClick]);
+
+  // El plano sigue al modo claro/oscuro: se cambia la paleta de módulo y, si el lienzo ya
+  // está hidratado, se reconstruyen los muebles en el lugar (misma posición/datos).
+  useEffect(() => {
+    floor = FLOOR_PALETTES[themeMode];
+    const canvas = canvasRef.current;
+    if (!canvas || !hydratedRef.current) return;
+    refreshFurnitureDesign(canvas, mesasRef.current, editorModeRef.current === 'edit');
+    canvas.backgroundColor = floor.floor;
+    syncZoneLabels(canvas);
+    canvas.requestRenderAll();
+  }, [themeMode]);
 
   useEffect(() => {
     const savedSections = window.localStorage.getItem(`${STORAGE_KEY}:sections`);
@@ -293,7 +417,7 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
 
   useEffect(() => {
     if (!canvasElement.current || canvasRef.current) return;
-    const canvas = new Canvas(canvasElement.current, { backgroundColor: '#0b0f0c', preserveObjectStacking: true, selection: true });
+    const canvas = new Canvas(canvasElement.current, { backgroundColor: floor.floor, preserveObjectStacking: true, selection: true });
     canvasRef.current = canvas;
     const preventNativeMenu = (event: MouseEvent) => event.preventDefault();
     canvas.upperCanvasEl.addEventListener('contextmenu', preventNativeMenu);
@@ -314,15 +438,16 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
         const local = window.localStorage.getItem(STORAGE_KEY);
         return local ? JSON.parse(local) : null;
       })();
-      if (savedPayload) await canvas.loadFromJSON(savedPayload);
+      if (savedPayload) { await canvas.loadFromJSON(savedPayload); recoverUntaggedObjects(canvas, mesasRef.current); }
       refreshFurnitureDesign(canvas, mesasRef.current, editorModeRef.current === 'edit');
+      canvas.backgroundColor = floor.floor;
       syncZoneLabels(canvas);
       setHasBackgroundImage(Boolean(canvas.backgroundImage));
       if (canvas.backgroundImage) setBackgroundOpacityState(canvas.backgroundImage.opacity ?? 1);
       canvas.requestRenderAll(); hydratedRef.current = true; pushHistorySnapshot(); setCanvasReady(true); setStatus(savedPayload ? 'Guardado' : 'Sin cambios');
     };
     void hydrate();
-    historyRef.current = [JSON.stringify((canvas.toJSON as unknown as (properties?: string[]) => unknown)(['data']))];
+    historyRef.current = [JSON.stringify(serializeCanvas(canvas))];
     historyIndexRef.current = 0;
 
     const onSelection = (event: { selected?: FabricObject[] }) => {
@@ -397,7 +522,13 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
           }
           setPreviewInfo({ numero: Number(data.mesaNumero), capacidad: Number(data.capacidad ?? 0), x: pointer.offsetX, y: pointer.offsetY });
         }
-        else setPreviewInfo(null);
+        else {
+          // En modo vista, arrastrar sobre el piso mueve el plano (también con el dedo).
+          setPreviewInfo(null);
+          panning = true;
+          lastPoint = { x: pointer.clientX, y: pointer.clientY };
+          canvas.selection = false;
+        }
         return;
       }
       setContextMenu(null);
@@ -410,7 +541,7 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
       canvas.discardActiveObject();
     });
     canvas.on('mouse:move', (event) => {
-      if (!panning || toolRef.current !== 'hand') return;
+      if (!panning) return;
       const pointer = event.e as MouseEvent;
       const point = { x: pointer.clientX, y: pointer.clientY };
       const transform = canvas.viewportTransform;
@@ -505,7 +636,10 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
       const zona = mesa.zona || ZONAS_NAMES[1];
       const col = perZoneCount.get(zona) ?? 0;
       perZoneCount.set(zona, col + 1);
-      const position = mesa.posicion.x > 20 || mesa.posicion.y > 20 ? mesa.posicion : { x: 140 + col * 220, y: 160 + zoneRow(zona) * 220 };
+      // La posición guardada ya es el centro del grupo (save() guarda left/top con origin center);
+      // solo la grilla por defecto necesita el corrimiento de media mesa.
+      const saved = mesa.posicion.x > 20 || mesa.posicion.y > 20;
+      const position = saved ? { x: mesa.posicion.x - 80, y: mesa.posicion.y - 80 } : { x: 140 + col * 220, y: 160 + zoneRow(zona) * 220 };
       const shape = formaToShape(mesa.forma);
       const objects = buildTableGroupObjects(mesa.numero, shape, MESA_ESTADO_HEX[mesa.estado], comensalesLabel(mesa));
       const group = new Group(objects, { left: position.x + 80, top: position.y + 80, originX: 'center', originY: 'center', subTargetCheck: false, interactive: false, objectCaching: false, selectable: editorModeRef.current === 'edit', evented: true });
@@ -534,6 +668,18 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
     });
   }, [canvasReady, mesas, onUpdateMesaCapacity]);
 
+  // Primer encuadre, una vez que el plano guardado y las mesas reales ya están dibujados.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !hydratedRef.current || fittedRef.current || mesas.length === 0) return;
+    const frame = requestAnimationFrame(() => {
+      fittedRef.current = true;
+      const next = fitToContent(canvas);
+      if (next) { setZoom(next); canvas.requestRenderAll(); }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [canvasReady, mesas]);
+
   // Atenúa las mesas que no matchean el filtro/buscador de la página (tabs de estado, búsqueda por número/zona).
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -545,12 +691,12 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
       object.set({ opacity: visible ? 1 : 0.25 });
     });
     canvas.requestRenderAll();
-  }, [canvasReady, mesas, visibleMesaIds]);
+  }, [canvasReady, mesas, visibleMesaIds, themeMode]);
 
   const save = async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const serialized = (canvas.toJSON as unknown as (properties?: string[]) => unknown)(['data']);
+    const serialized = serializeCanvas(canvas);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(serialized));
     window.localStorage.setItem(`${STORAGE_KEY}:section:${activeSection}`, JSON.stringify(serialized));
     window.localStorage.setItem(`${STORAGE_KEY}:sections`, JSON.stringify(sections));
@@ -570,13 +716,13 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
   const switchSection = async (nextSection: string) => {
     const canvas = canvasRef.current;
     if (!canvas || nextSection === activeSection) return;
-    const current = (canvas.toJSON as unknown as (properties?: string[]) => unknown)(['data']);
+    const current = serializeCanvas(canvas);
     window.localStorage.setItem(`${STORAGE_KEY}:section:${activeSection}`, JSON.stringify(current));
     const next = window.localStorage.getItem(`${STORAGE_KEY}:section:${nextSection}`);
     canvas.discardActiveObject();
-    if (next) { await canvas.loadFromJSON(JSON.parse(next)); refreshFurnitureDesign(canvas, mesasRef.current, editorModeRef.current === 'edit'); }
+    if (next) { await canvas.loadFromJSON(JSON.parse(next)); recoverUntaggedObjects(canvas, mesasRef.current); refreshFurnitureDesign(canvas, mesasRef.current, editorModeRef.current === 'edit'); }
     else { canvas.clear(); canvas.backgroundImage = undefined; }
-    canvas.backgroundColor = '#0b0f0c';
+    canvas.backgroundColor = floor.floor;
     syncZoneLabels(canvas);
     setHasBackgroundImage(Boolean(canvas.backgroundImage));
     if (canvas.backgroundImage) setBackgroundOpacityState(canvas.backgroundImage.opacity ?? 1);
@@ -603,7 +749,7 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
     const center = dropPoint ?? canvas.getVpCenter();
     let object: FabricObject;
     if (kind === 'chair') object = makeChair(center.x - 12, center.y - 11);
-    else { object = new Rect({ left: center.x - 100, top: center.y - 6, width: 200, height: 12, fill: '#66726a', stroke: '#a9b8ad', strokeWidth: 1 }); setObjectData(object, { kind: 'wall' }); }
+    else { object = new Rect({ left: center.x - 100, top: center.y - 6, width: 200, height: 12, fill: floor.wall, stroke: floor.wallStroke, strokeWidth: 1 }); setObjectData(object, { kind: 'wall' }); }
     styleObject(object);
     canvas.add(object);
     canvas.setActiveObject(object);
@@ -766,7 +912,7 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
     canvas.requestRenderAll();
     setSelected(null);
     setStatus('Cambios sin guardar');
-    const serialized = (canvas.toJSON as unknown as (properties?: string[]) => unknown)(['data']);
+    const serialized = serializeCanvas(canvas);
     window.localStorage.setItem(`${STORAGE_KEY}:section:${activeSection}`, JSON.stringify(serialized));
   };
 
@@ -1091,89 +1237,90 @@ export function FabricFloorEditor({ mesas, onDelete, onCreateMesa, onUpdateMesaC
   const sofaDraftAssigned = sofaDraftSelectedAssigned + sofaDraftOtherAssigned;
   const sofaDraftCapacity = sofaAllocationDraft ? Number(getData(sofaAllocationDraft.sofa).capacity ?? 1) : 0;
 
-  return <div className="relative flex min-h-0 flex-1 overflow-hidden bg-[#0b0f0c]" ref={wrapperRef} onDragEnter={(event) => { if (event.dataTransfer.types.includes('application/x-vase-floor-object')) setDragOverCanvas(true); }} onDragOver={(event) => { if (event.dataTransfer.types.includes('application/x-vase-floor-object')) { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; } }} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOverCanvas(false); }} onDrop={handleCanvasDrop}>
+  return <div className="relative flex min-h-0 flex-1 overflow-hidden bg-canvas" ref={wrapperRef} onDragEnter={(event) => { if (event.dataTransfer.types.includes('application/x-vase-floor-object')) setDragOverCanvas(true); }} onDragOver={(event) => { if (event.dataTransfer.types.includes('application/x-vase-floor-object')) { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; } }} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOverCanvas(false); }} onDrop={handleCanvasDrop}>
     <canvas ref={canvasElement} className={tool === 'hand' ? 'cursor-grab' : 'cursor-default'} />
-    {dragOverCanvas && <div className="pointer-events-none absolute inset-3 z-10 flex items-end justify-center rounded-3xl border-2 border-dashed border-[#7ed957]/70 bg-[#7ed957]/5 pb-8"><span className="rounded-full border border-[#7ed957]/30 bg-[#132016]/95 px-4 py-2 text-sm font-medium text-[#c8f7ae] shadow-xl">Soltá para agregar al plano</span></div>}
-    <div className="absolute left-1/2 top-4 z-20 flex -translate-x-1/2 items-center gap-1 rounded-2xl border border-[#2b3a2f] bg-[#151a16]/95 p-1.5 shadow-2xl backdrop-blur-xl">
-      <div className="flex rounded-xl bg-[#0d110e] p-1"><button onClick={() => setEditorMode('edit')} className={`flex h-9 cursor-pointer items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors ${editorMode === 'edit' ? 'bg-[#7ed957] text-[#0e0e0e]' : 'text-[#829487] hover:text-white'}`}><Pencil size={16} /><span className="hidden xl:inline">Editar</span></button><button onClick={() => setEditorMode('preview')} className={`flex h-9 cursor-pointer items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors ${editorMode === 'preview' ? 'bg-[#7ed957] text-[#0e0e0e]' : 'text-[#829487] hover:text-white'}`}><Eye size={16} /><span className="hidden xl:inline">Previsualizar</span></button></div>
-      <div className="mx-1 h-7 w-px bg-[#2b3a2f]" />
-      <button onClick={() => setTool('select')} className={`rounded-xl p-2.5 ${tool === 'select' ? 'bg-[#7ed957] text-[#0e0e0e]' : 'text-[#829487]'}`} title="Seleccionar"><MousePointer2 size={17} /></button>
-      <button onClick={() => setTool('hand')} className={`rounded-xl p-2.5 ${tool === 'hand' ? 'bg-[#7ed957] text-[#0e0e0e]' : 'text-[#829487]'}`} title="Mover viewport"><Hand size={17} /></button>
-      <div className="mx-1 h-7 w-px bg-[#2b3a2f]" />
+    {dragOverCanvas && <div className="pointer-events-none absolute inset-3 z-10 flex items-end justify-center rounded-3xl border-2 border-dashed border-brand/70 bg-brand/5 pb-8"><span className="rounded-full border border-brand/30 bg-surface/95 px-4 py-2 text-sm font-medium text-brand-strong shadow-card">Soltá para agregar al plano</span></div>}
+    {/* Con modo controlado desde la página, la vista operativa no muestra herramientas de edición. */}
+    <div className={`absolute left-1/2 top-4 z-20 -translate-x-1/2 items-center gap-1 rounded-2xl border border-line bg-surface/95 p-1.5 shadow-float backdrop-blur-xl ${controlledMode && editorMode === 'preview' ? 'hidden' : 'flex'}`}>
+      <div className="flex rounded-xl bg-surface p-1"><button onClick={() => setEditorMode('edit')} className={`flex h-9 cursor-pointer items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors ${editorMode === 'edit' ? 'bg-brand text-on-brand' : 'text-ink-3 hover:text-ink'}`}><Pencil size={16} /><span className="hidden xl:inline">Editar</span></button><button onClick={() => setEditorMode('preview')} className={`flex h-9 cursor-pointer items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors ${editorMode === 'preview' ? 'bg-brand text-on-brand' : 'text-ink-3 hover:text-ink'}`}><Eye size={16} /><span className="hidden xl:inline">Previsualizar</span></button></div>
+      <div className="mx-1 h-7 w-px bg-surface-3" />
+      <button onClick={() => setTool('select')} className={`rounded-xl p-2.5 ${tool === 'select' ? 'bg-brand text-on-brand' : 'text-ink-3'}`} title="Seleccionar"><MousePointer2 size={17} /></button>
+      <button onClick={() => setTool('hand')} className={`rounded-xl p-2.5 ${tool === 'hand' ? 'bg-brand text-on-brand' : 'text-ink-3'}`} title="Mover viewport"><Hand size={17} /></button>
+      <div className="mx-1 h-7 w-px bg-surface-3" />
       <div className="relative" ref={moreMenuRef}>
-        <button onClick={() => setMoreMenuOpen((open) => !open)} className={`rounded-xl p-2.5 transition-colors ${moreMenuOpen ? 'bg-[#243523] text-[#b7f397]' : 'text-[#829487] hover:bg-white/5 hover:text-white'}`} title="Más acciones"><MoreHorizontal size={17} /></button>
-        {moreMenuOpen && <div className="absolute left-1/2 top-full z-30 mt-2 flex min-w-44 -translate-x-1/2 flex-col gap-0.5 rounded-2xl border border-[#304034] bg-[#151a16]/98 p-1.5 shadow-2xl backdrop-blur-xl">
-          <button onClick={() => { restoreHistory(historyIndexRef.current - 1); setMoreMenuOpen(false); }} disabled={historyIndexRef.current <= 0} className="flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 text-left text-sm text-[#d4dfd7] transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-30"><Undo2 size={16} />Deshacer</button>
-          <button onClick={() => { restoreHistory(historyIndexRef.current + 1); setMoreMenuOpen(false); }} disabled={historyIndexRef.current >= historyRef.current.length - 1} className="flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 text-left text-sm text-[#d4dfd7] transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-30"><Redo2 size={16} />Rehacer</button>
-          <div className="my-1 h-px bg-[#2b3a2f]" />
-          <button onClick={() => { copySelection(); setMoreMenuOpen(false); }} disabled={!selectedObjects.length} className="flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 text-left text-sm text-[#d4dfd7] transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-30"><Copy size={16} />Copiar</button>
-          <button onClick={() => { void pasteClipboard(); setMoreMenuOpen(false); }} disabled={!clipboardRef.current.length} className="flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 text-left text-sm text-[#d4dfd7] transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-30"><ClipboardPaste size={16} />Pegar</button>
+        <button onClick={() => setMoreMenuOpen((open) => !open)} className={`rounded-xl p-2.5 transition-colors ${moreMenuOpen ? 'bg-surface-3 text-brand-strong' : 'text-ink-3 hover:bg-ink/5 hover:text-ink'}`} title="Más acciones"><MoreHorizontal size={17} /></button>
+        {moreMenuOpen && <div className="absolute left-1/2 top-full z-30 mt-2 flex min-w-44 -translate-x-1/2 flex-col gap-0.5 rounded-2xl border border-line-strong bg-surface/98 p-1.5 shadow-float backdrop-blur-xl">
+          <button onClick={() => { restoreHistory(historyIndexRef.current - 1); setMoreMenuOpen(false); }} disabled={historyIndexRef.current <= 0} className="flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 text-left text-sm text-ink-2 transition-colors hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-30"><Undo2 size={16} />Deshacer</button>
+          <button onClick={() => { restoreHistory(historyIndexRef.current + 1); setMoreMenuOpen(false); }} disabled={historyIndexRef.current >= historyRef.current.length - 1} className="flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 text-left text-sm text-ink-2 transition-colors hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-30"><Redo2 size={16} />Rehacer</button>
+          <div className="my-1 h-px bg-surface-3" />
+          <button onClick={() => { copySelection(); setMoreMenuOpen(false); }} disabled={!selectedObjects.length} className="flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 text-left text-sm text-ink-2 transition-colors hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-30"><Copy size={16} />Copiar</button>
+          <button onClick={() => { void pasteClipboard(); setMoreMenuOpen(false); }} disabled={!clipboardRef.current.length} className="flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 text-left text-sm text-ink-2 transition-colors hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-30"><ClipboardPaste size={16} />Pegar</button>
         </div>}
       </div>
-      <div className="mx-1 h-7 w-px bg-[#2b3a2f]" />
-      <button onClick={() => setPanelOpen((open) => !open)} className={`flex h-11 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors ${panelOpen ? 'bg-[#243523] text-[#b7f397]' : 'text-[#829487] hover:bg-white/5 hover:text-white'}`} title="Elementos y secciones"><Shapes size={18} /><span className="hidden 2xl:inline">Elementos</span></button>
-      <button onClick={deleteSelected} disabled={!selected} className="rounded-xl p-2.5 text-red-300 disabled:opacity-30" title="Eliminar"><Trash2 size={17} /></button><button onClick={save} className="rounded-xl bg-[#7ed957] p-2.5 text-[#0e0e0e]" title="Guardar"><Save size={17} /></button>
+      <div className="mx-1 h-7 w-px bg-surface-3" />
+      <button onClick={() => setPanelOpen((open) => !open)} className={`flex h-11 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors ${panelOpen ? 'bg-surface-3 text-brand-strong' : 'text-ink-3 hover:bg-ink/5 hover:text-ink'}`} title="Elementos y secciones"><Shapes size={18} /><span className="hidden 2xl:inline">Elementos</span></button>
+      <button onClick={deleteSelected} disabled={!selected} className="rounded-xl p-2.5 text-red-700 dark:text-red-300 disabled:opacity-30" title="Eliminar"><Trash2 size={17} /></button><button onClick={save} className="rounded-xl bg-brand p-2.5 text-on-brand" title="Guardar"><Save size={17} /></button>
     </div>
-    {(canLinkSelection || canAllocateSofa || canUnlinkSelection) && editorMode === 'edit' && <div className="absolute bottom-20 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-2xl border border-[#304034] bg-[#151a16]/95 p-2 shadow-2xl backdrop-blur-xl">{canLinkSelection && <button onClick={linkSelectedObjects} className="flex h-11 cursor-pointer items-center gap-2 rounded-xl bg-[#7ed957] px-4 text-sm font-semibold text-[#0e0e0e] transition-colors hover:bg-[#8be568]"><Link2 size={17} />Unir {selectedChairs.length} {selectedChairs.length === 1 ? 'silla' : 'sillas'}</button>}{canAllocateSofa && <button onClick={openSofaAllocation} className="flex h-11 cursor-pointer items-center gap-2 rounded-xl bg-[#7ed957] px-4 text-sm font-semibold text-[#0e0e0e] transition-colors hover:bg-[#8be568]"><Link2 size={17} />Distribuir sillón</button>}{canUnlinkSelection && <button onClick={unlinkSelectedObjects} className="flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-[#3a4a3e] px-4 text-sm font-medium text-[#c4d0c7] transition-colors hover:bg-white/5"><Unlink size={17} />Desunir</button>}</div>}
-    <div className="absolute bottom-5 left-5 z-20 flex items-center gap-1 rounded-2xl border border-[#2b3a2f] bg-[#151a16]/95 p-1.5 shadow-xl backdrop-blur-xl"><button onClick={() => zoomBy(0.9)} className="h-9 w-9 rounded-xl text-[#829487] hover:bg-white/10"><ZoomOut size={16} /></button><span className="min-w-12 text-center text-xs text-[#829487]">{Math.round(zoom * 100)}%</span><button onClick={() => zoomBy(1.1)} className="h-9 w-9 rounded-xl text-[#829487] hover:bg-white/10"><ZoomIn size={16} /></button></div>
-    {panelOpen && <aside className="absolute right-0 top-0 z-20 flex h-full w-80 flex-col border-l border-[#26362a] bg-[#111612]/98 shadow-2xl backdrop-blur-xl">
-      <div className="flex items-start justify-between p-5 pb-0"><div><p className="text-base font-semibold text-white">Elementos y secciones</p><p className="mt-1 text-sm text-[#829487]">Agregá objetos o cambiá de sección</p></div><button aria-label="Cerrar panel" onClick={() => setPanelOpen(false)} className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-[#829487] transition-colors hover:bg-white/5 hover:text-white"><X size={19} /></button></div>
-      <div className="mx-5 mt-4 flex rounded-xl bg-[#0d110e] p-1">
-        <button onClick={() => setPanelTab('elementos')} className={`flex h-9 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors ${panelTab === 'elementos' ? 'bg-[#7ed957] text-[#0e0e0e]' : 'text-[#829487] hover:text-white'}`}><Shapes size={15} />Elementos</button>
-        <button onClick={() => setPanelTab('secciones')} className={`flex h-9 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors ${panelTab === 'secciones' ? 'bg-[#7ed957] text-[#0e0e0e]' : 'text-[#829487] hover:text-white'}`}><Layers3 size={15} />Secciones</button>
+    {(canLinkSelection || canAllocateSofa || canUnlinkSelection) && editorMode === 'edit' && <div className="absolute bottom-20 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-2xl border border-line-strong bg-surface/95 p-2 shadow-float backdrop-blur-xl">{canLinkSelection && <button onClick={linkSelectedObjects} className="flex h-11 cursor-pointer items-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-on-brand transition-colors hover:bg-brand"><Link2 size={17} />Unir {selectedChairs.length} {selectedChairs.length === 1 ? 'silla' : 'sillas'}</button>}{canAllocateSofa && <button onClick={openSofaAllocation} className="flex h-11 cursor-pointer items-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-on-brand transition-colors hover:bg-brand"><Link2 size={17} />Distribuir sillón</button>}{canUnlinkSelection && <button onClick={unlinkSelectedObjects} className="flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-line-strong px-4 text-sm font-medium text-ink-2 transition-colors hover:bg-ink/5"><Unlink size={17} />Desunir</button>}</div>}
+    <div className="absolute bottom-5 left-5 z-20 flex items-center gap-1 rounded-2xl border border-line bg-surface/95 p-1.5 shadow-card backdrop-blur-xl"><button onClick={() => zoomBy(0.9)} className="h-9 w-9 rounded-xl text-ink-3 hover:bg-ink/10"><ZoomOut size={16} /></button><span className="min-w-12 text-center text-xs text-ink-3">{Math.round(zoom * 100)}%</span><button onClick={() => zoomBy(1.1)} className="h-9 w-9 rounded-xl text-ink-3 hover:bg-ink/10"><ZoomIn size={16} /></button></div>
+    {panelOpen && <aside className="absolute right-0 top-0 z-20 flex h-full w-80 flex-col border-l border-line bg-surface/98 shadow-float backdrop-blur-xl">
+      <div className="flex items-start justify-between p-5 pb-0"><div><p className="text-base font-semibold text-ink">Elementos y secciones</p><p className="mt-1 text-sm text-ink-3">Agregá objetos o cambiá de sección</p></div><button aria-label="Cerrar panel" onClick={() => setPanelOpen(false)} className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-ink-3 transition-colors hover:bg-ink/5 hover:text-ink"><X size={19} /></button></div>
+      <div className="mx-5 mt-4 flex rounded-xl bg-surface p-1">
+        <button onClick={() => setPanelTab('elementos')} className={`flex h-9 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors ${panelTab === 'elementos' ? 'bg-brand text-on-brand' : 'text-ink-3 hover:text-ink'}`}><Shapes size={15} />Elementos</button>
+        <button onClick={() => setPanelTab('secciones')} className={`flex h-9 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors ${panelTab === 'secciones' ? 'bg-brand text-on-brand' : 'text-ink-3 hover:text-ink'}`}><Layers3 size={15} />Secciones</button>
       </div>
       <div className="flex-1 overflow-y-auto p-5">
         {panelTab === 'elementos' ? <>
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#647568]">Fondo del plano</p>
-          {hasBackgroundImage ? <div className="rounded-2xl border border-[#26362a] bg-[#182019] p-4">
-            <div className="flex items-center justify-between"><span className="flex items-center gap-2 text-sm text-[#c8f7ae]"><ImageIcon size={16} />Fondo activo</span><button onClick={removeBackgroundImage} className="cursor-pointer text-xs font-medium text-red-300 hover:text-red-200">Quitar</button></div>
-            <label htmlFor="background-opacity" className="mt-4 block text-xs font-medium uppercase tracking-wider text-[#829487]">Opacidad</label>
-            <input id="background-opacity" type="range" min="0.1" max="1" step="0.05" value={backgroundOpacity} onChange={(event) => updateBackgroundOpacity(Number(event.target.value))} onMouseUp={pushHistorySnapshot} className="mt-2 w-full accent-[#7ed957]" />
-          </div> : <button onClick={() => backgroundFileInput.current?.click()} className="flex min-h-20 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-[#33453a] bg-[#141a15] text-[#b7f397] transition-colors hover:border-[#7ed957] hover:bg-[#1d281f]"><ImageIcon size={20} /><span className="text-xs">Subir imagen de fondo</span></button>}
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-ink-3">Fondo del plano</p>
+          {hasBackgroundImage ? <div className="rounded-2xl border border-line bg-surface-2 p-4">
+            <div className="flex items-center justify-between"><span className="flex items-center gap-2 text-sm text-brand-strong"><ImageIcon size={16} />Fondo activo</span><button onClick={removeBackgroundImage} className="cursor-pointer text-xs font-medium text-red-700 dark:text-red-300 hover:text-red-600">Quitar</button></div>
+            <label htmlFor="background-opacity" className="mt-4 block text-xs font-medium uppercase tracking-wider text-ink-3">Opacidad</label>
+            <input id="background-opacity" type="range" min="0.1" max="1" step="0.05" value={backgroundOpacity} onChange={(event) => updateBackgroundOpacity(Number(event.target.value))} onMouseUp={pushHistorySnapshot} className="mt-2 w-full accent-brand" />
+          </div> : <button onClick={() => backgroundFileInput.current?.click()} className="flex min-h-20 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-line-strong bg-surface-2 text-brand-strong transition-colors hover:border-brand hover:bg-surface-3"><ImageIcon size={20} /><span className="text-xs">Subir imagen de fondo</span></button>}
           <input ref={backgroundFileInput} type="file" accept="image/png,image/jpeg,image/webp" onChange={handleBackgroundFile} className="hidden" />
 
-          <p className="mb-3 mt-7 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#647568]">Mesas</p>
+          <p className="mb-3 mt-7 text-[11px] font-semibold uppercase tracking-[0.22em] text-ink-3">Mesas</p>
           <div className="grid grid-cols-3 gap-2">
-            <button draggable onDragStart={(event) => startLibraryDrag(event, 'table-round')} onClick={() => { pendingDropPointRef.current = null; setTableDraft('round'); }} className="flex min-h-24 cursor-grab flex-col items-center justify-center gap-2 rounded-2xl border border-[#26362a] bg-[#182019] text-[#b7f397] transition-colors hover:border-[#7ed957] hover:bg-[#1d281f] active:cursor-grabbing"><span className="h-9 w-9 rounded-full border-2 border-current" /><span className="text-xs">Redonda</span></button>
-            <button draggable onDragStart={(event) => startLibraryDrag(event, 'table-square')} onClick={() => { pendingDropPointRef.current = null; setTableDraft('square'); }} className="flex min-h-24 cursor-grab flex-col items-center justify-center gap-2 rounded-2xl border border-[#26362a] bg-[#182019] text-[#b7f397] transition-colors hover:border-[#7ed957] hover:bg-[#1d281f] active:cursor-grabbing"><span className="h-9 w-9 rounded-lg border-2 border-current" /><span className="text-xs">Cuadrada</span></button>
-            <button draggable onDragStart={(event) => startLibraryDrag(event, 'table-rectangular')} onClick={() => { pendingDropPointRef.current = null; setTableDraft('rectangular'); }} className="flex min-h-24 cursor-grab flex-col items-center justify-center gap-2 rounded-2xl border border-[#26362a] bg-[#182019] text-[#b7f397] transition-colors hover:border-[#7ed957] hover:bg-[#1d281f] active:cursor-grabbing"><span className="h-7 w-10 rounded-lg border-2 border-current" /><span className="text-xs">Rectangular</span></button>
+            <button draggable onDragStart={(event) => startLibraryDrag(event, 'table-round')} onClick={() => { pendingDropPointRef.current = null; setTableDraft('round'); }} className="flex min-h-24 cursor-grab flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface-2 text-brand-strong transition-colors hover:border-brand hover:bg-surface-3 active:cursor-grabbing"><span className="h-9 w-9 rounded-full border-2 border-current" /><span className="text-xs">Redonda</span></button>
+            <button draggable onDragStart={(event) => startLibraryDrag(event, 'table-square')} onClick={() => { pendingDropPointRef.current = null; setTableDraft('square'); }} className="flex min-h-24 cursor-grab flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface-2 text-brand-strong transition-colors hover:border-brand hover:bg-surface-3 active:cursor-grabbing"><span className="h-9 w-9 rounded-lg border-2 border-current" /><span className="text-xs">Cuadrada</span></button>
+            <button draggable onDragStart={(event) => startLibraryDrag(event, 'table-rectangular')} onClick={() => { pendingDropPointRef.current = null; setTableDraft('rectangular'); }} className="flex min-h-24 cursor-grab flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface-2 text-brand-strong transition-colors hover:border-brand hover:bg-surface-3 active:cursor-grabbing"><span className="h-7 w-10 rounded-lg border-2 border-current" /><span className="text-xs">Rectangular</span></button>
           </div>
-          <p className="mb-3 mt-7 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#647568]">Mobiliario</p>
+          <p className="mb-3 mt-7 text-[11px] font-semibold uppercase tracking-[0.22em] text-ink-3">Mobiliario</p>
           <div className="grid grid-cols-2 gap-3">
-            <button draggable onDragStart={(event) => startLibraryDrag(event, 'chair')} onClick={() => addObject('chair')} className="flex min-h-24 cursor-grab flex-col items-center justify-center gap-2 rounded-2xl border border-[#26362a] bg-[#182019] text-[#b7f397] transition-colors hover:border-[#7ed957] hover:bg-[#1d281f] active:cursor-grabbing"><span className="relative block h-9 w-9"><span className="absolute left-0.5 top-0 h-2.5 w-8 rounded-md border border-[#b7c8bc] bg-[#6f8978]" /><span className="absolute left-1.5 top-2.5 h-6 w-6 rounded-md border border-[#a9beaf] bg-[#33483a]" /></span><span className="text-sm">Silla</span><span className="text-[10px] text-[#708375]">Arrastrar</span></button>
-            <button draggable onDragStart={(event) => startLibraryDrag(event, 'sofa')} onClick={() => addObject('sofa')} className="flex min-h-24 cursor-grab flex-col items-center justify-center gap-2 rounded-2xl border border-[#26362a] bg-[#182019] text-[#b7f397] transition-colors hover:border-[#7ed957] hover:bg-[#1d281f] active:cursor-grabbing"><span className="relative block h-9 w-14"><span className="absolute left-1 top-0 h-3 w-12 rounded-lg border border-[#b7c8bc] bg-[#46614f]" /><span className="absolute left-1 top-2 h-7 w-12 rounded-lg border border-[#a9beaf] bg-[#304438]" /><span className="absolute left-0 top-3 h-6 w-2 rounded bg-[#3a5142]" /><span className="absolute right-0 top-3 h-6 w-2 rounded bg-[#3a5142]" /></span><span className="text-sm">Sillón</span><span className="text-[10px] text-[#708375]">Arrastrar</span></button>
-            <button draggable onDragStart={(event) => startLibraryDrag(event, 'wall')} onClick={() => addObject('wall')} className="flex min-h-24 cursor-grab flex-col items-center justify-center gap-2 rounded-2xl border border-[#26362a] bg-[#182019] text-[#b7f397] transition-colors hover:border-[#7ed957] hover:bg-[#1d281f] active:cursor-grabbing"><Square size={25} /><span className="text-sm">Pared</span><span className="text-[10px] text-[#708375]">Arrastrar</span></button>
-            <button onClick={() => fileInput.current?.click()} className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-[#26362a] bg-[#182019] text-[#b7f397] transition-colors hover:border-[#7ed957] hover:bg-[#1d281f]"><ImagePlus size={25} /><span className="text-sm">Objeto decorativo</span></button>
+            <button draggable onDragStart={(event) => startLibraryDrag(event, 'chair')} onClick={() => addObject('chair')} className="flex min-h-24 cursor-grab flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface-2 text-brand-strong transition-colors hover:border-brand hover:bg-surface-3 active:cursor-grabbing"><span className="relative block h-9 w-9"><span className="absolute left-0.5 top-0 h-2.5 w-8 rounded-md border border-line-strong bg-ink-3" /><span className="absolute left-1.5 top-2.5 h-6 w-6 rounded-md border border-line-strong bg-surface-3" /></span><span className="text-sm">Silla</span><span className="text-[10px] text-ink-3">Arrastrar</span></button>
+            <button draggable onDragStart={(event) => startLibraryDrag(event, 'sofa')} onClick={() => addObject('sofa')} className="flex min-h-24 cursor-grab flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface-2 text-brand-strong transition-colors hover:border-brand hover:bg-surface-3 active:cursor-grabbing"><span className="relative block h-9 w-14"><span className="absolute left-1 top-0 h-3 w-12 rounded-lg border border-line-strong bg-surface-3" /><span className="absolute left-1 top-2 h-7 w-12 rounded-lg border border-line-strong bg-surface-3" /><span className="absolute left-0 top-3 h-6 w-2 rounded bg-surface-3" /><span className="absolute right-0 top-3 h-6 w-2 rounded bg-surface-3" /></span><span className="text-sm">Sillón</span><span className="text-[10px] text-ink-3">Arrastrar</span></button>
+            <button draggable onDragStart={(event) => startLibraryDrag(event, 'wall')} onClick={() => addObject('wall')} className="flex min-h-24 cursor-grab flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface-2 text-brand-strong transition-colors hover:border-brand hover:bg-surface-3 active:cursor-grabbing"><Square size={25} /><span className="text-sm">Pared</span><span className="text-[10px] text-ink-3">Arrastrar</span></button>
+            <button onClick={() => fileInput.current?.click()} className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface-2 text-brand-strong transition-colors hover:border-brand hover:bg-surface-3"><ImagePlus size={25} /><span className="text-sm">Objeto decorativo</span></button>
           </div>
           <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={addImage} className="hidden" />
-          <p className="mt-6 rounded-2xl border border-[#26362a] bg-[#151c16] p-4 text-xs leading-5 text-[#829487]">Elegí una mesa y asignale solamente su número. Las sillas se agregan después desde esta biblioteca.</p>
+          <p className="mt-6 rounded-2xl border border-line bg-surface p-4 text-xs leading-5 text-ink-3">Elegí una mesa y asignale solamente su número. Las sillas se agregan después desde esta biblioteca.</p>
         </> : <>
-          <div className="space-y-2">{sections.map((section) => <button key={section} onClick={() => switchSection(section)} className={`flex min-h-12 w-full cursor-pointer items-center justify-between rounded-xl border px-4 text-left text-sm transition-colors ${section === activeSection ? 'border-[#7ed957]/50 bg-[#243523] text-[#c8f7ae]' : 'border-[#26362a] bg-[#182019] text-[#a0ada4] hover:border-[#435848] hover:text-white'}`}><span>{section}</span>{section === activeSection && <span className="h-2 w-2 rounded-full bg-[#7ed957]" />}</button>)}</div>
-          <div className="mt-6 border-t border-[#26362a] pt-5"><label htmlFor="new-section-name" className="text-xs font-medium uppercase tracking-wider text-[#829487]">Nueva sección</label><div className="mt-2 flex gap-2"><input id="new-section-name" value={newSectionName} onChange={(event) => setNewSectionName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') createSection(); }} placeholder="Ej. Terraza" className="h-11 min-w-0 flex-1 rounded-xl border border-[#304034] bg-[#0f1310] px-3 text-sm text-white outline-none placeholder:text-[#526057] focus:border-[#7ed957]" /><button aria-label="Crear sección" onClick={createSection} disabled={!newSectionName.trim()} className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl bg-[#7ed957] text-[#0e0e0e] disabled:cursor-not-allowed disabled:opacity-40"><Plus size={18} /></button></div></div>
+          <div className="space-y-2">{sections.map((section) => <button key={section} onClick={() => switchSection(section)} className={`flex min-h-12 w-full cursor-pointer items-center justify-between rounded-xl border px-4 text-left text-sm transition-colors ${section === activeSection ? 'border-brand/50 bg-surface-3 text-brand-strong' : 'border-line bg-surface-2 text-ink-2 hover:border-line-strong hover:text-ink'}`}><span>{section}</span>{section === activeSection && <span className="h-2 w-2 rounded-full bg-brand" />}</button>)}</div>
+          <div className="mt-6 border-t border-line pt-5"><label htmlFor="new-section-name" className="text-xs font-medium uppercase tracking-wider text-ink-3">Nueva sección</label><div className="mt-2 flex gap-2"><input id="new-section-name" value={newSectionName} onChange={(event) => setNewSectionName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') createSection(); }} placeholder="Ej. Terraza" className="h-11 min-w-0 flex-1 rounded-xl border border-line-strong bg-canvas px-3 text-sm text-ink outline-none placeholder:text-ink-3 focus:border-brand" /><button aria-label="Crear sección" onClick={createSection} disabled={!newSectionName.trim()} className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl bg-brand text-on-brand disabled:cursor-not-allowed disabled:opacity-40"><Plus size={18} /></button></div></div>
         </>}
       </div>
     </aside>}
-    {sofaCapacityDraft !== null && <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"><div role="dialog" aria-modal="true" aria-labelledby="sofa-capacity-title" className="w-full max-w-sm rounded-3xl border border-[#2b3a2f] bg-[#151a16] p-6 shadow-2xl"><div className="flex items-start justify-between"><div><h2 id="sofa-capacity-title" className="text-xl font-semibold text-white">Nuevo sillón</h2><p className="mt-2 text-sm leading-6 text-[#829487]">Indicá cuántas personas pueden usarlo en total.</p></div><button aria-label="Cerrar" onClick={() => setSofaCapacityDraft(null)} className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-[#829487] hover:bg-white/5 hover:text-white"><X size={19} /></button></div><label htmlFor="sofa-capacity" className="mt-6 block text-xs font-medium uppercase tracking-wider text-[#829487]">Capacidad total</label><input id="sofa-capacity" autoFocus type="number" min="1" value={sofaCapacityDraft} onChange={(event) => setSofaCapacityDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') createSofa(); }} className="mt-2 h-12 w-full rounded-xl border border-[#304034] bg-[#0f1310] px-4 text-white outline-none focus:border-[#7ed957] focus:ring-2 focus:ring-[#7ed957]/20" /><div className="mt-6 flex gap-3"><button onClick={() => setSofaCapacityDraft(null)} className="h-12 flex-1 rounded-xl border border-[#304034] text-sm text-[#a0ada4] hover:bg-white/5">Cancelar</button><button onClick={createSofa} disabled={Number(sofaCapacityDraft) < 1} className="h-12 flex-1 rounded-xl bg-[#7ed957] text-sm font-semibold text-[#0e0e0e] disabled:opacity-40">Crear sillón</button></div></div></div>}
-    {sofaAllocationDraft && <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"><div role="dialog" aria-modal="true" aria-labelledby="sofa-allocation-title" className="w-full max-w-md rounded-3xl border border-[#2b3a2f] bg-[#151a16] p-6 shadow-2xl"><div className="flex items-start justify-between"><div><h2 id="sofa-allocation-title" className="text-xl font-semibold text-white">Distribuir capacidad del sillón</h2><p className="mt-2 text-sm text-[#829487]">Asigná cuántos lugares utiliza cada mesa seleccionada.</p></div><button aria-label="Cerrar" onClick={() => setSofaAllocationDraft(null)} className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-[#829487] hover:bg-white/5 hover:text-white"><X size={19} /></button></div><div className="mt-5 space-y-3">{sofaAllocationDraft.tables.map((table) => { const data = getData(table); const key = String(data.mesaId ?? data.mesaNumero); return <label key={key} className="flex items-center justify-between rounded-2xl border border-[#2b3a2f] bg-[#101511] p-3"><span className="text-sm font-medium text-white">Mesa N.º {String(data.mesaNumero)}</span><input type="number" min="0" max={sofaDraftCapacity} value={sofaAllocationDraft.allocations[key] ?? '0'} onChange={(event) => setSofaAllocationDraft((current) => current ? { ...current, allocations: { ...current.allocations, [key]: event.target.value } } : null)} className="h-10 w-20 rounded-xl border border-[#304034] bg-[#0b0f0c] px-3 text-center text-white outline-none focus:border-[#7ed957]" /></label>; })}</div><div className={`mt-4 rounded-xl border p-3 text-sm ${sofaDraftAssigned > sofaDraftCapacity ? 'border-red-400/40 bg-red-400/10 text-red-300' : 'border-[#304034] bg-[#101511] text-[#aebbb1]'}`}>{sofaDraftAssigned} de {sofaDraftCapacity} lugares asignados{sofaDraftAssigned > sofaDraftCapacity ? ' · Supera la capacidad total' : ''}</div><div className="mt-6 flex gap-3"><button onClick={() => setSofaAllocationDraft(null)} className="h-12 flex-1 rounded-xl border border-[#304034] text-sm text-[#a0ada4] hover:bg-white/5">Cancelar</button><button onClick={confirmSofaAllocation} disabled={sofaDraftAssigned > sofaDraftCapacity} className="h-12 flex-1 rounded-xl bg-[#7ed957] text-sm font-semibold text-[#0e0e0e] disabled:opacity-40">Guardar distribución</button></div></div></div>}
-    {tableDraft && <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) setTableDraft(null); }}>
-      <div role="dialog" aria-modal="true" aria-labelledby="create-table-title" className="w-full max-w-sm rounded-3xl border border-[#2b3a2f] bg-[#151a16] p-6 shadow-2xl">
-        <div className="flex items-start justify-between"><div><h2 id="create-table-title" className="text-lg font-semibold text-white">Nueva mesa {tableDraft === 'round' ? 'redonda' : tableDraft === 'square' ? 'cuadrada' : 'rectangular'}</h2><p className="mt-1 text-sm text-[#829487]">Ingresá el número que la identifica.</p></div><button aria-label="Cerrar" onClick={() => setTableDraft(null)} className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-[#829487] hover:bg-white/5 hover:text-white"><X size={19} /></button></div>
-        <label htmlFor="fabric-table-number" className="mt-6 block text-xs font-medium uppercase tracking-wider text-[#829487]">Número de mesa</label>
-        <input id="fabric-table-number" autoFocus value={tableNumber} onChange={(event) => setTableNumber(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !duplicateTableNumber) addTable(); if (event.key === 'Escape') setTableDraft(null); }} type="number" min="1" aria-invalid={duplicateTableNumber} aria-describedby={duplicateTableNumber ? 'duplicate-table-error' : undefined} placeholder="Ej. 12" className={`mt-2 h-12 w-full rounded-xl border bg-[#0f1310] px-4 text-base text-white outline-none transition-colors placeholder:text-[#526057] focus:ring-2 ${duplicateTableNumber ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : 'border-[#304034] focus:border-[#7ed957] focus:ring-[#7ed957]/20'}`} />
-        {duplicateTableNumber && <p id="duplicate-table-error" className="mt-2 text-sm text-red-300">Ya existe una mesa con ese número.</p>}
-        <div className="mt-6 flex gap-3"><button onClick={() => setTableDraft(null)} className="h-12 flex-1 cursor-pointer rounded-xl border border-[#304034] text-sm font-medium text-[#a0ada4] transition-colors hover:bg-white/5">Cancelar</button><button onClick={addTable} disabled={!Number(tableNumber) || duplicateTableNumber} className="h-12 flex-1 cursor-pointer rounded-xl bg-[#7ed957] text-sm font-semibold text-[#0e0e0e] transition-colors hover:bg-[#8be568] disabled:cursor-not-allowed disabled:opacity-40">Crear mesa</button></div>
+    {sofaCapacityDraft !== null && <div className="absolute inset-0 z-40 flex items-center justify-center bg-scrim p-4 backdrop-blur-sm"><div role="dialog" aria-modal="true" aria-labelledby="sofa-capacity-title" className="w-full max-w-sm rounded-3xl border border-line bg-surface p-6 shadow-float"><div className="flex items-start justify-between"><div><h2 id="sofa-capacity-title" className="text-xl font-semibold text-ink">Nuevo sillón</h2><p className="mt-2 text-sm leading-6 text-ink-3">Indicá cuántas personas pueden usarlo en total.</p></div><button aria-label="Cerrar" onClick={() => setSofaCapacityDraft(null)} className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-ink-3 hover:bg-ink/5 hover:text-ink"><X size={19} /></button></div><label htmlFor="sofa-capacity" className="mt-6 block text-xs font-medium uppercase tracking-wider text-ink-3">Capacidad total</label><input id="sofa-capacity" autoFocus type="number" min="1" value={sofaCapacityDraft} onChange={(event) => setSofaCapacityDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') createSofa(); }} className="mt-2 h-12 w-full rounded-xl border border-line-strong bg-canvas px-4 text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" /><div className="mt-6 flex gap-3"><button onClick={() => setSofaCapacityDraft(null)} className="h-12 flex-1 rounded-xl border border-line-strong text-sm text-ink-2 hover:bg-ink/5">Cancelar</button><button onClick={createSofa} disabled={Number(sofaCapacityDraft) < 1} className="h-12 flex-1 rounded-xl bg-brand text-sm font-semibold text-on-brand disabled:opacity-40">Crear sillón</button></div></div></div>}
+    {sofaAllocationDraft && <div className="absolute inset-0 z-40 flex items-center justify-center bg-scrim p-4 backdrop-blur-sm"><div role="dialog" aria-modal="true" aria-labelledby="sofa-allocation-title" className="w-full max-w-md rounded-3xl border border-line bg-surface p-6 shadow-float"><div className="flex items-start justify-between"><div><h2 id="sofa-allocation-title" className="text-xl font-semibold text-ink">Distribuir capacidad del sillón</h2><p className="mt-2 text-sm text-ink-3">Asigná cuántos lugares utiliza cada mesa seleccionada.</p></div><button aria-label="Cerrar" onClick={() => setSofaAllocationDraft(null)} className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-ink-3 hover:bg-ink/5 hover:text-ink"><X size={19} /></button></div><div className="mt-5 space-y-3">{sofaAllocationDraft.tables.map((table) => { const data = getData(table); const key = String(data.mesaId ?? data.mesaNumero); return <label key={key} className="flex items-center justify-between rounded-2xl border border-line bg-surface p-3"><span className="text-sm font-medium text-ink">Mesa N.º {String(data.mesaNumero)}</span><input type="number" min="0" max={sofaDraftCapacity} value={sofaAllocationDraft.allocations[key] ?? '0'} onChange={(event) => setSofaAllocationDraft((current) => current ? { ...current, allocations: { ...current.allocations, [key]: event.target.value } } : null)} className="h-10 w-20 rounded-xl border border-line-strong bg-canvas px-3 text-center text-ink outline-none focus:border-brand" /></label>; })}</div><div className={`mt-4 rounded-xl border p-3 text-sm ${sofaDraftAssigned > sofaDraftCapacity ? 'border-red-400/40 bg-red-400/10 text-red-700 dark:text-red-300' : 'border-line-strong bg-surface text-ink-2'}`}>{sofaDraftAssigned} de {sofaDraftCapacity} lugares asignados{sofaDraftAssigned > sofaDraftCapacity ? ' · Supera la capacidad total' : ''}</div><div className="mt-6 flex gap-3"><button onClick={() => setSofaAllocationDraft(null)} className="h-12 flex-1 rounded-xl border border-line-strong text-sm text-ink-2 hover:bg-ink/5">Cancelar</button><button onClick={confirmSofaAllocation} disabled={sofaDraftAssigned > sofaDraftCapacity} className="h-12 flex-1 rounded-xl bg-brand text-sm font-semibold text-on-brand disabled:opacity-40">Guardar distribución</button></div></div></div>}
+    {tableDraft && <div className="absolute inset-0 z-40 flex items-center justify-center bg-scrim p-4 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) setTableDraft(null); }}>
+      <div role="dialog" aria-modal="true" aria-labelledby="create-table-title" className="w-full max-w-sm rounded-3xl border border-line bg-surface p-6 shadow-float">
+        <div className="flex items-start justify-between"><div><h2 id="create-table-title" className="text-lg font-semibold text-ink">Nueva mesa {tableDraft === 'round' ? 'redonda' : tableDraft === 'square' ? 'cuadrada' : 'rectangular'}</h2><p className="mt-1 text-sm text-ink-3">Ingresá el número que la identifica.</p></div><button aria-label="Cerrar" onClick={() => setTableDraft(null)} className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-ink-3 hover:bg-ink/5 hover:text-ink"><X size={19} /></button></div>
+        <label htmlFor="fabric-table-number" className="mt-6 block text-xs font-medium uppercase tracking-wider text-ink-3">Número de mesa</label>
+        <input id="fabric-table-number" autoFocus value={tableNumber} onChange={(event) => setTableNumber(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !duplicateTableNumber) addTable(); if (event.key === 'Escape') setTableDraft(null); }} type="number" min="1" aria-invalid={duplicateTableNumber} aria-describedby={duplicateTableNumber ? 'duplicate-table-error' : undefined} placeholder="Ej. 12" className={`mt-2 h-12 w-full rounded-xl border bg-canvas px-4 text-base text-ink outline-none transition-colors placeholder:text-ink-3 focus:ring-2 ${duplicateTableNumber ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : 'border-line-strong focus:border-brand focus:ring-brand/20'}`} />
+        {duplicateTableNumber && <p id="duplicate-table-error" className="mt-2 text-sm text-red-700 dark:text-red-300">Ya existe una mesa con ese número.</p>}
+        <div className="mt-6 flex gap-3"><button onClick={() => setTableDraft(null)} className="h-12 flex-1 cursor-pointer rounded-xl border border-line-strong text-sm font-medium text-ink-2 transition-colors hover:bg-ink/5">Cancelar</button><button onClick={addTable} disabled={!Number(tableNumber) || duplicateTableNumber} className="h-12 flex-1 cursor-pointer rounded-xl bg-brand text-sm font-semibold text-on-brand transition-colors hover:bg-brand disabled:cursor-not-allowed disabled:opacity-40">Crear mesa</button></div>
       </div>
     </div>}
-    {pendingLink && <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) setPendingLink(null); }}>
-      <div role="dialog" aria-modal="true" aria-labelledby="link-chair-title" className="w-full max-w-sm rounded-3xl border border-[#2b3a2f] bg-[#151a16] p-6 shadow-2xl">
-        <div className="flex items-start justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7ed957]">Relacionar silla</p><h2 id="link-chair-title" className="mt-2 text-xl font-semibold text-white">¿Unir con la mesa N.º {String(getData(pendingLink.table).mesaNumero)}?</h2><p className="mt-2 text-sm leading-6 text-[#829487]">La capacidad de la mesa se actualizará según la cantidad real de sillas relacionadas.</p></div><button aria-label="Cerrar" onClick={() => setPendingLink(null)} className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl text-[#829487] hover:bg-white/5 hover:text-white"><X size={19} /></button></div>
-        <div className="mt-6 flex gap-3"><button onClick={() => setPendingLink(null)} className="h-12 flex-1 cursor-pointer rounded-xl border border-[#304034] text-sm font-medium text-[#a0ada4] transition-colors hover:bg-white/5">Cancelar</button><button onClick={confirmPendingLink} className="h-12 flex-1 cursor-pointer rounded-xl bg-[#7ed957] text-sm font-semibold text-[#0e0e0e] transition-colors hover:bg-[#8be568]">Unir silla</button></div>
+    {pendingLink && <div className="absolute inset-0 z-40 flex items-center justify-center bg-scrim p-4 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) setPendingLink(null); }}>
+      <div role="dialog" aria-modal="true" aria-labelledby="link-chair-title" className="w-full max-w-sm rounded-3xl border border-line bg-surface p-6 shadow-float">
+        <div className="flex items-start justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">Relacionar silla</p><h2 id="link-chair-title" className="mt-2 text-xl font-semibold text-ink">¿Unir con la mesa N.º {String(getData(pendingLink.table).mesaNumero)}?</h2><p className="mt-2 text-sm leading-6 text-ink-3">La capacidad de la mesa se actualizará según la cantidad real de sillas relacionadas.</p></div><button aria-label="Cerrar" onClick={() => setPendingLink(null)} className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl text-ink-3 hover:bg-ink/5 hover:text-ink"><X size={19} /></button></div>
+        <div className="mt-6 flex gap-3"><button onClick={() => setPendingLink(null)} className="h-12 flex-1 cursor-pointer rounded-xl border border-line-strong text-sm font-medium text-ink-2 transition-colors hover:bg-ink/5">Cancelar</button><button onClick={confirmPendingLink} className="h-12 flex-1 cursor-pointer rounded-xl bg-brand text-sm font-semibold text-on-brand transition-colors hover:bg-brand">Unir silla</button></div>
       </div>
     </div>}
-    {contextMenu && editorMode === 'edit' && <div className="absolute z-50 min-w-52 overflow-hidden rounded-2xl border border-[#304034] bg-[#151a16]/98 p-1.5 shadow-2xl backdrop-blur-xl" style={{ left: Math.min(contextMenu.x, Math.max(16, (wrapperRef.current?.clientWidth ?? 300) - 230)), top: Math.min(contextMenu.y, Math.max(16, (wrapperRef.current?.clientHeight ?? 300) - 190)) }}>
-      {contextMenu.target ? <>{getData(contextMenu.target).kind === 'chair' && getData(contextMenu.target).tableId != null && <button onClick={() => unlinkChair(contextMenu.target!)} className="flex h-11 w-full cursor-pointer items-center rounded-xl px-3 text-left text-sm text-[#d4dfd7] transition-colors hover:bg-white/5">Desunir de la mesa</button>}{getData(contextMenu.target).kind === 'sofa' && Object.keys((getData(contextMenu.target).allocations as Record<string, number> | undefined) ?? {}).length > 0 && <><button onClick={() => manageSofaLinks(contextMenu.target!)} className="flex h-11 w-full cursor-pointer items-center rounded-xl px-3 text-left text-sm text-[#d4dfd7] transition-colors hover:bg-white/5">Administrar mesas vinculadas</button><button onClick={() => unlinkSofa(contextMenu.target!)} className="flex h-11 w-full cursor-pointer items-center rounded-xl px-3 text-left text-sm text-[#d4dfd7] transition-colors hover:bg-white/5">Desunir de todas las mesas</button></>}<button onClick={() => { const canvas = canvasRef.current; if (canvas && contextMenu.target) { canvas.bringObjectToFront(contextMenu.target); canvas.requestRenderAll(); } setContextMenu(null); }} className="flex h-11 w-full cursor-pointer items-center rounded-xl px-3 text-left text-sm text-[#d4dfd7] transition-colors hover:bg-white/5">Traer al frente</button><button onClick={removeContextTarget} className="flex h-11 w-full cursor-pointer items-center rounded-xl px-3 text-left text-sm text-red-300 transition-colors hover:bg-red-400/10">Eliminar</button></> : <p className="px-3 py-2 text-sm text-[#829487]">No hay un objeto seleccionado</p>}
+    {contextMenu && editorMode === 'edit' && <div className="absolute z-50 min-w-52 overflow-hidden rounded-2xl border border-line-strong bg-surface/98 p-1.5 shadow-float backdrop-blur-xl" style={{ left: Math.min(contextMenu.x, Math.max(16, (wrapperRef.current?.clientWidth ?? 300) - 230)), top: Math.min(contextMenu.y, Math.max(16, (wrapperRef.current?.clientHeight ?? 300) - 190)) }}>
+      {contextMenu.target ? <>{getData(contextMenu.target).kind === 'chair' && getData(contextMenu.target).tableId != null && <button onClick={() => unlinkChair(contextMenu.target!)} className="flex h-11 w-full cursor-pointer items-center rounded-xl px-3 text-left text-sm text-ink-2 transition-colors hover:bg-ink/5">Desunir de la mesa</button>}{getData(contextMenu.target).kind === 'sofa' && Object.keys((getData(contextMenu.target).allocations as Record<string, number> | undefined) ?? {}).length > 0 && <><button onClick={() => manageSofaLinks(contextMenu.target!)} className="flex h-11 w-full cursor-pointer items-center rounded-xl px-3 text-left text-sm text-ink-2 transition-colors hover:bg-ink/5">Administrar mesas vinculadas</button><button onClick={() => unlinkSofa(contextMenu.target!)} className="flex h-11 w-full cursor-pointer items-center rounded-xl px-3 text-left text-sm text-ink-2 transition-colors hover:bg-ink/5">Desunir de todas las mesas</button></>}<button onClick={() => { const canvas = canvasRef.current; if (canvas && contextMenu.target) { canvas.bringObjectToFront(contextMenu.target); canvas.requestRenderAll(); } setContextMenu(null); }} className="flex h-11 w-full cursor-pointer items-center rounded-xl px-3 text-left text-sm text-ink-2 transition-colors hover:bg-ink/5">Traer al frente</button><button onClick={removeContextTarget} className="flex h-11 w-full cursor-pointer items-center rounded-xl px-3 text-left text-sm text-red-700 dark:text-red-300 transition-colors hover:bg-red-400/10">Eliminar</button></> : <p className="px-3 py-2 text-sm text-ink-3">No hay un objeto seleccionado</p>}
     </div>}
-    {previewInfo && editorMode === 'preview' && <div className="absolute z-30 w-56 rounded-2xl border border-[#304034] bg-[#151a16]/98 p-4 shadow-2xl backdrop-blur-xl" style={{ left: Math.min(previewInfo.x + 14, Math.max(16, (wrapperRef.current?.clientWidth ?? 300) - 240)), top: Math.min(previewInfo.y + 14, Math.max(16, (wrapperRef.current?.clientHeight ?? 300) - 150)) }}><div className="flex items-start justify-between"><div><p className="text-xs uppercase tracking-wider text-[#829487]">Mesa</p><p className="mt-1 text-xl font-semibold text-white">{previewInfo.numero}</p></div><button aria-label="Cerrar información" onClick={() => setPreviewInfo(null)} className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-[#829487] hover:bg-white/5 hover:text-white"><X size={17} /></button></div><p className="mt-3 text-sm text-[#aebbb1]">{previewInfo.capacidad} {previewInfo.capacidad === 1 ? 'silla asociada' : 'sillas asociadas'}</p></div>}
-    <span className="absolute bottom-5 right-5 z-20 rounded-xl border border-[#2b3a2f] bg-[#151a16]/90 px-3 py-2 text-xs text-[#829487]">{status}</span>
+    {previewInfo && editorMode === 'preview' && <div className="absolute z-30 w-56 rounded-2xl border border-line-strong bg-surface/98 p-4 shadow-float backdrop-blur-xl" style={{ left: Math.min(previewInfo.x + 14, Math.max(16, (wrapperRef.current?.clientWidth ?? 300) - 240)), top: Math.min(previewInfo.y + 14, Math.max(16, (wrapperRef.current?.clientHeight ?? 300) - 150)) }}><div className="flex items-start justify-between"><div><p className="text-xs uppercase tracking-wider text-ink-3">Mesa</p><p className="mt-1 text-xl font-semibold text-ink">{previewInfo.numero}</p></div><button aria-label="Cerrar información" onClick={() => setPreviewInfo(null)} className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-ink-3 hover:bg-ink/5 hover:text-ink"><X size={17} /></button></div><p className="mt-3 text-sm text-ink-2">{previewInfo.capacidad} {previewInfo.capacidad === 1 ? 'silla asociada' : 'sillas asociadas'}</p></div>}
+    <span className="absolute bottom-5 right-5 z-20 rounded-xl border border-line bg-surface/90 px-3 py-2 text-xs text-ink-3">{status}</span>
   </div>;
 }
