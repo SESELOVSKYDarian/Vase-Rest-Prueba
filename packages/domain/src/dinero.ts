@@ -27,3 +27,17 @@ export function repartirEquitativo(total: Centavos, partes: number): Centavos[] 
   const resto = total - base * partes;
   return Array.from({ length: partes }, (_, i) => base + (i < resto ? 1 : 0));
 }
+
+/**
+ * Lee un precio escrito a mano en formato argentino ("12.500", "12500,50", "$ 1.234,5")
+ * y devuelve centavos, o null si no es un número válido.
+ */
+export function parsearPesos(texto: string): Centavos | null {
+  const limpio = texto.replace(/[$\s]/g, '');
+  if (!limpio) return null;
+  let normal = limpio;
+  if (limpio.includes(',')) normal = limpio.replace(/\./g, '').replace(',', '.');
+  else if (/^\d{1,3}(\.\d{3})+$/.test(limpio)) normal = limpio.replace(/\./g, '');
+  if (!/^\d+(\.\d{1,2})?$/.test(normal)) return null;
+  return aCentavos(Number(normal));
+}

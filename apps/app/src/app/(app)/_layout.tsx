@@ -13,6 +13,7 @@ export default function AppLayout() {
       <Tabs.Screen name="salon" options={{ title: 'Salón' }} />
       <Tabs.Screen name="pedido" options={{ title: 'Pedido' }} />
       <Tabs.Screen name="cobro" options={{ title: 'Cobro' }} />
+      <Tabs.Screen name="menu" options={{ title: 'Carta' }} />
     </Tabs>
   );
 }

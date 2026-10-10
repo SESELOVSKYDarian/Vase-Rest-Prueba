@@ -3,14 +3,16 @@ import { StyleSheet, View } from 'react-native';
 import type { Tabs } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LayoutGrid, LogOut, NotebookPen, Receipt, type LucideIcon } from 'lucide-react-native';
+import { BookOpen, LayoutGrid, LogOut, NotebookPen, Receipt, type LucideIcon } from 'lucide-react-native';
 import { PressableScale, Text, haptic, minTarget, radius, space, useTheme } from '@vase/ui';
 import { useSession } from '@/lib/session';
 
-const ICONOS: Record<string, { Icono: LucideIcon; titulo: string }> = {
+const ICONOS: Record<string, { Icono: LucideIcon; titulo: string; roles?: readonly string[] }> = {
   salon: { Icono: LayoutGrid, titulo: 'Salón' },
   pedido: { Icono: NotebookPen, titulo: 'Pedido' },
   cobro: { Icono: Receipt, titulo: 'Cobro' },
+  // La carta la editan quienes manejan el local.
+  menu: { Icono: BookOpen, titulo: 'Carta', roles: ['admin', 'encargado'] },
 };
 
 /**
@@ -29,7 +31,7 @@ export function AppTabBar({ state, navigation }: TabBarProps) {
 
   const items = state.routes.map((route, index) => {
     const meta = ICONOS[route.name];
-    if (!meta) return null;
+    if (!meta || (meta.roles && !meta.roles.includes(usuario?.rol ?? ''))) return null;
     const activo = state.index === index;
     const { Icono, titulo } = meta;
     const ir = () => {

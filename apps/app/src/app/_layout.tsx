@@ -23,7 +23,11 @@ function Shell() {
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'fade' }}>
         <Stack.Protected guard={!!token}>
           <Stack.Screen name="(app)" />
+          <Stack.Screen name="editor-plano" options={{ animation: 'slide_from_bottom', presentation: 'fullScreenModal' }} />
+          <Stack.Screen name="qr-mesas" options={{ animation: 'slide_from_right' }} />
         </Stack.Protected>
+        {/* La carta del QR es pública: la abre cualquiera, con o sin sesión. */}
+        <Stack.Screen name="carta" />
         <Stack.Protected guard={!token}>
           <Stack.Screen name="login" />
         </Stack.Protected>

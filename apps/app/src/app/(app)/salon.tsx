@@ -1,14 +1,23 @@
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { LayoutGrid } from 'lucide-react-native';
-import { contarPorEstado, ESTADOS_MESA, ETIQUETA_ESTADO_MESA, ESTADOS_CON_PERSONAS, type EstadoMesa, type Mesa } from '@vase/domain';
+import { LayoutGrid, PencilRuler } from 'lucide-react-native';
+import { useWindowDimensions } from 'react-native';
+import { contarPorEstado, ESTADOS_MESA, ETIQUETA_ESTADO_MESA, ESTADOS_CON_PERSONAS, planoDesdeMesas, type EstadoMesa, type Mesa } from '@vase/domain';
 import { Button, Chip, EmptyState, ErrorBanner, Group, Row, Screen, Segmented, Skeleton, StatusPill, Text, space, useEstadoColor, useTheme } from '@vase/ui';
 import { MesaSheet } from '@/components/MesaSheet';
-import { PlanoSalon } from '@/components/PlanoSalon';
-import { useMesas, usePedidosActivos } from '@/lib/queries';
+import { PlanoCanvas, type Seleccion } from '@/components/plano/PlanoCanvas';
+import { useMesas, usePedidosActivos, usePlano } from '@/lib/queries';
+import { useSession } from '@/lib/session';
 
 type Vista = 'plano' | 'lista';
+
+/** "12'", "1 h 05'", "3 d": entra dentro de la mesa. */
+function duracionCorta(min: number) {
+  if (min < 60) return `${min}'`;
+  if (min < 24 * 60) return `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')}'`;
+  return `${Math.floor(min / 1440)} d`;
+}
 
 export default function Salon() {
   const router = useRouter();
@@ -16,6 +25,10 @@ export default function Salon() {
   const colorDe = useEstadoColor();
   const mesasQ = useMesas();
   const pedidosQ = usePedidosActivos();
+  const planoQ = usePlano();
+  const rol = useSession((st) => st.usuario?.rol);
+  const puedeEditar = rol === 'admin' || rol === 'encargado';
+  const { height } = useWindowDimensions();
   const [vista, setVista] = useState<Vista>('plano');
   const [filtro, setFiltro] = useState<EstadoMesa | 'todas'>('todas');
   const [zona, setZona] = useState<string>('todas');
@@ -27,6 +40,26 @@ export default function Salon() {
   const conteo = useMemo(() => contarPorEstado(delaZona), [delaZona]);
   const visibles = useMemo(() => (filtro === 'todas' ? null : new Set(delaZona.filter((m) => m.estado === filtro).map((m) => m.id))), [delaZona, filtro]);
   const pedidoDe = (mesa: Mesa | null) => (mesa ? pedidosQ.data?.find((p) => p.mesaId === mesa.id) ?? null : null);
+
+  const plano = useMemo(() => planoQ.data ?? planoDesdeMesas(mesas), [planoQ.data, mesas]);
+  const porId = useMemo(() => new Map(mesas.map((m) => [m.id, m])), [mesas]);
+  const pedidoPorMesa = useMemo(() => new Map((pedidosQ.data ?? []).map((p) => [p.mesaId, p])), [pedidosQ.data]);
+  const infoMesa = (id: string) => {
+    const m = porId.get(id);
+    if (!m) return null;
+    const p = pedidoPorMesa.get(id);
+    const minutos = p ? Math.max(0, Math.floor((Date.now() - p.abiertoEn.getTime()) / 60000)) : null;
+    return { numero: m.numero, estado: m.estado, detalle: minutos != null && ESTADOS_CON_PERSONAS.has(m.estado) ? duracionCorta(minutos) : undefined };
+  };
+  const visiblesPlano = useMemo(() => {
+    if (filtro === 'todas' && zona === 'todas') return null;
+    return new Set(mesas.filter((m) => (filtro === 'todas' || m.estado === filtro) && (zona === 'todas' || m.zona === zona)).map((m) => m.id));
+  }, [mesas, filtro, zona]);
+  const seleccionar = (sel: Seleccion) => { if (sel?.tipo === 'mesa') { const m = porId.get(sel.id); if (m) setElegida(m); } };
+  // El marco toma la proporción del local (sin franjas vacías), con un tope según la pantalla.
+  const [anchoMarco, setAnchoMarco] = useState(0);
+  const topeAlto = Math.max(320, Math.min(760, height * (sizeClass === 'compact' ? 0.58 : 0.66)));
+  const altoPlano = anchoMarco ? Math.max(260, Math.min(topeAlto, anchoMarco * (plano.alto / plano.ancho) + 40)) : topeAlto;
 
   const ocupadas = mesas.filter((m) => ESTADOS_CON_PERSONAS.has(m.estado)).length;
   const subtitulo = mesas.length ? `${ocupadas} de ${mesas.length} mesas con gente` : undefined;
@@ -42,6 +75,7 @@ export default function Salon() {
       refreshing={mesasQ.isRefetching}
       onRefresh={() => { void mesasQ.refetch(); void pedidosQ.refetch(); }}
       bottomInset={sizeClass === 'compact' ? 72 : 0}
+      headerRight={puedeEditar ? <Button label="Editar plano" size="sm" variant="tinted" icon={<PencilRuler size={16} color={colors.tint} />} onPress={() => router.push('/editor-plano')} /> : undefined}
     >
       {mesasQ.isPending ? (
         <View style={styles.stack}>
@@ -74,7 +108,12 @@ export default function Salon() {
 
           {vista === 'plano' ? (
             <View style={styles.stack}>
-              <PlanoSalon mesas={delaZona} seleccionada={elegida?.id} visibles={visibles} onSeleccionar={setElegida} />
+              <View onLayout={(e) => setAnchoMarco(e.nativeEvent.layout.width)} style={[styles.marcoPlano, { height: altoPlano, backgroundColor: colors.surface }]}>
+                <PlanoCanvas plano={plano} info={infoMesa} modo="servicio" seleccion={elegida ? { tipo: 'mesa', id: elegida.id } : null} onSeleccionar={seleccionar} visibles={visiblesPlano} />
+              </View>
+              {!planoQ.data && puedeEditar ? (
+                <Text variant="footnote" color="secondary">Este plano se armó con la ubicación actual de las mesas. Tocá “Editar plano” para dibujar tu local: zonas, barra, paredes y la foto del plano.</Text>
+              ) : null}
               <View style={styles.leyenda} accessibilityRole="list">
                 {presentes.map((estado) => (
                   <View key={estado} style={styles.item}>
@@ -106,6 +145,7 @@ const styles = StyleSheet.create({
   controles: { gap: space.md },
   segmento: { maxWidth: 280 },
   chips: { gap: space.sm, paddingRight: space.xl },
+  marcoPlano: { borderRadius: 18, overflow: 'hidden', borderCurve: 'continuous' },
   leyenda: { flexDirection: 'row', flexWrap: 'wrap', gap: space.lg, paddingHorizontal: space.xs },
   item: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   punto: { width: 9, height: 9, borderRadius: 5 },

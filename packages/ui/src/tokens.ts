@@ -148,3 +148,47 @@ export const tabular: TextStyle = { fontVariant: ['tabular-nums'] };
 export const breakpoints = { medium: 600, expanded: 1024 } as const;
 export type SizeClass = 'compact' | 'medium' | 'expanded';
 export const sizeClassFor = (width: number): SizeClass => (width >= breakpoints.expanded ? 'expanded' : width >= breakpoints.medium ? 'medium' : 'compact');
+
+import type { ColorZona } from '@vase/domain';
+
+/** Colores de zonas del plano: relleno muy suave, borde y rótulo con más presencia. */
+export const zonaColor: Record<ColorZona, { light: string; dark: string }> = {
+  salvia: { light: '#2E9B63', dark: '#4CC38A' },
+  arena: { light: '#B8862F', dark: '#E2BC72' },
+  cielo: { light: '#3F78C6', dark: '#6FA0E8' },
+  terracota: { light: '#C8643B', dark: '#EE8C66' },
+  lavanda: { light: '#8A5FC8', dark: '#B08CEB' },
+  grafito: { light: '#6E6E75', dark: '#A6A6AD' },
+};
+
+/** "Materiales" del plano: piso, grilla, sillas, mesa, barra, paredes. */
+export interface PlanoMaterial {
+  piso: string;
+  grilla: string;
+  borde: string;
+  mesa: string;
+  sombra: string;
+  silla: string;
+  sillaBorde: string;
+  respaldo: string;
+  barra: string;
+  barraTexto: string;
+  pared: string;
+  vidrio: string;
+  planta: string;
+  plantaClara: string;
+  ambiente: string;
+}
+
+export const planoMaterial: { light: PlanoMaterial; dark: PlanoMaterial } = {
+  light: {
+    piso: '#FAF9F6', grilla: 'rgba(60,60,67,0.13)', borde: 'rgba(60,60,67,0.22)', mesa: '#FFFFFF', sombra: 'rgba(28,28,30,0.10)',
+    silla: '#F4F3EF', sillaBorde: 'rgba(60,60,67,0.20)', respaldo: '#D9D5CC', barra: '#CBB79A', barraTexto: '#4A3D2C',
+    pared: '#48484A', vidrio: '#8FB3D9', planta: '#4F8E5E', plantaClara: '#7DB487', ambiente: '#EFEDE8',
+  },
+  dark: {
+    piso: '#161618', grilla: 'rgba(235,235,245,0.10)', borde: 'rgba(235,235,245,0.18)', mesa: '#2C2C2E', sombra: 'rgba(0,0,0,0.45)',
+    silla: '#242426', sillaBorde: 'rgba(235,235,245,0.16)', respaldo: '#3D3D40', barra: '#5E4E3B', barraTexto: '#F1E4D0',
+    pared: '#9A9AA0', vidrio: '#6F93B8', planta: '#3F7A4E', plantaClara: '#5F9C6D', ambiente: '#1F1F22',
+  },
+};

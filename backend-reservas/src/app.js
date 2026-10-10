@@ -12,6 +12,9 @@ import { checkDatabase } from "./config/database.js";
 import dataRoutes from "./routes/data.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import { attachAuth } from "./controllers/auth.controller.js";
+import archivosRoutes, { UPLOADS_DIR } from "./routes/archivos.routes.js";
+import publicoRoutes from "./routes/publico.routes.js";
+import planoRoutes from "./routes/plano.routes.js";
 import integracionesRoutes from "./routes/integraciones.routes.js";
 
 const app = express();
@@ -32,6 +35,21 @@ app.use(cors({
 // payload JSON; el límite por defecto de express (100kb) la rechaza con 413.
 app.use(express.json({ limit: "12mb" }));
 app.use(attachAuth);
+
+// Imágenes subidas: nombres aleatorios e inmutables → caché larga. "cross-origin" para que
+// la app (otro puerto/dominio) pueda mostrarlas.
+app.use("/uploads", express.static(UPLOADS_DIR, {
+  immutable: true,
+  maxAge: "365d",
+  fallthrough: false,
+  setHeaders: (res) => {
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+  },
+}));
+app.use("/api/archivos", archivosRoutes);
+app.use("/api/public", publicoRoutes);
+app.use("/api/plano", planoRoutes);
 
 app.get("/health", async (_req, res) => {
   try {

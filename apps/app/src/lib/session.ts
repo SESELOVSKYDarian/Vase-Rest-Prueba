@@ -23,6 +23,8 @@ interface SessionState {
   usuario: Usuario | null;
   /** Dirección elegida por la persona (servidor del local); vacío = la de por defecto. */
   servidor: string;
+  /** Dirección pública donde los clientes abren la carta (la que va en el QR); vacío = la de por defecto. */
+  urlCarta: string;
   tema: ThemeMode;
   hidratado: boolean;
   cargando: boolean;
@@ -30,6 +32,7 @@ interface SessionState {
   entrar: (usuario: string, password: string) => Promise<boolean>;
   salir: () => void;
   setServidor: (url: string) => void;
+  setUrlCarta: (url: string) => void;
   setTema: (tema: ThemeMode) => void;
   limpiarError: () => void;
 }
@@ -40,6 +43,7 @@ export const useSession = create<SessionState>()(
       token: null,
       usuario: null,
       servidor: '',
+      urlCarta: '',
       tema: 'system',
       hidratado: false,
       cargando: false,
@@ -57,13 +61,14 @@ export const useSession = create<SessionState>()(
       },
       salir: () => set({ token: null, usuario: null }),
       setServidor: (servidor) => set({ servidor }),
+      setUrlCarta: (urlCarta) => set({ urlCarta: urlCarta.trim().replace(/\/+$/, '') }),
       setTema: (tema) => set({ tema }),
       limpiarError: () => set({ error: null }),
     }),
     {
       name: 'vase-sesion',
       storage: createJSONStorage(() => secureStorage),
-      partialize: (state) => ({ token: state.token, usuario: state.usuario, servidor: state.servidor, tema: state.tema }),
+      partialize: (state) => ({ token: state.token, usuario: state.usuario, servidor: state.servidor, urlCarta: state.urlCarta, tema: state.tema }),
       onRehydrateStorage: () => () => { useSession.setState({ hidratado: true }); },
     },
   ),

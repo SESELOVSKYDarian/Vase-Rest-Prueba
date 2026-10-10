@@ -8,6 +8,7 @@ import { formatearARS } from '@vase/domain';
 import { Button, Chip, EmptyState, ErrorBanner, Group, PressableScale, Row, Screen, Skeleton, Stepper, Text, Toast, haptic, minTarget, space, useTheme } from '@vase/ui';
 import { CartBar } from '@/components/CartBar';
 import { useCart } from '@/lib/cart';
+import { FotoPlato } from '@/components/FotoPlato';
 import { useCategorias, useMesas, usePedidosActivos, useProductos } from '@/lib/queries';
 
 export default function Pedido() {
@@ -134,6 +135,7 @@ export default function Pedido() {
                   <Row
                     key={p.id}
                     title={p.nombre}
+                    leading={<FotoPlato ruta={p.imagenUrl} ancho={52} radio={10} />}
                     detail={
                       <Text variant="footnote" color="secondary" numberOfLines={2}>
                         <Text variant="footnote" weight="600" numeric>{formatearARS(p.precio, true)}</Text>

@@ -222,3 +222,27 @@ Se migran las pantallas existentes: Inicio, Mesas, Pedido, Cocina, Facturas, His
 3. **Plano en celular:** el plano con posiciones libres no entra en pantallas chicas con mesas tocables; se usa grilla de 3 columnas en celular y plano libre solo si entra con mesas de tamaño cómodo. Zoom y paneo del plano completo llegan con el editor de la fase 2.
 4. `expo install` consulta un servicio de Expo bloqueado en este entorno; las versiones se fijaron con la tabla oficial del SDK instalado.
 5. **Tauri (escritorio):** el spike no se pudo hacer acá (este entorno no tiene las bibliotecas gráficas de Windows/Linux para compilar un instalador). El export web que usará Tauri ya compila. Se hará en una PC con Windows o con CI en GitHub Actions.
+
+## 13. Avance (plano real, fotos de platos y carta QR)
+
+**Plano del salón (reemplaza la grilla del punto 12.3)**
+- Modelo en centímetros reales (`packages/domain/src/plano.ts`): mesas con forma, lugares y giro; sillas calculadas sin superponerse; zonas con color; barra, paredes, puertas (con barrido), ventanas, plantas, columnas, cocina, baños y caja; foto o plano de fondo con opacidad. 21 pruebas en el dominio.
+- Vista **Salón**: el plano se dibuja con SVG (sillas con respaldo, sombra, color y tiempo por estado), con zoom con dos dedos, paneo y botón "ver todo". El marco toma la proporción del local, sin franjas vacías.
+- **Editor** (admin y encargado): agregar mesas/zonas/objetos (aparecen en el primer lugar libre, sin pisar nada), arrastrar con imán de 10 cm, girar, cambiar forma y lugares, renombrar, deshacer, medidas del local, subir el plano o una foto de fondo. Guardar crea las mesas nuevas y actualiza zona, forma, lugares y posición de cada mesa en la base. Probado de punta a punta: agregar, arrastrar, guardar, recargar.
+- **Armar el plano con IA**: se sube una foto o imagen del plano (JPG, PNG o WebP; un PDF hay que exportarlo a imagen) y Claude (visión) propone mesas, sillas y zonas; se revisa antes de aplicar. Necesita `ANTHROPIC_API_KEY` en el servidor; sin ella, el botón explica qué falta (no se simula nada).
+- Arreglado: posiciones de mesa corruptas en la base (números gigantes de un error viejo de concatenación) se ignoran y se reacomodan; al guardar el plano quedan corregidas.
+
+**Carta con fotos**
+- Pestaña **Carta** (admin y encargado): buscar, filtrar por categoría, cargar platos nuevos, editar nombre, precio (formato argentino: `12.500` o `12500,50`), descripción y categoría, marcar agotado, sacar de la carta (sin borrar historial) y **subir la foto** (se achica y comprime en el dispositivo antes de subirla; el servidor valida que sea JPG/PNG/WebP real, hasta 6 MB).
+- Las fotos se ven también en **Pedido**.
+
+**Carta QR pública**
+- `/carta?mesa=N`: la abre el cliente desde la cámara, sin cuenta ni app. Categorías fijas arriba, fotos, precios, agotados y detalle de cada plato. Se actualiza sola cada minuto.
+- **QR de las mesas**: un QR por mesa, listo para **imprimir** (hoja A4 con tarjetas recortables). Se configura la dirección pública de la carta.
+- Pedir y pagar desde el QR quedan para la fase del QR de mesa (punto 7): hoy la carta invita a llamar al mozo.
+
+**Pendientes y decisiones**
+- **IVA (urgente con la carta pública):** la carta muestra el precio cargado y el servidor suma 21 % al facturar. La ley de defensa del consumidor exige mostrar precio final; hay que decidir si los precios cargados incluyen IVA.
+- Publicar la versión web en una dirección fija (dominio del local) para que los QR impresos no cambien.
+- `ANTHROPIC_API_KEY` para el análisis de planos con IA.
+- Lint: la app todavía no tiene configuración de ESLint (la configuración automática de Expo no pudo descargarse en este entorno).

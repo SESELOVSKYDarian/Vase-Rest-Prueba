@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Animated, { Easing, FadeInUp, FadeOutUp } from 'react-native-reanimated';
@@ -13,21 +13,26 @@ export interface ToastProps {
   onHide: () => void;
   /** Milisegundos hasta que desaparece solo. */
   duration?: number;
+  /** Separación extra desde arriba (pantallas con barra flotante propia). */
+  offset?: number;
 }
 
 /** Confirmación breve y flotante (no bloquea, se anuncia a lectores de pantalla y se retira sola). */
-export function Toast({ message, onHide, duration = 2600 }: ToastProps) {
+export function Toast({ message, onHide, duration = 2600, offset = 0 }: ToastProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  // El temporizador depende solo del mensaje: un onHide nuevo en cada render no lo reinicia.
+  const alOcultar = useRef(onHide);
+  alOcultar.current = onHide;
   useEffect(() => {
     if (!message) return;
-    const timer = setTimeout(onHide, duration);
+    const timer = setTimeout(() => alOcultar.current(), duration);
     return () => clearTimeout(timer);
-  }, [message, duration, onHide]);
+  }, [message, duration]);
 
   if (!message) return null;
   return (
-    <View pointerEvents="none" style={[styles.host, { top: insets.top + space.md }]}>
+    <View pointerEvents="none" style={[styles.host, { top: insets.top + space.md + offset }]}>
       <Animated.View
         entering={FadeInUp.duration(260).easing(Easing.bezier(0.23, 1, 0.32, 1))}
         exiting={FadeOutUp.duration(180)}

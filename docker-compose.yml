@@ -34,6 +34,10 @@ services:
       ARCA_PUNTO_VENTA: ${ARCA_PUNTO_VENTA:-1}
       ARCA_CERTIFICATE_PATH: ${ARCA_CERTIFICATE_PATH:-}
       ARCA_PRIVATE_KEY_PATH: ${ARCA_PRIVATE_KEY_PATH:-}
+      UPLOADS_DIR: /app/backend-reservas/uploads
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    volumes:
+      - uploads_data:/app/backend-reservas/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -42,3 +46,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:

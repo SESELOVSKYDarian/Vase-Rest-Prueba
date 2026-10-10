@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { calcularCuenta, dividirEnPartesIguales, dividirPorComensal } from './cuenta';
-import { aCentavos, formatearARS, repartirEquitativo } from './dinero';
+import { aCentavos, formatearARS, parsearPesos, repartirEquitativo } from './dinero';
 
 describe('dinero', () => {
   it('convierte pesos a centavos sin error de punto flotante', () => {
@@ -63,5 +63,16 @@ describe('tiempoTranscurrido', () => {
     expect(tiempoTranscurrido(new Date(ahora - 65 * 60_000), ahora)).toBe('hace 1 h 5 min');
     expect(tiempoTranscurrido(new Date(ahora - 120 * 60_000), ahora)).toBe('hace 2 h');
     expect(tiempoTranscurrido(new Date(ahora - 49 * 3600_000), ahora)).toBe('hace 2 días');
+  });
+});
+
+describe('parsearPesos', () => {
+  it('entiende el formato argentino', () => {
+    expect(parsearPesos('12.500')).toBe(1_250_000);
+    expect(parsearPesos('12500,50')).toBe(1_250_050);
+    expect(parsearPesos('$ 1.234,5')).toBe(123_450);
+    expect(parsearPesos('9.5')).toBe(950);
+    expect(parsearPesos('abc')).toBeNull();
+    expect(parsearPesos('')).toBeNull();
   });
 });

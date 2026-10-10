@@ -5,3 +5,5 @@ export * from './mesas';
 export * from './menu';
 export * from './pedidos';
 export * from './servidor';
+export * from './plano';
+export * from './archivos';
