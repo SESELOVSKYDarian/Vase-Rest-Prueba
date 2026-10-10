@@ -16,6 +16,10 @@ export const CONFIG_DEFECTO = {
   happyHour: { activo: false, dias: [1, 2, 3, 4, 5], desde: "18:00", hasta: "20:00", descuento: 20, categorias: [] },
   pago: { alias: "", titular: "", mensaje: "" },
   propinas: [0, 10, 15],
+  // Reservas por WhatsApp y web: cuánto dura una mesa, en qué horario se reserva y hasta cuántas personas.
+  reservas: { activas: true, duracionMin: 90, desde: "12:00", hasta: "23:30", maxPersonas: 12, anticipacionMin: 60 },
+  // Pedidos para llevar por WhatsApp: entran directo a cocina; se pagan al retirar.
+  llevar: { activo: true, demoraMin: 30, maxUnidades: 30 },
   // Datos del local que salen en el ticket y deciden qué tipo de factura corresponde.
   fiscal: { razonSocial: "", cuit: "", condicionIva: "responsable_inscripto", domicilio: "", pedirFactura: true },
 };
@@ -31,6 +35,8 @@ export function normalizarConfig(entrada = {}) {
   const hh = e.happyHour && typeof e.happyHour === "object" ? e.happyHour : {};
   const pago = e.pago && typeof e.pago === "object" ? e.pago : {};
   const fiscal = e.fiscal && typeof e.fiscal === "object" ? e.fiscal : {};
+  const res = e.reservas && typeof e.reservas === "object" ? e.reservas : {};
+  const llevar = e.llevar && typeof e.llevar === "object" ? e.llevar : {};
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return {
     nombreLocal: texto(e.nombreLocal ?? base.nombreLocal, 60),
@@ -46,6 +52,19 @@ export function normalizarConfig(entrada = {}) {
       categorias: Array.isArray(hh.categorias) ? hh.categorias.filter((c) => uuid.test(String(c))) : [],
     },
     pago: { alias: texto(pago.alias, 40), titular: texto(pago.titular, 60), mensaje: texto(pago.mensaje, 120) },
+    reservas: {
+      activas: res.activas === undefined ? base.reservas.activas : res.activas === true,
+      duracionMin: entero(res.duracionMin, 30, 300, base.reservas.duracionMin),
+      desde: hora(res.desde, base.reservas.desde),
+      hasta: hora(res.hasta, base.reservas.hasta),
+      maxPersonas: entero(res.maxPersonas, 1, 60, base.reservas.maxPersonas),
+      anticipacionMin: entero(res.anticipacionMin, 0, 1440, base.reservas.anticipacionMin),
+    },
+    llevar: {
+      activo: llevar.activo === undefined ? base.llevar.activo : llevar.activo === true,
+      demoraMin: entero(llevar.demoraMin, 5, 240, base.llevar.demoraMin),
+      maxUnidades: entero(llevar.maxUnidades, 1, 200, base.llevar.maxUnidades),
+    },
     fiscal: {
       razonSocial: texto(fiscal.razonSocial, 100),
       cuit: texto(fiscal.cuit, 13).replace(/[^\d-]/g, ""),

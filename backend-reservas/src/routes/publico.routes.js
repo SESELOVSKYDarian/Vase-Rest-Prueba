@@ -8,6 +8,10 @@ import { recomendar } from "../services/ia/nlu.local.js";
 import { crearPreferencia, firmaValida, leerPagoMp, mpConfigurado } from "../services/mercadopago.service.js";
 import { armarCuenta, confirmarPago, crearPago, formatearComprobante, leerComprobante, mesaPorNumero, pedidoActivo, vencerPagosViejos } from "../services/qr.service.js";
 import { armarTicket, validarPedidoFactura } from "../services/factura.service.js";
+import { crearReserva, inicioDe, leerEnlace, mesasDisponibles } from "../services/reservas.service.js";
+import { enviarTexto } from "../services/whatsapp/whatsapp.service.js";
+import { fechaLegible } from "../services/whatsapp/entender.js";
+import { fechaArgentina } from "../services/whatsapp/entender.js";
 import { ErrorHttp, responderError } from "../utils/errores.js";
 import { limitar } from "../utils/limitar.js";
 
@@ -243,6 +247,56 @@ router.post("/pago/:codigo/factura", escritura, async (req, res) => {
     res.status(201).json({ ok: true, tipo: datos.tipoComprobante });
   } catch (error) {
     responderError(res, error, "No se pudo registrar el pedido de factura");
+  }
+});
+
+/**
+ * Elegir mesa mirando el plano real: el enlace que manda el asistente de WhatsApp lleva firmados el día,
+ * la hora y la cantidad. Devuelve el plano y qué mesas están libres para ese horario.
+ */
+router.get("/reservar", lectura, async (req, res) => {
+  try {
+    const datos = await leerEnlace(req.query.t);
+    if (!datos) throw new ErrorHttp(410, "Este enlace venció. Volvé a pedir tu reserva por WhatsApp.");
+    const config = await leerConfig();
+    const duracionMin = config.reservas.duracionMin;
+    const libres = new Set((await mesasDisponibles({ inicio: inicioDe(datos.fechaIso, datos.hora), duracionMin, personas: datos.personas })).map((m) => m.id));
+    const [mesas, plano] = await Promise.all([
+      pool.query("select id, numero, capacidad, zona, forma, pos_x, pos_y, estado from mesas where estado <> 'mantenimiento' order by numero"),
+      pool.query("select payload from salon_layouts where id = 'plano-v2'"),
+    ]);
+    res.json({
+      local: config.nombreLocal,
+      pedido: { fechaIso: datos.fechaIso, hora: datos.hora, personas: datos.personas, cuando: `${fechaLegible(datos.fechaIso, fechaArgentina())} a las ${datos.hora}`, nombre: datos.nombre },
+      duracionMin,
+      plano: plano.rows[0]?.payload ?? null,
+      mesas: mesas.rows.map((m) => ({
+        id: m.id, numero: m.numero, capacidad: m.capacidad, zona: m.zona, forma: m.forma,
+        posX: Number(m.pos_x) || 0, posY: Number(m.pos_y) || 0,
+        libre: libres.has(m.id),
+        motivo: libres.has(m.id) ? null : m.capacidad < datos.personas ? "chica" : "ocupada",
+      })),
+    });
+  } catch (error) {
+    responderError(res, error, "No se pudo cargar el plano");
+  }
+});
+
+router.post("/reservar", escritura, async (req, res) => {
+  try {
+    const datos = await leerEnlace(req.body?.t);
+    if (!datos) throw new ErrorHttp(410, "Este enlace venció. Volvé a pedir tu reserva por WhatsApp.");
+    const config = await leerConfig();
+    const mesaId = String(req.body?.mesaId ?? "");
+    const nombre = String(req.body?.nombre ?? datos.nombre ?? "");
+    const { reserva, mesa } = await crearReserva({ mesaId, fechaIso: datos.fechaIso, hora: datos.hora, personas: datos.personas, nombre, telefono: datos.telefono, origen: "whatsapp" }, config);
+    // La conversación de WhatsApp queda lista para lo próximo: la reserva ya se hizo desde el plano.
+    await pool.query("update whatsapp_sesiones set estado = 'inicio', datos = datos - 'reserva' where telefono = $1", [datos.telefono]);
+    // Se confirma por el mismo chat, así la persona no tiene que volver a abrir nada.
+    void enviarTexto(datos.telefono, `¡Listo, ${reserva.nombre_cliente}! ✅ Pedí tu reserva: *mesa ${mesa.numero}*, ${fechaLegible(datos.fechaIso, fechaArgentina())} a las ${datos.hora}, ${datos.personas} ${datos.personas === 1 ? "persona" : "personas"}.\n\nEl local la confirma en breve y te aviso por acá.`);
+    res.status(201).json({ ok: true, mesa: mesa.numero, estado: "pendiente" });
+  } catch (error) {
+    responderError(res, error, "No se pudo reservar");
   }
 });
 

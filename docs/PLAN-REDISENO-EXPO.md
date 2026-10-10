@@ -260,3 +260,12 @@ Detalle completo, qué se necesita para activarlo y qué no se simula: **`docs/Q
 - **Avisos del salón**: pedidos y llamados del QR y transferencias por confirmar, con vibración al llegar uno nuevo.
 
 **Pendiente:** factura fiscal ARCA de los cobros por QR (necesita credenciales), cobro en la caja con división por plato, offline, TV de pedidos listos y el resto de la lista de `docs/INVESTIGACION-COMPETENCIA.md`.
+
+## 15. Avance (ticket y factura, plano inteligente, avisos al celular, WhatsApp)
+
+- **Ticket y factura**: ticket no fiscal imprimible (80/58 mm, IVA contenido) y pedido de factura con datos validados (CUIT con dígito verificador, tipo A/B/C). El local emite en ARCA con sus credenciales y anota el número; el sistema **no** genera CAE.
+- **Plano inteligente**: mesa demorada que late (plato listo sin servir, pedido sin tomar, cuenta pedida, estadía), mapa de calor (ventas, rotación, permanencia) y reparto justo entre mozos con sugerencia e insignias.
+- **Avisos al celular**: "Mesa 5 · listo para servir" por Expo Push al mozo de esa mesa. Requiere la app instalada y credenciales FCM/APNs; sin Live Activities de iOS.
+- **WhatsApp**: reservas con disponibilidad real y plano para elegir mesa, y pedidos para llevar directo a cocina (se pagan al retirar). Probado con el simulador; falta conectar la cuenta de WhatsApp Business.
+- Arreglo de paso: tocar una mesa del Salón no abría la hoja en la web (un gesto de arrastre deshabilitado frenaba el toque).
+- Detalle de uso, variables de entorno y límites: `docs/QR-Y-ASISTENTE.md`.

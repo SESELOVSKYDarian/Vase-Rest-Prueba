@@ -48,6 +48,8 @@ export interface AjustesCarta {
   happyHour: { activo: boolean; dias: number[]; desde: string; hasta: string; descuento: number; categorias: string[] };
   pago: { alias: string; titular: string; mensaje: string };
   propinas: number[];
+  reservas: { activas: boolean; duracionMin: number; desde: string; hasta: string; maxPersonas: number; anticipacionMin: number };
+  llevar: { activo: boolean; demoraMin: number; maxUnidades: number };
   fiscal: { razonSocial: string; cuit: string; condicionIva: 'responsable_inscripto' | 'monotributo' | 'exento'; domicilio: string; pedirFactura: boolean };
 }
 

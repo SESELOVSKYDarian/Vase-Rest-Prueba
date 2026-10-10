@@ -59,7 +59,8 @@ export function NodoPlano({ left, top, width, height, escala, arrastrable, lienz
   if (lienzo) pan = pan.blocksExternalGesture(lienzo);
 
   const tap = Gesture.Tap().maxDuration(400).onEnd(() => { scheduleOnRN(tocar); });
-  const gesto = Gesture.Exclusive(pan, tap);
+  // Si no se puede arrastrar (servicio), el toque va solo: un pan deshabilitado no debe frenarlo.
+  const gesto = arrastrable ? Gesture.Exclusive(pan, tap) : tap;
 
   const estilo = useAnimatedStyle(() => ({
     transform: [{ translateX: dx.get() }, { translateY: dy.get() }, { scale: 1 + alzado.get() * 0.04 }],

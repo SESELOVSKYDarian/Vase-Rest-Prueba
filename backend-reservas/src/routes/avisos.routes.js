@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { requireAuth } from "../controllers/auth.controller.js";
-import { agregarItemAPedido } from "../controllers/pedidos.controller.js";
+import { agregarItemAPedido, cancelarPedidoPorId } from "../controllers/pedidos.controller.js";
+import { fechaArgentina, fechaLegible } from "../services/whatsapp/entender.js";
+import { enviarTexto } from "../services/whatsapp/whatsapp.service.js";
 import { pool } from "../config/database.js";
 import { confirmarPago, formatearComprobante, leerComprobante, pedidoActivo, vencerPagosViejos } from "../services/qr.service.js";
 import { obtenerUsuarioRequest } from "../utils/authz.js";
@@ -27,7 +29,7 @@ router.get("/", async (req, res) => {
   try {
     exigirPersonal(req);
     await vencerPagosViejos();
-    const [solicitudes, pagos, facturas] = await Promise.all([
+    const [solicitudes, pagos, facturas, reservas, llevar] = await Promise.all([
       pool.query(
         `select s.id, s.tipo, s.items, s.nota, s.creada_en, m.numero as mesa, m.id as mesa_id
            from solicitudes_mesa s join mesas m on m.id = s.mesa_id where s.estado = 'pendiente' order by s.creada_en`,
@@ -40,6 +42,19 @@ router.get("/", async (req, res) => {
         `select f.*, q.codigo, q.monto, q.propina, q.pagado_en, m.numero as mesa
            from solicitudes_factura f join pagos_qr q on q.id = f.pago_id left join mesas m on m.id = q.mesa_id
           where f.estado = 'pendiente' order by f.creada_en`,
+      ),
+      pool.query(
+        `select r.id, r.nombre_cliente, r.telefono, r.cantidad_personas, r.fecha_hora_inicio, r.origen, r.creado_en, m.numero as mesa
+           from reservas r left join mesas m on m.id = r.mesa_id
+          where r.estado::text = 'pendiente' and r.fecha_hora_fin > now() order by r.fecha_hora_inicio`,
+      ),
+      pool.query(
+        `select p.id, p.estado, p.total, p.cliente_nombre, p.cliente_telefono, p.retiro_para, p.abierto_en,
+                coalesce((select json_agg(json_build_object('nombre', pr.nombre, 'cantidad', pi.cantidad, 'notas', coalesce(pi.notas, '')) order by pi.creado_en)
+                            from pedido_items pi join productos pr on pr.id = pi.producto_id where pi.pedido_id = p.id), '[]'::json) as items
+           from pedidos p
+          where p.tipo = 'llevar' and p.estado::text in ('pendiente', 'preparando', 'en_preparacion', 'listo', 'entregado')
+          order by p.retiro_para nulls last, p.abierto_en`,
       ),
     ]);
     const ids = [...new Set(solicitudes.rows.flatMap((s) => s.items.map((i) => i.productoId)))];
@@ -55,6 +70,12 @@ router.get("/", async (req, res) => {
         items: s.items.map((i) => ({ productoId: i.productoId, nombre: nombres.get(i.productoId) ?? "Plato", cantidad: i.cantidad, notas: i.notas ?? "" })),
       })),
       pagos: pagos.rows.map((p) => ({ id: p.id, codigo: p.codigo, metodo: p.metodo, mesa: p.mesa, monto: Number(p.monto), propina: Number(p.propina), total: Math.round((Number(p.monto) + Number(p.propina)) * 100) / 100, creadoEn: p.creado_en })),
+      reservas: reservas.rows.map((r) => ({
+        id: r.id, nombre: r.nombre_cliente, telefono: r.telefono, personas: r.cantidad_personas, inicio: r.fecha_hora_inicio, mesa: r.mesa, origen: r.origen ?? "", creadaEn: r.creado_en,
+      })),
+      llevar: llevar.rows.map((p) => ({
+        id: p.id, codigo: String(p.id).slice(-4).toUpperCase(), estado: p.estado, total: Number(p.total), cliente: p.cliente_nombre ?? "", telefono: p.cliente_telefono ?? "", retiro: p.retiro_para, creadoEn: p.abierto_en, items: p.items,
+      })),
       facturas: facturas.rows.map((f) => ({
         id: f.id, codigo: f.codigo, mesa: f.mesa, tipo: f.tipo_comprobante, condicionIva: f.condicion_iva, docTipo: f.doc_tipo, docNumero: f.doc_numero,
         nombre: f.nombre, email: f.email ?? "", domicilio: f.domicilio ?? "", importe: Math.round((Number(f.monto) + Number(f.propina)) * 100) / 100, importeNeto: Number(f.monto), creadaEn: f.creada_en,
@@ -142,6 +163,83 @@ router.post("/pagos/:id/rechazar", async (req, res) => {
     res.json({ ok: true });
   } catch (error) {
     responderError(res, error, "No se pudo rechazar el pago");
+  }
+});
+
+const cuandoReserva = (inicio) => `${fechaLegible(fechaArgentina(new Date(inicio)).iso, fechaArgentina())} a las ${new Intl.DateTimeFormat("es-AR", { timeZone: "America/Argentina/Buenos_Aires", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(inicio))}`;
+
+/** Reservas que entraron por WhatsApp o la web: el local las confirma y la persona se entera por el mismo chat. */
+router.post("/reservas/:id/confirmar", async (req, res) => {
+  try {
+    exigirPersonal(req);
+    const r = await pool.query(
+      `update reservas set estado = 'confirmada' where id = $1 and estado::text = 'pendiente' returning telefono, nombre_cliente, fecha_hora_inicio, cantidad_personas, origen,
+         (select numero from mesas where id = reservas.mesa_id) as mesa`,
+      [idValido(req.params.id)],
+    );
+    const f = r.rows[0];
+    if (!f) throw new ErrorHttp(409, "Esa reserva ya fue atendida");
+    if (f.origen === "whatsapp") void enviarTexto(f.telefono, `✅ ¡Tu reserva está confirmada, ${f.nombre_cliente}! Te esperamos ${cuandoReserva(f.fecha_hora_inicio)}, mesa ${f.mesa}, ${f.cantidad_personas} ${f.cantidad_personas === 1 ? "persona" : "personas"}. Si no podés venir, escribime *cancelar reserva*.`);
+    res.json({ ok: true });
+  } catch (error) {
+    responderError(res, error, "No se pudo confirmar la reserva");
+  }
+});
+
+router.post("/reservas/:id/rechazar", async (req, res) => {
+  try {
+    exigirPersonal(req);
+    const motivo = String(req.body?.motivo ?? "").trim().slice(0, 160);
+    const r = await pool.query("update reservas set estado = 'cancelada', observaciones = coalesce($2, observaciones) where id = $1 and estado::text = 'pendiente' returning telefono, nombre_cliente, fecha_hora_inicio, origen", [idValido(req.params.id), motivo || null]);
+    const f = r.rows[0];
+    if (!f) throw new ErrorHttp(409, "Esa reserva ya fue atendida");
+    if (f.origen === "whatsapp") void enviarTexto(f.telefono, `Hola ${f.nombre_cliente}, lamentablemente no pudimos confirmar tu reserva de ${cuandoReserva(f.fecha_hora_inicio)}.${motivo ? ` ${motivo}` : ""} Escribime *reservar* y buscamos otro horario. 🙏`);
+    res.json({ ok: true });
+  } catch (error) {
+    responderError(res, error, "No se pudo rechazar la reserva");
+  }
+});
+
+/** Pedidos para llevar: cocina los ve como pedidos normales; acá se entregan y se cobran. */
+router.post("/llevar/:id/entregar", async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const usuario = exigirPersonal(req);
+    const metodo = ["efectivo", "debito", "credito", "billetera_virtual"].includes(req.body?.metodo) ? req.body.metodo : "efectivo";
+    await client.query("begin");
+    const p = (await client.query("select * from pedidos where id = $1 and tipo = 'llevar' for update", [idValido(req.params.id)])).rows[0];
+    if (!p || ["cerrada", "cerrado", "cancelado"].includes(p.estado)) throw new ErrorHttp(409, "Ese pedido ya está cerrado");
+    await client.query(
+      `insert into pagos (pedido_id, metodo_pago, monto, estado, referencia_pago, idempotency_key, confirmado_en, recibido_por)
+       values ($1, $2, $3, 'pagado', $4, $5, now(), $6) on conflict do nothing`,
+      [p.id, metodo, p.total, `llevar-${String(p.id).slice(-4)}`, `llevar-${p.id}`, usuario.nombre || usuario.rol],
+    );
+    await client.query(
+      `insert into movimientos_caja (pedido_id, tipo, metodo, importe, motivo, creado_por) values ($1, 'ingreso_no_fiscal', $2, $3, $4, $5)`,
+      [p.id, metodo === "billetera_virtual" ? "billetera_virtual" : metodo, p.total, `Pedido para llevar #${String(p.id).slice(-4).toUpperCase()} (${p.cliente_nombre ?? ""})`, usuario.nombre || usuario.rol],
+    );
+    await client.query("update pedidos set estado = 'cerrada', cerrado_en = now() where id = $1", [p.id]);
+    await client.query("commit");
+    res.json({ ok: true });
+  } catch (error) {
+    await client.query("rollback").catch(() => {});
+    responderError(res, error, "No se pudo cerrar el pedido");
+  } finally {
+    client.release();
+  }
+});
+
+router.post("/llevar/:id/rechazar", async (req, res) => {
+  try {
+    exigirPersonal(req);
+    const id = idValido(req.params.id);
+    const p = (await pool.query("select estado, cliente_telefono, cliente_nombre, origen from pedidos where id = $1 and tipo = 'llevar'", [id])).rows[0];
+    if (!p || ["cerrada", "cerrado", "cancelado"].includes(p.estado)) throw new ErrorHttp(409, "Ese pedido ya está cerrado");
+    await cancelarPedidoPorId(id);
+    if (p.origen === "whatsapp" && p.cliente_telefono) void enviarTexto(p.cliente_telefono, `Hola ${p.cliente_nombre ?? ""}, lamentablemente no pudimos preparar tu pedido #${String(id).slice(-4).toUpperCase()}. 🙏 Disculpá las molestias; escribime *menu* si querés intentar con otra cosa.`);
+    res.json({ ok: true });
+  } catch (error) {
+    responderError(res, error, "No se pudo rechazar el pedido");
   }
 });
 

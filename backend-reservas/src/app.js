@@ -18,6 +18,7 @@ import planoRoutes from "./routes/plano.routes.js";
 import avisosRoutes from "./routes/avisos.routes.js";
 import inteligenciaRoutes from "./routes/inteligencia.routes.js";
 import pushRoutes from "./routes/push.routes.js";
+import whatsappRoutes from "./routes/whatsapp.routes.js";
 import cartaAdminRoutes from "./routes/cartaAdmin.routes.js";
 import integracionesRoutes from "./routes/integraciones.routes.js";
 
@@ -37,7 +38,8 @@ app.use(cors({
 
 // El plano de mesas (salon_layouts) embebe la imagen de fondo como data URL en el
 // payload JSON; el límite por defecto de express (100kb) la rechaza con 413.
-app.use(express.json({ limit: "12mb" }));
+// El cuerpo crudo de WhatsApp hace falta para verificar la firma de Meta.
+app.use(express.json({ limit: "12mb", verify: (req, _res, buf) => { if (req.originalUrl.startsWith("/api/whatsapp")) req.rawBody = buf; } }));
 app.use(attachAuth);
 
 // Imágenes subidas: nombres aleatorios e inmutables → caché larga. "cross-origin" para que
@@ -57,6 +59,7 @@ app.use("/api/plano", planoRoutes);
 app.use("/api/avisos", avisosRoutes);
 app.use("/api/inteligencia", inteligenciaRoutes);
 app.use("/api/push", pushRoutes);
+app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api/carta-admin", cartaAdminRoutes);
 
 app.get("/health", async (_req, res) => {

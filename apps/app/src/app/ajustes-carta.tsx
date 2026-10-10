@@ -96,6 +96,23 @@ export default function AjustesCarta() {
                 <Field label="Mensaje" value={borrador.pago.mensaje} onChangeText={(t) => cambiar({ pago: { ...borrador.pago, mensaje: t } })} placeholder="Opcional" />
               </Group>
 
+              <Group header="Reservas por WhatsApp" footer="El asistente de WhatsApp toma reservas con la disponibilidad real de las mesas. Quedan pendientes hasta que las confirmás desde Avisos, y la persona se entera por el mismo chat.">
+                <Row title="Tomar reservas" trailing={interruptor(borrador.reservas.activas, (v) => cambiar({ reservas: { ...borrador.reservas, activas: v } }), 'Tomar reservas')} />
+                {borrador.reservas.activas ? (
+                  <>
+                    <Row title="Duración de la mesa" trailing={<Stepper value={borrador.reservas.duracionMin} min={30} max={300} step={15} onChange={(n) => cambiar({ reservas: { ...borrador.reservas, duracionMin: n } })} label="Duración en minutos" />} value={`${borrador.reservas.duracionMin} min`} />
+                    <Row title="Máximo de personas" trailing={<Stepper value={borrador.reservas.maxPersonas} min={1} max={60} onChange={(n) => cambiar({ reservas: { ...borrador.reservas, maxPersonas: n } })} label="Máximo de personas" />} value={String(borrador.reservas.maxPersonas)} />
+                    <Field label="Desde" value={borrador.reservas.desde} onChangeText={(t) => cambiar({ reservas: { ...borrador.reservas, desde: t } })} placeholder="12:00" />
+                    <Field label="Hasta" value={borrador.reservas.hasta} onChangeText={(t) => cambiar({ reservas: { ...borrador.reservas, hasta: t } })} placeholder="23:30" />
+                  </>
+                ) : null}
+              </Group>
+
+              <Group header="Pedidos para llevar por WhatsApp" footer="Entran directo a cocina y se pagan al retirar. Desde Avisos marcás la entrega y el cobro.">
+                <Row title="Tomar pedidos para llevar" trailing={interruptor(borrador.llevar.activo, (v) => cambiar({ llevar: { ...borrador.llevar, activo: v } }), 'Pedidos para llevar')} />
+                {borrador.llevar.activo ? <Row title="Demora mínima" trailing={<Stepper value={borrador.llevar.demoraMin} min={5} max={240} step={5} onChange={(n) => cambiar({ llevar: { ...borrador.llevar, demoraMin: n } })} label="Demora mínima en minutos" />} value={`${borrador.llevar.demoraMin} min`} /> : null}
+              </Group>
+
               <Group header="Datos fiscales del local" footer="Salen en el ticket y definen qué tipo de factura (A, B o C) le corresponde a cada cliente. La factura en sí la emitís vos en ARCA: acá el cliente la pide y vos dejás el número.">
                 <Field label="Razón social" value={borrador.fiscal.razonSocial} onChangeText={(t) => cambiar({ fiscal: { ...borrador.fiscal, razonSocial: t } })} placeholder="Opcional" />
                 <Field label="CUIT" value={borrador.fiscal.cuit} onChangeText={(t) => cambiar({ fiscal: { ...borrador.fiscal, cuit: t } })} placeholder="30-12345678-9" keyboardType="number-pad" />

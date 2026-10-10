@@ -75,6 +75,17 @@ Para que lleguen de verdad hace falta:
 
 No incluye Live Activities de iOS (la tarjeta viva en pantalla bloqueada tipo Starbucks): requieren código nativo propio de ActivityKit. Los clientes que usan la carta desde la web no reciben avisos; eso necesitaría Web Push o una app propia.
 
+## WhatsApp: reservas y pedidos para llevar
+
+El asistente conversa por WhatsApp (Cloud API de Meta) con estas reglas:
+
+- **Reservar viendo el plano real.** "Mesa para 4 mañana a las 21" → el asistente entiende día, hora y personas (entiende "el sábado", "a las 9 de la noche", "somos cuatro"), busca mesas libres con la disponibilidad real (capacidad, reservas que se pisan, mesas ocupadas ahora) y propone la más justa. También manda un enlace corto al **plano del local** con las mesas libres para ese horario: la persona toca la que quiere. Si no hay lugar ofrece horarios cercanos. La reserva queda **pendiente** hasta que el local la confirma en **Avisos**, y la persona se entera por el mismo chat. "cancelar reserva" la cancela.
+- **Pedidos para llevar directo a cocina.** "Quiero 2 milanesas napolitanas y una IPA para llevar" → arma el pedido con el mismo motor que entiende pedidos dictados (agotados, variantes), pide nombre y hora de retiro (respeta una demora mínima), muestra el total y, al confirmar, crea un pedido **para llevar** en estado pendiente: cocina lo ve como cualquier pedido (zona *PARA LLEVAR*). Cuando cocina lo marca listo, el cliente recibe el aviso por el chat. En **Avisos → Para llevar** se entrega y se cobra (efectivo o transferencia, queda en caja). Se paga al retirar.
+- Límites: máximo de unidades por pedido, máximo 3 pedidos en curso por teléfono, 60 mensajes por hora, reservas hasta 90 días y dentro del horario que se define en Ajustes. No hace envíos a domicilio.
+- Se ajusta en **Carta → Ajustes** (reservas: duración de la mesa, horario, máximo de personas; para llevar: demora mínima).
+
+Para conectarlo de verdad hace falta una cuenta de **WhatsApp Business Platform** (Meta for Developers): número, `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID`, `WHATSAPP_APP_SECRET` (firma de los avisos) y `WHATSAPP_VERIFY_TOKEN`. Configurar el webhook de la app apuntando a `https://TU-SERVIDOR/api/whatsapp/webhook`. Sin eso, **probalo con el simulador**: `POST /api/whatsapp/simular {"telefono":"5491100000000","texto":"hola"}` devuelve lo que se habría contestado. Notas de Meta: solo se puede escribir libremente dentro de las 24 h desde el último mensaje de la persona; fuera de esa ventana hacen falta plantillas aprobadas (no incluidas). Hoy solo se leen mensajes de texto y respuestas de botones.
+
 ## Variables de entorno
 
 Ver `backend-reservas/.env.example`: `LLM_PROVIDER`, `GEMINI_API_KEY`, `GROQ_API_KEY`, `MYMEMORY_EMAIL`, `MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET`, `PUBLIC_API_URL` (https, para el aviso de Mercado Pago) y `PUBLIC_WEB_URL`.

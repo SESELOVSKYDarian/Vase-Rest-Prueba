@@ -52,7 +52,10 @@ function mapPedido(pedido) {
     total: Number(pedido.total || 0),
     abiertoEn: pedido.abierto_en,
     createdAt: pedido.created_at,
-    mesa: mapMesa(pedido.mesas),
+    mesa: mapMesa(pedido.mesas) ?? (pedido.tipo === "llevar" ? { id: null, numero: 0, zona: "PARA LLEVAR", capacidad: 0, disponible: true, estado: "libre" } : null),
+    tipo: pedido.tipo || "salon",
+    clienteNombre: pedido.cliente_nombre || null,
+    retiroPara: pedido.retiro_para || null,
     items: (pedido.pedido_items || []).map(mapItem),
     detalles: (pedido.pedido_items || []).map(mapItem),
     mozoId: pedido.usuario_id || null,
@@ -419,6 +422,16 @@ export const cerrarPedido = async (req, res) => {
     });
   }
 };
+
+/** Cancela un pedido (devuelve el stock) sin pasar por HTTP: lo usan los avisos del personal. */
+export async function cancelarPedidoPorId(id) {
+  const pedidoRaw = await obtenerPedidoCompleto(id);
+  if (pedidoRaw.estado === "cancelado") return;
+  await restaurarStockDePedido(id);
+  const { error } = await postgresClient.from("pedidos").update({ estado: "cancelado" }).eq("id", id);
+  if (error) throw new Error(error.message);
+  if (pedidoRaw.mesa_id) await postgresClient.from("mesas").update({ disponible: true, estado: "libre" }).eq("id", pedidoRaw.mesa_id);
+}
 
 /**
  * Cancela un pedido y restaura stock antes de liberar la mesa.

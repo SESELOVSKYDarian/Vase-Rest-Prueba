@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { BellRing, Check, Copy, FileText, Landmark, Receipt, X } from 'lucide-react-native';
-import { aceptarSolicitud, confirmarPagoQr, marcarFacturaEmitida, rechazarPagoQr, rechazarPedidoFactura, rechazarSolicitud, type Avisos, type FacturaPendiente } from '@vase/api';
+import { BellRing, CalendarClock, Check, Copy, FileText, Landmark, Receipt, ShoppingBag, X } from 'lucide-react-native';
+import { aceptarSolicitud, confirmarPagoQr, confirmarReserva, entregarPedidoLlevar, marcarFacturaEmitida, rechazarPagoQr, rechazarPedidoFactura, rechazarPedidoLlevar, rechazarReserva, rechazarSolicitud, type Avisos, type FacturaPendiente, type PedidoLlevar, type ReservaPendiente } from '@vase/api';
 import { formatearARS } from '@vase/domain';
 import { Button, EmptyState, ErrorBanner, Sheet, Text, fontFor, haptic, radius, space, useTheme } from '@vase/ui';
 
@@ -39,8 +39,17 @@ export function AvisosSheet({ open, onClose, avisos, onAviso }: Props) {
   });
   const noEmitir = useMutation({ mutationFn: ({ id, motivo }: { id: string; motivo: string }) => rechazarPedidoFactura(id, motivo), onSuccess: async () => { haptic.medio(); await refrescar(); } });
 
-  const error = [aceptar, rechazar, confirmar, noLlego, emitir, noEmitir].find((m) => m.isError)?.error;
-  const vacio = !avisos || (avisos.solicitudes.length === 0 && avisos.pagos.length === 0 && avisos.facturas.length === 0);
+  const confirmaReserva = useMutation({ mutationFn: confirmarReserva, onSuccess: async () => { haptic.exito(); onAviso('Reserva confirmada: le avisamos por WhatsApp'); await refrescar(); }, onError: () => haptic.error() });
+  const rechazaReserva = useMutation({ mutationFn: (id: string) => rechazarReserva(id, ''), onSuccess: async () => { haptic.medio(); await refrescar(); } });
+  const entrega = useMutation({
+    mutationFn: ({ id, metodo }: { id: string; metodo: 'efectivo' | 'billetera_virtual' }) => entregarPedidoLlevar(id, metodo),
+    onSuccess: async () => { haptic.exito(); onAviso('Pedido entregado y cobrado'); await refrescar(); },
+    onError: () => haptic.error(),
+  });
+  const rechazaLlevar = useMutation({ mutationFn: rechazarPedidoLlevar, onSuccess: async () => { haptic.medio(); await refrescar(); } });
+
+  const error = [aceptar, rechazar, confirmar, noLlego, emitir, noEmitir, confirmaReserva, rechazaReserva, entrega, rechazaLlevar].find((m) => m.isError)?.error;
+  const vacio = !avisos || (avisos.solicitudes.length === 0 && avisos.pagos.length === 0 && avisos.facturas.length === 0 && avisos.reservas.length === 0 && avisos.llevar.length === 0);
 
   return (
     <Sheet open={open} onClose={onClose} title="Avisos de las mesas">
@@ -86,11 +95,77 @@ export function AvisosSheet({ open, onClose, avisos, onAviso }: Props) {
           </View>
         ))}
 
+        {avisos?.reservas.map((r) => (
+          <TarjetaReserva key={r.id} r={r} ocupada={(confirmaReserva.isPending && confirmaReserva.variables === r.id) || (rechazaReserva.isPending && rechazaReserva.variables === r.id)} onConfirmar={() => confirmaReserva.mutate(r.id)} onRechazar={() => rechazaReserva.mutate(r.id)} />
+        ))}
+
+        {avisos?.llevar.map((p) => (
+          <TarjetaLlevar key={p.id} p={p} ocupada={(entrega.isPending && entrega.variables?.id === p.id) || (rechazaLlevar.isPending && rechazaLlevar.variables === p.id)} onEntregar={(metodo) => entrega.mutate({ id: p.id, metodo })} onRechazar={() => rechazaLlevar.mutate(p.id)} />
+        ))}
+
         {avisos?.facturas.map((f) => (
           <TarjetaFactura key={f.id} f={f} ocupada={(emitir.isPending && emitir.variables?.id === f.id) || (noEmitir.isPending && noEmitir.variables?.id === f.id)} onEmitida={(numero) => emitir.mutate({ id: f.id, numero })} onRechazar={(motivo) => noEmitir.mutate({ id: f.id, motivo })} />
         ))}
       </ScrollView>
     </Sheet>
+  );
+}
+
+const ZONA = 'America/Argentina/Buenos_Aires';
+const horaCorta = (iso: string | null) => (iso ? new Date(iso).toLocaleTimeString('es-AR', { timeZone: ZONA, hour: '2-digit', minute: '2-digit', hour12: false }) : '');
+// El local trabaja en hora argentina, sin importar la zona del celular o la PC.
+const ymd = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: ZONA });
+const cuando = (iso: string) => {
+  const d = new Date(iso);
+  const hoy = new Date();
+  const dia = ymd(d) === ymd(hoy) ? 'Hoy' : ymd(d) === ymd(new Date(hoy.getTime() + 86400000)) ? 'Mañana' : d.toLocaleDateString('es-AR', { timeZone: ZONA, weekday: 'short', day: 'numeric', month: 'numeric' });
+  return `${dia} ${horaCorta(iso)}`;
+};
+
+/** Reserva que pidió alguien por WhatsApp: el local la confirma (o la rechaza) y la persona se entera por el chat. */
+function TarjetaReserva({ r, ocupada, onConfirmar, onRechazar }: { r: ReservaPendiente; ocupada: boolean; onConfirmar: () => void; onRechazar: () => void }) {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.tarjeta, { backgroundColor: colors.surface }]}>
+      <View style={styles.cabecera}>
+        <CalendarClock size={20} color={colors.tint} />
+        <View style={{ flex: 1 }}>
+          <Text variant="headline">{`Reserva · ${cuando(r.inicio)}`}</Text>
+          <Text variant="footnote" color="secondary">{`${r.nombre} · ${r.personas} ${r.personas === 1 ? 'persona' : 'personas'}${r.mesa ? ` · mesa ${r.mesa}` : ''}${r.origen === 'whatsapp' ? ' · WhatsApp' : ''}`}</Text>
+        </View>
+      </View>
+      <Text variant="footnote" color="secondary">{`${r.telefono} · pedida ${hace(r.creadaEn)}`}</Text>
+      <View style={styles.botones}>
+        <Button label="Confirmar" size="sm" icon={<Check size={16} color={colors.onTint} />} loading={ocupada} onPress={onConfirmar} style={{ flex: 1 }} />
+        <Button label="No puedo" size="sm" variant="plain" onPress={onRechazar} />
+      </View>
+    </View>
+  );
+}
+
+const ESTADO_LLEVAR: Record<string, string> = { pendiente: 'En cocina', preparando: 'Preparando', en_preparacion: 'Preparando', listo: 'Listo para retirar', entregado: 'Entregado' };
+
+/** Pedido para llevar: cocina lo prepara; acá se entrega y se cobra al retirar. */
+function TarjetaLlevar({ p, ocupada, onEntregar, onRechazar }: { p: PedidoLlevar; ocupada: boolean; onEntregar: (metodo: 'efectivo' | 'billetera_virtual') => void; onRechazar: () => void }) {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.tarjeta, { backgroundColor: colors.surface }]}>
+      <View style={styles.cabecera}>
+        <ShoppingBag size={20} color={colors.tint} />
+        <View style={{ flex: 1 }}>
+          <Text variant="headline">{`Para llevar #${p.codigo}${p.retiro ? ` · retira ${horaCorta(p.retiro)}` : ''}`}</Text>
+          <Text variant="footnote" color="secondary">{`${p.cliente} · ${ESTADO_LLEVAR[p.estado] ?? p.estado}`}</Text>
+        </View>
+        <Text variant="title3" numeric weight="700">{formatearARS(p.total, true)}</Text>
+      </View>
+      {p.items.map((i, k) => <Text key={k} variant="callout">{`${i.cantidad} × ${i.nombre}`}{i.notas ? <Text variant="callout" color="secondary">{`  ·  ${i.notas}`}</Text> : null}</Text>)}
+      <Text variant="footnote" color="secondary">Al entregarlo, ¿cómo pagó?</Text>
+      <View style={styles.botones}>
+        <Button label="Efectivo" size="sm" icon={<Check size={16} color={colors.onTint} />} loading={ocupada} onPress={() => onEntregar('efectivo')} style={{ flex: 1 }} />
+        <Button label="Transferencia" size="sm" variant="tinted" onPress={() => onEntregar('billetera_virtual')} />
+        {p.estado === 'pendiente' ? <Button label="Rechazar" size="sm" variant="plain" onPress={onRechazar} /> : null}
+      </View>
+    </View>
   );
 }
 
