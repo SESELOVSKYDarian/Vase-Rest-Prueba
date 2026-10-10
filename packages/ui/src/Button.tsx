@@ -18,7 +18,8 @@ export interface ButtonProps {
   accessibilityLabel?: string;
 }
 
-const HEIGHT = { lg: 54, md: 48, sm: 36 } as const;
+// Ningún botón baja de 44: se usa con prisa y a veces con las manos mojadas.
+const HEIGHT = { lg: 54, md: 48, sm: 44 } as const;
 
 /** Un solo botón "filled" por pantalla: es la acción principal. */
 export function Button({ label, onPress, variant = 'filled', size = 'md', icon, loading, disabled, full, style, accessibilityLabel }: ButtonProps) {

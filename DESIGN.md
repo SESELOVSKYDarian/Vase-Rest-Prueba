@@ -37,7 +37,7 @@ Escala de 4 pt: 4 · 8 · 12 · 16 · 20 · 24 · 32 · 40 · 56 · 72. Márgene
 
 - **Screen** — título grande que se compacta al desplazar; barra con blur estático cuyo opacity se anima (nunca la intensidad).
 - **Group / Row** — lista agrupada: un bloque redondeado, separador fino con sangría, sin cajas anidadas. Es el contenedor por defecto.
-- **Button** — `filled` (una sola por pantalla), `tinted`, `plain`, `destructive`; 54/48/36 de alto.
+- **Button** — `filled` (una sola por pantalla), `tinted`, `plain`, `destructive`; 54/48/44 de alto (ninguno baja de 44).
 - **Segmented** — pastilla que se desliza con resorte; **Chip** para filtros con contador.
 - **Sheet** — hoja inferior en celular (arrastre por velocidad o distancia, rebote solo si hubo inercia); panel centrado en tablet/escritorio.
 - **Stepper**, **StatusPill**, **Toast**, **EmptyState**, **Skeleton**, **ErrorBanner**, **Field**.

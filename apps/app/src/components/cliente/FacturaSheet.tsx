@@ -50,9 +50,9 @@ export function FacturaSheet({ open, onClose, codigo, idioma, condicionEmisor }:
             />
           </View>
           <Field label={t.numeroDoc} value={docNumero} onChangeText={setDocNumero} keyboardType="number-pad" placeholder={docTipo === 'DNI' ? '30123456' : '20-12345678-6'} />
-          <Field label={t.nombre} value={nombre} onChangeText={setNombre} autoComplete="name" />
+          <Field label={t.nombreCorto} placeholder={t.nombre} value={nombre} onChangeText={setNombre} autoComplete="name" />
           <Field label={t.email} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" />
-          <Field label={t.domicilio} value={domicilio} onChangeText={setDomicilio} autoComplete="street-address" />
+          <Field label={t.domicilioCorto} placeholder={t.opcional} value={domicilio} onChangeText={setDomicilio} autoComplete="street-address" />
         </Group>
         <Text variant="footnote" color="secondary" align="center">{t.tipoQueCorresponde(tipo)}</Text>
         {enviar.isError ? <ErrorBanner message={enviar.error instanceof Error ? enviar.error.message : '—'} /> : null}

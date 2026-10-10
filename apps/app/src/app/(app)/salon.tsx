@@ -227,7 +227,7 @@ export default function Salon() {
 }
 
 const styles = StyleSheet.create({
-  acciones: { flexDirection: 'row', gap: space.sm },
+  acciones: { flexDirection: 'row', flexWrap: 'wrap', flexShrink: 1, gap: space.sm },
   calor: { gap: space.sm },
   calorTitulo: { flexDirection: 'row', alignItems: 'center', gap: space.xs, paddingHorizontal: space.xs },
   stack: { gap: space.xl },

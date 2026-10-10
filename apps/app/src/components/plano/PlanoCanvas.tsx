@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-nativ
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Maximize2, Minus, Plus } from 'lucide-react-native';
-import { ESTADOS_CON_PERSONAS, type EstadoMesa, type MesaEnPlano, type NivelAlerta, type Plano } from '@vase/domain';
+import { ESTADOS_CON_PERSONAS, ETIQUETA_ESTADO_MESA, type EstadoMesa, type MesaEnPlano, type NivelAlerta, type Plano } from '@vase/domain';
 import { urlArchivo } from '@vase/api';
 import { PressableScale, materialPlano, radius, space, useEstadoColor, useTheme, zonaColor } from '@vase/ui';
 import { ElementoSvg, MesaSvg, ZonaSvg, ladoElemento, ladoMesa } from './dibujos';
@@ -234,7 +234,7 @@ export const PlanoCanvas = forwardRef<PlanoCanvasHandle, Props>(function PlanoCa
                   lienzo={editar ? arrastre : undefined}
                   onTocar={() => onSeleccionar?.({ tipo: 'mesa', id: m.mesaId })}
                   onSoltar={(dx, dy) => onMover?.('mesa', m.mesaId, dx, dy)}
-                  accessibilityLabel={datos ? `Mesa ${datos.numero}, ${m.asientos} lugares` : 'Mesa'}
+                  accessibilityLabel={datos ? [`Mesa ${datos.numero}`, `${m.asientos} lugares`, !editar ? ETIQUETA_ESTADO_MESA[datos.estado] : '', !editar && alerta?.(m.mesaId) ? (alerta(m.mesaId) === 'urgente' ? 'demorada, urgente' : 'demorada') : '', !editar && insignia?.(m.mesaId) ? `atiende ${insignia(m.mesaId)}` : '', datos.detalle ? `hace ${datos.detalle}` : ''].filter(Boolean).join(', ') : 'Mesa'}
                 >
                   <View style={{ opacity: atenuada ? 0.25 : 1 }}>
                     {!editar && !calor && alerta?.(m.mesaId) ? <PulsoMesa lado={L} diametro={L * 1.15} nivel={alerta(m.mesaId)!} /> : null}

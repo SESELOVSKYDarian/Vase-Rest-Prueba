@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   // Con varias acciones el título no se aplasta: las acciones pasan a la línea de abajo.
   titleRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', columnGap: space.lg, rowGap: space.md },
   titleText: { flexGrow: 1, flexShrink: 1, flexBasis: 180 },
-  right: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.sm, paddingBottom: 4 },
+  right: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.sm, paddingBottom: 4, maxWidth: '100%', flexShrink: 1 },
   bar: { position: 'absolute', top: 0, left: 0, right: 0 },
   hairline: { position: 'absolute', bottom: 0, left: 0, right: 0, height: StyleSheet.hairlineWidth },
   compact: { position: 'absolute', left: 0, right: 0, alignItems: 'center', justifyContent: 'center' },

@@ -57,6 +57,7 @@ export function AvisosSheet({ open, onClose, avisos, onAviso }: Props) {
         {error ? <ErrorBanner message={error instanceof Error ? error.message : 'No se pudo completar'} /> : null}
         {vacio ? <EmptyState icon={<BellRing size={30} color={colors.labelSecondary} />} title="Todo al día" message="Cuando una mesa pida o llame desde el QR, aparece acá." /> : null}
 
+        {avisos && (avisos.solicitudes.length || avisos.pagos.length) ? <Encabezado texto="En las mesas" /> : null}
         {avisos?.solicitudes.map((s) => (
           <View key={s.id} style={[styles.tarjeta, { backgroundColor: colors.surface }]}>
             <View style={styles.cabecera}>
@@ -71,7 +72,7 @@ export function AvisosSheet({ open, onClose, avisos, onAviso }: Props) {
             ))}
             {s.nota ? <Text variant="callout" color="secondary">{s.nota}</Text> : null}
             <View style={styles.botones}>
-              <Button label={s.tipo === 'pedido' ? 'Confirmar y enviar a cocina' : 'Listo, ya voy'} size="sm" icon={<Check size={16} color={colors.onTint} />} loading={aceptar.isPending && aceptar.variables === s.id} onPress={() => aceptar.mutate(s.id)} style={{ flex: 1 }} />
+              <Button label={s.tipo === 'pedido' ? 'Confirmar y enviar a cocina' : 'Listo, ya voy'} size="sm" icon={<Check size={16} color={colors.onTint} />} loading={aceptar.isPending && aceptar.variables === s.id} onPress={() => aceptar.mutate(s.id)} style={{ flexGrow: 1, flexBasis: 150 }} />
               {s.tipo === 'pedido' ? <Button label="Rechazar" size="sm" variant="plain" loading={rechazar.isPending && rechazar.variables === s.id} onPress={() => rechazar.mutate(s.id)} /> : null}
             </View>
           </View>
@@ -89,20 +90,23 @@ export function AvisosSheet({ open, onClose, avisos, onAviso }: Props) {
             </View>
             <Text variant="footnote" color="secondary">Confirmá solo si ya ves esta plata (y el código en el concepto) en tu cuenta o billetera.</Text>
             <View style={styles.botones}>
-              <Button label="Llegó" size="sm" icon={<Check size={16} color={colors.onTint} />} loading={confirmar.isPending && confirmar.variables === p.id} onPress={() => confirmar.mutate(p.id)} style={{ flex: 1 }} />
+              <Button label="Llegó" size="sm" icon={<Check size={16} color={colors.onTint} />} loading={confirmar.isPending && confirmar.variables === p.id} onPress={() => confirmar.mutate(p.id)} style={{ flexGrow: 1, flexBasis: 150 }} />
               <Button label="No llegó" size="sm" variant="plain" icon={<X size={16} color={colors.tint} />} loading={noLlego.isPending && noLlego.variables === p.id} onPress={() => noLlego.mutate(p.id)} />
             </View>
           </View>
         ))}
 
+        {avisos && avisos.reservas.length ? <Encabezado texto="Reservas por confirmar" /> : null}
         {avisos?.reservas.map((r) => (
           <TarjetaReserva key={r.id} r={r} ocupada={(confirmaReserva.isPending && confirmaReserva.variables === r.id) || (rechazaReserva.isPending && rechazaReserva.variables === r.id)} onConfirmar={() => confirmaReserva.mutate(r.id)} onRechazar={() => rechazaReserva.mutate(r.id)} />
         ))}
 
+        {avisos && avisos.llevar.length ? <Encabezado texto="Pedidos para llevar" /> : null}
         {avisos?.llevar.map((p) => (
           <TarjetaLlevar key={p.id} p={p} ocupada={(entrega.isPending && entrega.variables?.id === p.id) || (rechazaLlevar.isPending && rechazaLlevar.variables === p.id)} onEntregar={(metodo) => entrega.mutate({ id: p.id, metodo })} onRechazar={() => rechazaLlevar.mutate(p.id)} />
         ))}
 
+        {avisos && avisos.facturas.length ? <Encabezado texto="Facturas para emitir" /> : null}
         {avisos?.facturas.map((f) => (
           <TarjetaFactura key={f.id} f={f} ocupada={(emitir.isPending && emitir.variables?.id === f.id) || (noEmitir.isPending && noEmitir.variables?.id === f.id)} onEmitida={(numero) => emitir.mutate({ id: f.id, numero })} onRechazar={(motivo) => noEmitir.mutate({ id: f.id, motivo })} />
         ))}
@@ -112,6 +116,10 @@ export function AvisosSheet({ open, onClose, avisos, onAviso }: Props) {
 }
 
 const ZONA = 'America/Argentina/Buenos_Aires';
+function Encabezado({ texto }: { texto: string }) {
+  return <Text variant="subhead" weight="600" color="secondary" accessibilityRole="header" style={{ marginTop: space.sm, paddingHorizontal: space.xs }}>{texto}</Text>;
+}
+
 const horaCorta = (iso: string | null) => (iso ? new Date(iso).toLocaleTimeString('es-AR', { timeZone: ZONA, hour: '2-digit', minute: '2-digit', hour12: false }) : '');
 // El local trabaja en hora argentina, sin importar la zona del celular o la PC.
 const ymd = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: ZONA });
@@ -136,8 +144,8 @@ function TarjetaReserva({ r, ocupada, onConfirmar, onRechazar }: { r: ReservaPen
       </View>
       <Text variant="footnote" color="secondary">{`${r.telefono} · pedida ${hace(r.creadaEn)}`}</Text>
       <View style={styles.botones}>
-        <Button label="Confirmar" size="sm" icon={<Check size={16} color={colors.onTint} />} loading={ocupada} onPress={onConfirmar} style={{ flex: 1 }} />
-        <Button label="No puedo" size="sm" variant="plain" onPress={onRechazar} />
+        <Button label="Confirmar" size="sm" icon={<Check size={16} color={colors.onTint} />} loading={ocupada} onPress={onConfirmar} style={{ flexGrow: 1, flexBasis: 150 }} />
+        <Button label="Rechazar" size="sm" variant="plain" onPress={onRechazar} />
       </View>
     </View>
   );
@@ -161,7 +169,7 @@ function TarjetaLlevar({ p, ocupada, onEntregar, onRechazar }: { p: PedidoLlevar
       {p.items.map((i, k) => <Text key={k} variant="callout">{`${i.cantidad} × ${i.nombre}`}{i.notas ? <Text variant="callout" color="secondary">{`  ·  ${i.notas}`}</Text> : null}</Text>)}
       <Text variant="footnote" color="secondary">Al entregarlo, ¿cómo pagó?</Text>
       <View style={styles.botones}>
-        <Button label="Efectivo" size="sm" icon={<Check size={16} color={colors.onTint} />} loading={ocupada} onPress={() => onEntregar('efectivo')} style={{ flex: 1 }} />
+        <Button label="Efectivo" size="sm" icon={<Check size={16} color={colors.onTint} />} loading={ocupada} onPress={() => onEntregar('efectivo')} style={{ flexGrow: 1, flexBasis: 120 }} />
         <Button label="Transferencia" size="sm" variant="tinted" onPress={() => onEntregar('billetera_virtual')} />
         {p.estado === 'pendiente' ? <Button label="Rechazar" size="sm" variant="plain" onPress={onRechazar} /> : null}
       </View>
@@ -206,7 +214,7 @@ function TarjetaFactura({ f, ocupada, onEmitida, onRechazar }: { f: FacturaPendi
         style={[styles.numero, fontFor('500'), { backgroundColor: colors.fillSoft, color: colors.label }]}
       />
       <View style={styles.botones}>
-        <Button label="Ya la emití" size="sm" icon={<Check size={16} color={colors.onTint} />} disabled={!/^\d{1,5}-\d{1,8}$/.test(numero)} loading={ocupada} onPress={() => onEmitida(numero)} style={{ flex: 1 }} />
+        <Button label="Ya la emití" size="sm" icon={<Check size={16} color={colors.onTint} />} disabled={!/^\d{1,5}-\d{1,8}$/.test(numero)} loading={ocupada} onPress={() => onEmitida(numero)} style={{ flexGrow: 1, flexBasis: 150 }} />
         <Button label="No se puede" size="sm" variant="plain" onPress={() => onRechazar('Revisá tus datos y volvé a pedirla, o consultá en caja.')} />
       </View>
     </View>
@@ -218,5 +226,5 @@ const styles = StyleSheet.create({
   cuerpo: { gap: space.md, paddingBottom: space.lg },
   tarjeta: { padding: space.lg, borderRadius: radius.lg, gap: space.sm, borderCurve: 'continuous' },
   cabecera: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  botones: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.xs },
+  botones: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.sm, marginTop: space.xs },
 });

@@ -68,7 +68,7 @@ export function Segmented<T extends string>({ items, value, onChange, accessibil
 }
 
 const styles = StyleSheet.create({
-  track: { flexDirection: 'row', padding: 2, borderRadius: radius.sm + 2, borderCurve: 'continuous', minHeight: 40 },
+  track: { flexDirection: 'row', padding: 2, borderRadius: radius.sm + 2, borderCurve: 'continuous', minHeight: 44 },
   thumb: { position: 'absolute', top: 2, bottom: 2, left: 2, borderRadius: radius.sm, borderCurve: 'continuous', boxShadow: '0 1px 3px rgba(0,0,0,0.14), 0 0 1px rgba(0,0,0,0.12)' },
   item: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
 });

@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CalendarCheck, CheckCircle2 } from 'lucide-react-native';
 import { configureApi, normalizarUrlServidor, obtenerPlanoParaReservar, reservarDesdePlano, type MesaParaReservar } from '@vase/api';
 import { normalizarPlano, planoDesdeMesas, type Mesa } from '@vase/domain';
-import { Button, ErrorBanner, Sheet, Skeleton, Text, fontFor, haptic, radius, space, useTheme } from '@vase/ui';
+import { Button, ErrorBanner, Group, Row, Sheet, Skeleton, Text, fontFor, haptic, radius, space, useTheme } from '@vase/ui';
 import { PlanoCanvas } from '@/components/plano/PlanoCanvas';
 import { useSession } from '@/lib/session';
 
@@ -73,6 +73,13 @@ export default function Reservar() {
                 onSeleccionar={(sel) => { if (sel?.tipo === 'mesa' && libres.has(sel.id)) { haptic.seleccion(); setElegida(porId.get(sel.id) ?? null); } }}
               />
             </View>
+            {datos.mesas.some((m) => m.libre) ? (
+              <Group header="O elegí de la lista">
+                {datos.mesas.filter((m) => m.libre).map((m) => (
+                  <Row key={m.id} title={`Mesa ${m.numero}`} subtitle={`${m.zona ?? 'Salón'} · hasta ${m.capacidad} personas`} chevron onPress={() => { haptic.seleccion(); setElegida(m); }} />
+                ))}
+              </Group>
+            ) : null}
             <Text variant="footnote" color="secondary">{datos.mesas.some((m) => m.libre) ? 'Tocá una mesa para reservarla. Las que se ven apagadas no están disponibles en ese horario o son muy chicas para tu grupo.' : 'No quedan mesas libres para ese horario: volvé al chat y probá otro.'}</Text>
           </>
         )}

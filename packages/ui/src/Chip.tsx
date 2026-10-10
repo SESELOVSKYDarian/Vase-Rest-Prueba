@@ -31,6 +31,6 @@ export function Chip({ label, count, selected, onPress }: ChipProps) {
 }
 
 const styles = StyleSheet.create({
-  chip: { minHeight: 40, paddingHorizontal: space.lg, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  chip: { minHeight: 44, paddingHorizontal: space.lg, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', gap: space.sm },
   countOn: { opacity: 0.85 },
 });

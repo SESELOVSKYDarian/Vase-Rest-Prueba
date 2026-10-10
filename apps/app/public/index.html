@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#177A4E" />
+    <meta name="color-scheme" content="light dark" />
+    <title>%WEB_TITLE%</title>
+    <style id="expo-reset">
+      html, body { height: 100%; }
+      body { overflow: hidden; }
+      #root { display: flex; height: 100%; flex: 1; }
+    </style>
+    <!-- Lo que React Native no dibuja solo: foco para teclado, selección de texto, suavizado. -->
+    <style id="vase-base">
+      :root { --foco: #177A4E; --seleccion: rgba(23,122,78,.22); }
+      @media (prefers-color-scheme: dark) { :root { --foco: #4CC38A; --seleccion: rgba(76,195,138,.32); } }
+      html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+      body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overscroll-behavior-y: none; }
+      ::selection { background: var(--seleccion); }
+      /* Quien navega con teclado tiene que ver dónde está: anillo solo con teclado, no al tocar o hacer clic. */
+      [tabindex]:focus { outline: none; }
+      [tabindex]:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; border-radius: 12px; }
+      /* Los campos de texto traen outline-style:none inline; se pisa para que el foco se vea. */
+      input:focus-visible, textarea:focus-visible { outline: 3px solid var(--foco) !important; outline-offset: 1px; border-radius: 8px; }
+    </style>
+  </head>
+  <body>
+    <noscript>Necesitás activar JavaScript para usar esta app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
