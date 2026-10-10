@@ -1,4 +1,7 @@
 import { postgresClient } from "../config/postgresClient.js";
+import { pool } from "../config/database.js";
+import { ErrorHttp } from "../utils/errores.js";
+import { leerConfig, precioVigente, totalesDe } from "../services/cartaConfig.service.js";
 import { obtenerUsuarioRequest } from "../utils/authz.js";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -293,92 +296,87 @@ export const obtenerPedidoPorId = async (req, res) => {
 /**
  * Agrega productos al pedido y descuenta stock cuando corresponde.
  */
+/**
+ * Agrega un producto a un pedido: precio vigente (happy hour), stock, ítem y totales (IVA según ajustes).
+ * Lo usan el mozo y las solicitudes que llegan desde el QR de la mesa.
+ */
+export async function agregarItemAPedido(id, { productoId, cantidad, notas }) {
+  const cantidadSolicitada = Number(cantidad || 0);
+  if (!productoId || cantidadSolicitada <= 0) {
+    throw new ErrorHttp(400, "El producto y una cantidad mayor a 0 son obligatorios");
+  }
+
+  await obtenerPedidoCompleto(id);
+  const { data: producto, error: productoError } = await postgresClient
+    .from("productos")
+    .select("*")
+    .eq("id", productoId)
+    .single();
+
+  if (productoError || !producto) {
+    throw new ErrorHttp(404, "Producto no encontrado", { idBuscado: productoId });
+  }
+  if (producto.disponible === false) {
+    throw new ErrorHttp(409, `${producto.nombre} está agotado`);
+  }
+
+  const config = await leerConfig();
+  const precioUnitario = precioVigente(producto, config).precio;
+  const subtotalItem = Math.round(precioUnitario * cantidadSolicitada * 100) / 100;
+
+  // Validar stock antes de insertar el ítem (bloquea si no alcanza; nunca negativo)
+  const stockDisponible = producto.stock_actual;
+  if (stockDisponible !== null && stockDisponible !== undefined && Number(stockDisponible) < cantidadSolicitada) {
+    throw new ErrorHttp(409, `No hay stock suficiente de ${producto.nombre}`);
+  }
+
+  const { data: item, error: itemError } = await postgresClient
+    .from("pedido_items")
+    .insert({
+      pedido_id: id,
+      producto_id: productoId,
+      cantidad: cantidadSolicitada,
+      precio_unitario: precioUnitario,
+      subtotal: subtotalItem,
+      notas: notas || null,
+    })
+    .select("*, productos(*)")
+    .single();
+
+  if (itemError) throw new Error(itemError.message);
+
+  // Descontar stock (directo sobre stock_actual). Si falla por stock, revertir el ítem.
+  try {
+    await descontarStockPorVenta(producto, cantidadSolicitada, id);
+  } catch (stockErr) {
+    await postgresClient.from("pedido_items").delete().eq("id", item.id);
+    if (stockErr.code === "STOCK_INSUFICIENTE") throw new ErrorHttp(409, stockErr.message);
+    throw stockErr;
+  }
+
+  // Los totales se recalculan siempre desde los ítems (no se arrastran sumas viejas).
+  const suma = await pool.query("select coalesce(sum(subtotal), 0) as s from pedido_items where pedido_id = $1", [id]);
+  const totales = totalesDe(Number(suma.rows[0].s), config);
+  const { error: pedidoError } = await postgresClient
+    .from("pedidos")
+    .update({ subtotal: totales.subtotal, impuestos: totales.impuestos, total: totales.total })
+    .eq("id", id);
+  if (pedidoError) throw new Error(pedidoError.message);
+
+  return { item, pedido: await obtenerPedidoCompleto(id) };
+}
+
 export const agregarProductoAlPedido = async (req, res) => {
   try {
     const { id } = req.params;
-    const { productoId, cantidad, notas } = req.body;
-    const cantidadSolicitada = Number(cantidad || 0);
-
-    if (!productoId || cantidadSolicitada <= 0) {
-      return res.status(400).json({
-        mensaje: "El producto y una cantidad mayor a 0 son obligatorios",
-      });
-    }
-
-    const pedidoRaw = await obtenerPedidoCompleto(id);
-    const { data: producto, error: productoError } = await postgresClient
-      .from("productos")
-      .select("*")
-      .eq("id", productoId)
-      .single();
-
-    if (productoError || !producto) {
-      console.error("Error buscando producto con ID:", productoId, "Error:", productoError);
-      return res.status(404).json({ mensaje: "Producto no encontrado", error: productoError?.message, idBuscado: productoId });
-    }
-
-    const precioUnitario = Number(producto.precio || 0);
-    const subtotalItem = precioUnitario * cantidadSolicitada;
-
-    // Validar stock antes de insertar el ítem (bloquea si no alcanza; nunca negativo)
-    const stockDisponible = producto.stock_actual;
-    if (
-      stockDisponible !== null &&
-      stockDisponible !== undefined &&
-      Number(stockDisponible) < cantidadSolicitada
-    ) {
-      return res.status(409).json({ mensaje: `No hay stock suficiente de ${producto.nombre}` });
-    }
-
-    const { data: item, error: itemError } = await postgresClient
-      .from("pedido_items")
-      .insert({
-        pedido_id: id,
-        producto_id: productoId,
-        cantidad: cantidadSolicitada,
-        precio_unitario: precioUnitario,
-        subtotal: subtotalItem,
-        notas: notas || null,
-      })
-      .select("*, productos(*)")
-      .single();
-
-    if (itemError) throw new Error(itemError.message);
-
-    // Descontar stock (directo sobre stock_actual). Si falla por stock, revertir el ítem.
-    try {
-      await descontarStockPorVenta(producto, cantidadSolicitada, id);
-    } catch (stockErr) {
-      await postgresClient.from("pedido_items").delete().eq("id", item.id);
-      if (stockErr.code === "STOCK_INSUFICIENTE") {
-        return res.status(409).json({ mensaje: stockErr.message });
-      }
-      throw stockErr;
-    }
-
-    const nuevoSubtotal = Number(pedidoRaw.subtotal || pedidoRaw.total || 0) + subtotalItem;
-    const nuevosImpuestos = Number((nuevoSubtotal * 0.21).toFixed(2));
-    const nuevoTotal = Number((nuevoSubtotal + nuevosImpuestos).toFixed(2));
-
-    const { error: pedidoError } = await postgresClient
-      .from("pedidos")
-      .update({
-        subtotal: nuevoSubtotal,
-        impuestos: nuevosImpuestos,
-        total: nuevoTotal,
-      })
-      .eq("id", id);
-
-    if (pedidoError) throw new Error(pedidoError.message);
-
-    const pedidoActualizado = await obtenerPedidoCompleto(id);
-
+    const { item, pedido } = await agregarItemAPedido(id, req.body ?? {});
     return res.status(201).json({
       mensaje: "Producto agregado al pedido correctamente",
       detalle: mapItem(item),
-      pedido: mapPedido(pedidoActualizado),
+      pedido: mapPedido(pedido),
     });
   } catch (error) {
+    if (error instanceof ErrorHttp) return res.status(error.status).json({ mensaje: error.message, ...error.extra });
     return res.status(500).json({
       mensaje: "Error al agregar producto al pedido",
       error: error.message,
