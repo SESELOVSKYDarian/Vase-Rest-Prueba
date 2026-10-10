@@ -50,6 +50,31 @@ Las integraciones con Gemini, Groq y MyMemory están escritas pero **sin probar 
 ### Voz
 Dictado con el reconocimiento del propio dispositivo (gratis, no pasa por nuestro servidor): navegador (Chrome, Edge, Safari) y, en la app, Android/iOS con `expo-speech-recognition`. Necesita compilar la app (no corre en Expo Go). Si el dispositivo no lo soporta, el botón del micrófono no aparece y se escribe.
 
+## Ticket y factura
+
+- Al confirmarse el pago, el comprobante del cliente tiene **Imprimir ticket** (80 mm, sirve para 58): platos cubiertos por ese pago, propina, total y el **IVA contenido** (importe × 21/121). Dice "no válido como factura". Los datos del local (razón social, CUIT, domicilio, condición frente al IVA) se cargan en Carta → Ajustes → *Datos fiscales del local*.
+- **Pedir factura**: el cliente elige condición frente al IVA, documento (DNI/CUIT/CUIL con dígito verificador), nombre y email. El servidor decide el tipo: emisor Monotributo → C; emisor Responsable Inscripto → A para Resp. Inscripto y B para el resto.
+- El pedido queda en **Avisos → Facturas**. El local copia los datos, emite en ARCA con sus propias credenciales y anota el número real (`0001-00000123`). El cliente ve el estado en su comprobante. **Este sistema no genera CAE ni números de factura**: sin credenciales de ARCA no se inventa nada.
+
+## Plano con inteligencia
+
+- **Mesa demorada**: el pedido guarda desde cuándo está en su estado. Plato listo sin servir (3 / 6 min), pedido sin tomar (5 / 10), en preparación (20 / 35), cuenta pedida (5 / 10), sentados sin pedido (8 / 15), estadía larga (100 / 150). Atención late lento en ámbar, urgente rápido en rojo; con "reducir movimiento" queda un anillo fijo. Chip **Demoradas** para filtrar y el motivo en la hoja de la mesa.
+- **Mapa de calor** (admin, encargado, cajero): ventas, rotación (veces por día) y permanencia por mesa, últimos 30 días, sobre cuentas cerradas.
+- **Reparto justo**: lista de mozos con mesas y comensales abiertos y mesas recibidas en el turno (8 h). Sugiere a quien menos trabajo tiene; asignar es un toque desde la mesa. Insignia con iniciales en el plano cuando hay más de un mozo. Al liberarse la mesa, se libera el mozo.
+
+## Avisos en la pantalla bloqueada
+
+"Mesa 5 · listo para servir" llega al mozo que atiende esa mesa (si no hay, a todos los mozos); también: mesa que pide desde el QR, transferencia por confirmar, pedido de factura. Un vigilante en el servidor mira la base cada 8 s y avisa **una sola vez** por evento.
+
+Para que lleguen de verdad hace falta:
+
+1. **La app instalada** (no Expo Go, no la web): `eas build` de Android/iOS.
+2. Vincular el proyecto: `npx eas init` agrega `extra.eas.projectId` en `app.json`.
+3. **Android**: credenciales de FCM (`eas credentials`). **iPhone**: cuenta de Apple Developer (APNs).
+4. Con eso, al iniciar sesión la app pide permiso y registra el celular. Sin proyecto o sin permiso todo sigue funcionando, solo sin avisos del sistema.
+
+No incluye Live Activities de iOS (la tarjeta viva en pantalla bloqueada tipo Starbucks): requieren código nativo propio de ActivityKit. Los clientes que usan la carta desde la web no reciben avisos; eso necesitaría Web Push o una app propia.
+
 ## Variables de entorno
 
 Ver `backend-reservas/.env.example`: `LLM_PROVIDER`, `GEMINI_API_KEY`, `GROQ_API_KEY`, `MYMEMORY_EMAIL`, `MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET`, `PUBLIC_API_URL` (https, para el aviso de Mercado Pago) y `PUBLIC_WEB_URL`.

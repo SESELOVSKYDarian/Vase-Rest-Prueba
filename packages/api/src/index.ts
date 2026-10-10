@@ -13,3 +13,4 @@ export * from './avisos';
 export * from './asistente';
 export * from './factura';
 export * from './salon';
+export * from './push';

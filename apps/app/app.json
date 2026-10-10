@@ -49,6 +49,14 @@
         }
       ],
       [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/android-icon-monochrome.png",
+          "color": "#177A4E",
+          "defaultChannel": "servicio"
+        }
+      ],
+      [
         "expo-speech-recognition",
         {
           "microphonePermission": "Vase Rest usa el micrófono para dictar pedidos y órdenes.",

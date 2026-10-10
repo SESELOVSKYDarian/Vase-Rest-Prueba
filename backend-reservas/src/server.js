@@ -1,5 +1,6 @@
 import { env } from "./config/env.js";
 import app from "./app.js";
+import { iniciarAvisosPush } from "./services/avisosPush.service.js";
 import { seedLocalAdmin } from "./controllers/auth.controller.js";
 import { runMigrations } from "./config/migrations.js";
 
@@ -9,6 +10,7 @@ const PORT = env.port;
 await runMigrations();
 await seedLocalAdmin();
 const server = app.listen(PORT, () => {
+  iniciarAvisosPush();
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 

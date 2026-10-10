@@ -5,6 +5,7 @@ import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BookOpen, DoorOpen, LayoutGrid, LogOut, NotebookPen, Receipt, type LucideIcon } from 'lucide-react-native';
 import { PressableScale, Text, haptic, minTarget, radius, space, useTheme } from '@vase/ui';
+import { cerrarSesionConPush } from '@/lib/avisosPush';
 import { useSession } from '@/lib/session';
 
 const ICONOS: Record<string, { Icono: LucideIcon; titulo: string; roles?: readonly string[] }> = {
@@ -28,7 +29,7 @@ export function AppTabBar({ state, navigation }: TabBarProps) {
   const { colors, sizeClass } = useTheme();
   const insets = useSafeAreaInsets();
   const usuario = useSession((s) => s.usuario);
-  const salir = useSession((s) => s.salir);
+  const salir = () => { void cerrarSesionConPush(); };
   const lateral = sizeClass !== 'compact';
 
   const items = state.routes.map((route, index) => {

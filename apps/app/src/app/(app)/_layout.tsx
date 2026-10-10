@@ -1,9 +1,11 @@
 import { Tabs } from 'expo-router';
 import { AppTabBar } from '@/components/AppTabBar';
+import { useAvisosPush } from '@/lib/avisosPush';
 import { useTheme } from '@vase/ui';
 
 export default function AppLayout() {
   const { sizeClass } = useTheme();
+  useAvisosPush();
   return (
     <Tabs
       initialRouteName="salon"

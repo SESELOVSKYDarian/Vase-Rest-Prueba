@@ -17,6 +17,7 @@ import publicoRoutes from "./routes/publico.routes.js";
 import planoRoutes from "./routes/plano.routes.js";
 import avisosRoutes from "./routes/avisos.routes.js";
 import inteligenciaRoutes from "./routes/inteligencia.routes.js";
+import pushRoutes from "./routes/push.routes.js";
 import cartaAdminRoutes from "./routes/cartaAdmin.routes.js";
 import integracionesRoutes from "./routes/integraciones.routes.js";
 
@@ -55,6 +56,7 @@ app.use("/api/public", publicoRoutes);
 app.use("/api/plano", planoRoutes);
 app.use("/api/avisos", avisosRoutes);
 app.use("/api/inteligencia", inteligenciaRoutes);
+app.use("/api/push", pushRoutes);
 app.use("/api/carta-admin", cartaAdminRoutes);
 
 app.get("/health", async (_req, res) => {
