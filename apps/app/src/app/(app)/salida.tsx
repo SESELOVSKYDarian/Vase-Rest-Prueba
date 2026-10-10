@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, CheckCircle2, DoorOpen, XCircle } from 'lucide-react-native';
-import { comprobantesRecientes, verificarSalida, type ResultadoSalida } from '@vase/api';
+import { AlertTriangle, CheckCircle2, DoorOpen, Printer, XCircle } from 'lucide-react-native';
+import { comprobantesRecientes, obtenerTicket, verificarSalida, type ResultadoSalida } from '@vase/api';
 import { formatearARS } from '@vase/domain';
+import { imprimir } from '@/lib/carta';
+import { htmlTicket } from '@/lib/ticket';
 import { Button, Group, PressableScale, Row, Screen, Text, fontFor, haptic, radius, space, useTheme } from '@vase/ui';
 
 const hora = (iso?: string | null) => (iso ? new Date(iso).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : '');
@@ -26,6 +28,7 @@ export default function Salida() {
   // Si el QR abrió la app con el código en la dirección, se verifica solo.
   useEffect(() => { if (c) { setCodigo(c); verificar.mutate(c); } }, [c]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const reimprimir = useMutation({ mutationFn: async (cod: string) => imprimir(htmlTicket(await obtenerTicket(cod))) });
   const k = resultado?.comprobante;
   const estado = !resultado ? null : resultado.valido ? (resultado.repetido ? 'repetido' : 'ok') : 'mal';
   const color = estado === 'ok' ? colors.tint : estado === 'repetido' ? colors.warning : colors.danger;
@@ -66,10 +69,12 @@ export default function Salida() {
               <View style={styles.datos}>
                 <Text variant="headline" numeric>{`${k.mesa ? `Mesa ${k.mesa} · ` : ''}${formatearARS(k.total, true)}`}</Text>
                 <Text variant="footnote" color="secondary">{`${k.codigo}${k.pagadoEn ? ` · pagado ${hora(k.pagadoEn)}` : ''}`}</Text>
+                {resultado.valido ? <Button label="Imprimir ticket" size="sm" variant="tinted" icon={<Printer size={16} color={colors.tint} />} loading={reimprimir.isPending} onPress={() => reimprimir.mutate(k.codigo)} /> : null}
               </View>
             ) : null}
           </View>
         ) : null}
+        {reimprimir.isError ? <Text variant="callout" color="danger" align="center">{reimprimir.error instanceof Error ? reimprimir.error.message : 'No se pudo imprimir'}</Text> : null}
         {verificar.isError ? <Text variant="callout" color="danger" align="center">{verificar.error instanceof Error ? verificar.error.message : 'No se pudo verificar'}</Text> : null}
 
         <Group header="Pagos de las últimas horas" footer="Si alguien no puede mostrar el QR, buscalo acá por mesa e importe.">

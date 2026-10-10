@@ -16,6 +16,8 @@ export const CONFIG_DEFECTO = {
   happyHour: { activo: false, dias: [1, 2, 3, 4, 5], desde: "18:00", hasta: "20:00", descuento: 20, categorias: [] },
   pago: { alias: "", titular: "", mensaje: "" },
   propinas: [0, 10, 15],
+  // Datos del local que salen en el ticket y deciden qué tipo de factura corresponde.
+  fiscal: { razonSocial: "", cuit: "", condicionIva: "responsable_inscripto", domicilio: "", pedirFactura: true },
 };
 
 const hora = (v, def) => (/^([01]\d|2[0-3]):[0-5]\d$/.test(String(v)) ? String(v) : def);
@@ -28,6 +30,7 @@ export function normalizarConfig(entrada = {}) {
   const e = entrada && typeof entrada === "object" ? entrada : {};
   const hh = e.happyHour && typeof e.happyHour === "object" ? e.happyHour : {};
   const pago = e.pago && typeof e.pago === "object" ? e.pago : {};
+  const fiscal = e.fiscal && typeof e.fiscal === "object" ? e.fiscal : {};
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return {
     nombreLocal: texto(e.nombreLocal ?? base.nombreLocal, 60),
@@ -43,6 +46,13 @@ export function normalizarConfig(entrada = {}) {
       categorias: Array.isArray(hh.categorias) ? hh.categorias.filter((c) => uuid.test(String(c))) : [],
     },
     pago: { alias: texto(pago.alias, 40), titular: texto(pago.titular, 60), mensaje: texto(pago.mensaje, 120) },
+    fiscal: {
+      razonSocial: texto(fiscal.razonSocial, 100),
+      cuit: texto(fiscal.cuit, 13).replace(/[^\d-]/g, ""),
+      condicionIva: ["responsable_inscripto", "monotributo", "exento"].includes(fiscal.condicionIva) ? fiscal.condicionIva : base.fiscal.condicionIva,
+      domicilio: texto(fiscal.domicilio, 160),
+      pedirFactura: fiscal.pedirFactura === undefined ? base.fiscal.pedirFactura : fiscal.pedirFactura === true,
+    },
     propinas: Array.isArray(e.propinas) ? [...new Set(e.propinas.map((p) => entero(p, 0, 30, 0)))].slice(0, 4) : base.propinas,
   };
 }

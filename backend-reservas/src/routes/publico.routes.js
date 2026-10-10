@@ -7,6 +7,7 @@ import { pedirJson } from "../services/ia/llm.js";
 import { recomendar } from "../services/ia/nlu.local.js";
 import { crearPreferencia, firmaValida, leerPagoMp, mpConfigurado } from "../services/mercadopago.service.js";
 import { armarCuenta, confirmarPago, crearPago, formatearComprobante, leerComprobante, mesaPorNumero, pedidoActivo, vencerPagosViejos } from "../services/qr.service.js";
+import { armarTicket, validarPedidoFactura } from "../services/factura.service.js";
 import { ErrorHttp, responderError } from "../utils/errores.js";
 import { limitar } from "../utils/limitar.js";
 
@@ -193,6 +194,55 @@ router.get("/pago/:codigo", lectura, async (req, res) => {
     });
   } catch (error) {
     responderError(res, error, "No se pudo leer el comprobante");
+  }
+});
+
+async function datosTicket(codigo) {
+  const fila = await leerComprobante(codigo);
+  if (!fila) throw new ErrorHttp(404, "No encontramos ese comprobante");
+  if (fila.estado !== "pagado") throw new ErrorHttp(409, "El ticket está disponible cuando el local confirma el pago");
+  const pedido = (await pool.query("select * from pedidos where id = $1", [fila.pedido_id])).rows[0];
+  const cuenta = await armarCuenta(pedido);
+  const config = await leerConfig();
+  const sol = (await pool.query("select * from solicitudes_factura where pago_id = $1", [fila.id])).rows[0];
+  const factura = sol
+    ? { estado: sol.estado, tipo: sol.tipo_comprobante, nombre: sol.nombre, numero: sol.estado === "emitida" ? sol.numero_factura : null, motivo: sol.estado === "rechazada" ? sol.nota_local ?? "" : "" }
+    : null;
+  return { fila, config, ticket: armarTicket({ pago: fila, cuenta, config, mesaNumero: fila.mesa_numero, factura }) };
+}
+
+/** Ticket (no fiscal) de un pago confirmado, listo para mostrar o imprimir. */
+router.get("/pago/:codigo/ticket", lectura, async (req, res) => {
+  try {
+    res.json((await datosTicket(req.params.codigo)).ticket);
+  } catch (error) {
+    responderError(res, error, "No se pudo armar el ticket");
+  }
+});
+
+/**
+ * El cliente pide factura con sus datos. Queda en la bandeja del local, que la emite en ARCA con sus
+ * propias credenciales y deja el número acá. Este sistema no genera CAE ni números de factura.
+ */
+router.post("/pago/:codigo/factura", escritura, async (req, res) => {
+  try {
+    const { fila, config } = await datosTicket(req.params.codigo);
+    if (config.fiscal?.pedirFactura === false) throw new ErrorHttp(409, "Este local no recibe pedidos de factura por acá. Consultá en caja.");
+    const { datos, error } = validarPedidoFactura(req.body, config.fiscal?.condicionIva);
+    if (error) throw new ErrorHttp(400, error);
+    const previa = await pool.query("select estado from solicitudes_factura where pago_id = $1", [fila.id]);
+    if (previa.rows[0] && previa.rows[0].estado !== "rechazada") throw new ErrorHttp(409, "Ya pediste la factura de este pago.");
+    await pool.query(
+      `insert into solicitudes_factura (pago_id, tipo_comprobante, condicion_iva, doc_tipo, doc_numero, nombre, email, domicilio)
+       values ($1, $2, $3, $4, $5, $6, $7, $8)
+       on conflict (pago_id) do update set tipo_comprobante = excluded.tipo_comprobante, condicion_iva = excluded.condicion_iva,
+         doc_tipo = excluded.doc_tipo, doc_numero = excluded.doc_numero, nombre = excluded.nombre, email = excluded.email,
+         domicilio = excluded.domicilio, estado = 'pendiente', nota_local = null, creada_en = now()`,
+      [fila.id, datos.tipoComprobante, datos.condicionIva, datos.docTipo, datos.docNumero, datos.nombre, datos.email, datos.domicilio || null],
+    );
+    res.status(201).json({ ok: true, tipo: datos.tipoComprobante });
+  } catch (error) {
+    responderError(res, error, "No se pudo registrar el pedido de factura");
   }
 });
 

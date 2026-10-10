@@ -1,5 +1,6 @@
 import { aCentavos, type Centavos } from '@vase/domain';
 import { apiFetch } from './http';
+import type { FacturaPendiente } from './factura';
 import type { Comprobante } from './qr';
 
 /** Lo que el salón tiene que atender (pedidos y llamados del QR, transferencias) y el control de salida. */
@@ -24,11 +25,11 @@ export interface PagoPendiente {
   creadoEn: string;
 }
 
-export interface Avisos { solicitudes: SolicitudMesa[]; pagos: PagoPendiente[] }
+export interface Avisos { solicitudes: SolicitudMesa[]; pagos: PagoPendiente[]; facturas: FacturaPendiente[] }
 
 export async function obtenerAvisos(): Promise<Avisos> {
-  const r = await apiFetch<{ solicitudes: SolicitudMesa[]; pagos: Array<Omit<PagoPendiente, 'monto' | 'propina' | 'total'> & { monto: number; propina: number; total: number }> }>('/avisos');
-  return { solicitudes: r.solicitudes, pagos: r.pagos.map((p) => ({ ...p, monto: aCentavos(p.monto), propina: aCentavos(p.propina), total: aCentavos(p.total) })) };
+  const r = await apiFetch<{ solicitudes: SolicitudMesa[]; pagos: Array<Omit<PagoPendiente, 'monto' | 'propina' | 'total'> & { monto: number; propina: number; total: number }>; facturas: Array<Omit<FacturaPendiente, 'importe' | 'importeNeto'> & { importe: number; importeNeto: number }> }>('/avisos');
+  return { solicitudes: r.solicitudes, pagos: r.pagos.map((p) => ({ ...p, monto: aCentavos(p.monto), propina: aCentavos(p.propina), total: aCentavos(p.total) })), facturas: (r.facturas ?? []).map((f) => ({ ...f, importe: aCentavos(f.importe), importeNeto: aCentavos(f.importeNeto) })) };
 }
 
 export const aceptarSolicitud = (id: string) => apiFetch<{ ok: boolean; agregados: string[]; omitidos: Array<{ productoId: string; motivo: string }> }>(`/avisos/solicitudes/${id}/aceptar`, { method: 'POST' });

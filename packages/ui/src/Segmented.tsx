@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring } from 'react-native-reanimated';
 import { haptic } from './haptics';
@@ -28,6 +28,9 @@ export function Segmented<T extends string>({ items, value, onChange, accessibil
     setWidth(next);
     x.set(index * ((next - 4) / items.length));
   };
+
+  // Si el valor cambia desde afuera (no por un toque), la píldora igual acompaña.
+  useEffect(() => { if (segment > 0) x.set(reduced ? index * segment : withSpring(index * segment, motion.sheet)); }, [index, segment, reduced, x]);
 
   const thumb = useAnimatedStyle(() => ({ transform: [{ translateX: x.get() }] }));
 

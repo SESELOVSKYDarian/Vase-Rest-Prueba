@@ -1,9 +1,10 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { BellRing, Check, Landmark, Receipt, X } from 'lucide-react-native';
-import { aceptarSolicitud, confirmarPagoQr, rechazarPagoQr, rechazarSolicitud, type Avisos } from '@vase/api';
+import { BellRing, Check, Copy, FileText, Landmark, Receipt, X } from 'lucide-react-native';
+import { aceptarSolicitud, confirmarPagoQr, marcarFacturaEmitida, rechazarPagoQr, rechazarPedidoFactura, rechazarSolicitud, type Avisos, type FacturaPendiente } from '@vase/api';
 import { formatearARS } from '@vase/domain';
-import { Button, EmptyState, ErrorBanner, Sheet, Text, haptic, radius, space, useTheme } from '@vase/ui';
+import { Button, EmptyState, ErrorBanner, Sheet, Text, fontFor, haptic, radius, space, useTheme } from '@vase/ui';
 
 interface Props { open: boolean; onClose: () => void; avisos: Avisos | undefined; onAviso: (mensaje: string) => void }
 
@@ -31,8 +32,15 @@ export function AvisosSheet({ open, onClose, avisos, onAviso }: Props) {
   });
   const noLlego = useMutation({ mutationFn: rechazarPagoQr, onSuccess: async () => { haptic.medio(); await refrescar(); } });
 
-  const error = [aceptar, rechazar, confirmar, noLlego].find((m) => m.isError)?.error;
-  const vacio = !avisos || (avisos.solicitudes.length === 0 && avisos.pagos.length === 0);
+  const emitir = useMutation({
+    mutationFn: ({ id, numero }: { id: string; numero: string }) => marcarFacturaEmitida(id, numero),
+    onSuccess: async () => { haptic.exito(); onAviso('Factura registrada: el cliente ya la ve en su comprobante'); await refrescar(); },
+    onError: () => haptic.error(),
+  });
+  const noEmitir = useMutation({ mutationFn: ({ id, motivo }: { id: string; motivo: string }) => rechazarPedidoFactura(id, motivo), onSuccess: async () => { haptic.medio(); await refrescar(); } });
+
+  const error = [aceptar, rechazar, confirmar, noLlego, emitir, noEmitir].find((m) => m.isError)?.error;
+  const vacio = !avisos || (avisos.solicitudes.length === 0 && avisos.pagos.length === 0 && avisos.facturas.length === 0);
 
   return (
     <Sheet open={open} onClose={onClose} title="Avisos de las mesas">
@@ -77,12 +85,61 @@ export function AvisosSheet({ open, onClose, avisos, onAviso }: Props) {
             </View>
           </View>
         ))}
+
+        {avisos?.facturas.map((f) => (
+          <TarjetaFactura key={f.id} f={f} ocupada={(emitir.isPending && emitir.variables?.id === f.id) || (noEmitir.isPending && noEmitir.variables?.id === f.id)} onEmitida={(numero) => emitir.mutate({ id: f.id, numero })} onRechazar={(motivo) => noEmitir.mutate({ id: f.id, motivo })} />
+        ))}
       </ScrollView>
     </Sheet>
   );
 }
 
+const CONDICION: Record<string, string> = { consumidor_final: 'Consumidor final', responsable_inscripto: 'Resp. Inscripto', monotributo: 'Monotributo', exento: 'Exento' };
+
+/** Pedido de factura: se copian los datos, se emite en ARCA y acá se anota el número real que salió. */
+function TarjetaFactura({ f, ocupada, onEmitida, onRechazar }: { f: FacturaPendiente; ocupada: boolean; onEmitida: (numero: string) => void; onRechazar: (motivo: string) => void }) {
+  const { colors } = useTheme();
+  const [numero, setNumero] = useState('');
+  const [copiado, setCopiado] = useState(false);
+  const datos = `${f.nombre}\n${f.docTipo} ${f.docNumero}\n${CONDICION[f.condicionIva] ?? f.condicionIva}${f.domicilio ? `\n${f.domicilio}` : ''}\n${f.email}\nFactura ${f.tipo} · ${formatearARS(f.importeNeto, true)}`;
+  const copiar = async () => {
+    try { await globalThis.navigator?.clipboard?.writeText(datos); setCopiado(true); haptic.seleccion(); setTimeout(() => setCopiado(false), 2000); } catch { /* sin portapapeles: se copia a mano */ }
+  };
+  return (
+    <View style={[styles.tarjeta, { backgroundColor: colors.surface }]}>
+      <View style={styles.cabecera}>
+        <FileText size={20} color={colors.tint} />
+        <View style={{ flex: 1 }}>
+          <Text variant="headline">{`Factura ${f.tipo} · mesa ${f.mesa ?? '?'}`}</Text>
+          <Text variant="footnote" color="secondary">{`${hace(f.creadaEn)} · código ${f.codigo}`}</Text>
+        </View>
+        <Text variant="title3" numeric weight="700">{formatearARS(f.importeNeto, true)}</Text>
+      </View>
+      <Text variant="callout">{f.nombre}</Text>
+      <Text variant="callout" color="secondary">{`${f.docTipo} ${f.docNumero} · ${CONDICION[f.condicionIva] ?? f.condicionIva}`}</Text>
+      <Text variant="callout" color="secondary">{f.email}{f.domicilio ? ` · ${f.domicilio}` : ''}</Text>
+      <Button label={copiado ? 'Copiado' : 'Copiar datos'} size="sm" variant="tinted" icon={<Copy size={16} color={colors.tint} />} onPress={copiar} />
+      <Text variant="footnote" color="secondary">Emitila en ARCA con estos datos y anotá acá el número que te dio. Sin número no se marca como emitida.</Text>
+      <TextInput
+        value={numero}
+        onChangeText={(t) => setNumero(t.replace(/[^\d-]/g, ''))}
+        placeholder="Número de factura (0001-00000123)"
+        placeholderTextColor={colors.labelTertiary}
+        selectionColor={colors.tint}
+        keyboardType="numbers-and-punctuation"
+        accessibilityLabel="Número de factura emitida"
+        style={[styles.numero, fontFor('500'), { backgroundColor: colors.fillSoft, color: colors.label }]}
+      />
+      <View style={styles.botones}>
+        <Button label="Ya la emití" size="sm" icon={<Check size={16} color={colors.onTint} />} disabled={!/^\d{1,5}-\d{1,8}$/.test(numero)} loading={ocupada} onPress={() => onEmitida(numero)} style={{ flex: 1 }} />
+        <Button label="No se puede" size="sm" variant="plain" onPress={() => onRechazar('Revisá tus datos y volvé a pedirla, o consultá en caja.')} />
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  numero: { fontSize: 16, padding: space.md, borderRadius: radius.md, outlineStyle: 'none' as never },
   cuerpo: { gap: space.md, paddingBottom: space.lg },
   tarjeta: { padding: space.lg, borderRadius: radius.lg, gap: space.sm, borderCurve: 'continuous' },
   cabecera: { flexDirection: 'row', alignItems: 'center', gap: space.md },

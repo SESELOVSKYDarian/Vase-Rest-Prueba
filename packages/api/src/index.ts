@@ -11,3 +11,4 @@ export * from './carta';
 export * from './qr';
 export * from './avisos';
 export * from './asistente';
+export * from './factura';

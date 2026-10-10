@@ -2,11 +2,15 @@ import { useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import QRCodeSvg from 'react-native-qrcode-svg';
-import { CheckCircle2, Star } from 'lucide-react-native';
-import { enviarResena, obtenerComprobante, type Idioma } from '@vase/api';
+import { CheckCircle2, FileText, Printer, Star } from 'lucide-react-native';
+import { enviarResena, obtenerComprobante, obtenerTicket, type Idioma } from '@vase/api';
 import { formatearARS } from '@vase/domain';
 import { Button, ErrorBanner, PressableScale, Text, fontFor, haptic, radius, space, useTheme } from '@vase/ui';
 import { localeDe, type Textos } from '@/lib/i18n';
+import { textosFactura } from '@/lib/i18nFactura';
+import { imprimir } from '@/lib/carta';
+import { htmlTicket } from '@/lib/ticket';
+import { FacturaSheet } from './FacturaSheet';
 
 /** Dirección que abre el control de salida: el QR del comprobante lleva directo al verificador del personal. */
 export function enlaceDeSalida(codigo: string): string {
@@ -22,6 +26,10 @@ export function ComprobanteVista({ codigo, textos, idioma }: { codigo: string; t
   const [estrellas, setEstrellas] = useState(0);
   const [comentario, setComentario] = useState('');
   const [enviada, setEnviada] = useState(false);
+  const [verFactura, setVerFactura] = useState(false);
+  const tf = textosFactura(idioma);
+  const ticketQ = useQuery({ queryKey: ['ticket', codigo], queryFn: () => obtenerTicket(codigo), refetchInterval: 20000 });
+  const imprimirTicket = useMutation({ mutationFn: async () => imprimir(htmlTicket(await obtenerTicket(codigo))) });
   const resena = useMutation({
     mutationFn: () => enviarResena(codigo, estrellas, comentario),
     onSuccess: () => { setEnviada(true); haptic.exito(); void queryClient.invalidateQueries({ queryKey: ['comprobante', codigo] }); },
@@ -51,6 +59,22 @@ export function ComprobanteVista({ codigo, textos, idioma }: { codigo: string; t
         </View>
       </View>
       <Text variant="footnote" color="secondary" align="center">{textos.noEsFactura}</Text>
+
+      <View style={styles.acciones}>
+        <Button label={tf.imprimirTicket} variant="tinted" icon={<Printer size={18} color={colors.tint} />} loading={imprimirTicket.isPending} onPress={() => imprimirTicket.mutate()} full />
+        {ticketQ.data?.puedePedirFactura && (!ticketQ.data.factura || ticketQ.data.factura.estado === 'rechazada') ? (
+          <Button label={ticketQ.data.factura ? tf.volverAPedir : tf.pedirFactura} variant="tinted" icon={<FileText size={18} color={colors.tint} />} onPress={() => setVerFactura(true)} full />
+        ) : null}
+      </View>
+      {imprimirTicket.isError ? <ErrorBanner message={imprimirTicket.error instanceof Error ? imprimirTicket.error.message : textos.error} /> : null}
+      {ticketQ.data?.factura ? (
+        <View style={[styles.tarjeta, { backgroundColor: colors.surface }]}>
+          <Text variant="callout" align="center">
+            {ticketQ.data.factura.estado === 'pendiente' ? tf.pendiente : ticketQ.data.factura.estado === 'emitida' ? tf.emitida(ticketQ.data.factura.tipo, ticketQ.data.factura.numero ?? '') : `${tf.rechazada} ${ticketQ.data.factura.motivo}`}
+          </Text>
+        </View>
+      ) : null}
+      <FacturaSheet open={verFactura} onClose={() => setVerFactura(false)} codigo={codigo} idioma={idioma} condicionEmisor={ticketQ.data?.condicionEmisor ?? 'responsable_inscripto'} />
 
       {c.reseniaEnviada || enviada ? (
         <Text variant="callout" weight="600" color="tint" align="center">{textos.gracias}</Text>
@@ -89,6 +113,7 @@ function Fila({ k, v, fuerte }: { k: string; v: string; fuerte?: boolean }) {
 const styles = StyleSheet.create({
   pila: { gap: space.xl },
   titulo: { alignItems: 'center', gap: space.sm },
+  acciones: { gap: space.sm },
   tarjeta: { padding: space.xl, borderRadius: radius.xl, alignItems: 'center', gap: space.xs, borderCurve: 'continuous' },
   qr: { padding: space.md, backgroundColor: '#FFFFFF', borderRadius: radius.md, marginBottom: space.md },
   codigo: { letterSpacing: 2 },

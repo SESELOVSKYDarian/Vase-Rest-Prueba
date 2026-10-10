@@ -31,7 +31,7 @@ export default function Salon() {
   const puedeEditar = rol === 'admin' || rol === 'encargado';
   const atiendeSalon = puedeEditar || rol === 'cajero' || rol === 'mozo';
   const avisosQ = useAvisos(atiendeSalon);
-  const cantidadAvisos = (avisosQ.data?.solicitudes.length ?? 0) + (avisosQ.data?.pagos.length ?? 0);
+  const cantidadAvisos = (avisosQ.data?.solicitudes.length ?? 0) + (avisosQ.data?.pagos.length ?? 0) + (avisosQ.data?.facturas.length ?? 0);
   const [verAvisos, setVerAvisos] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
   const anteriores = useRef(0);

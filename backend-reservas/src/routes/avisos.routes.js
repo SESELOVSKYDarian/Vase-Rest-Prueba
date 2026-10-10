@@ -27,7 +27,7 @@ router.get("/", async (req, res) => {
   try {
     exigirPersonal(req);
     await vencerPagosViejos();
-    const [solicitudes, pagos] = await Promise.all([
+    const [solicitudes, pagos, facturas] = await Promise.all([
       pool.query(
         `select s.id, s.tipo, s.items, s.nota, s.creada_en, m.numero as mesa, m.id as mesa_id
            from solicitudes_mesa s join mesas m on m.id = s.mesa_id where s.estado = 'pendiente' order by s.creada_en`,
@@ -35,6 +35,11 @@ router.get("/", async (req, res) => {
       pool.query(
         `select q.id, q.codigo, q.metodo, q.monto, q.propina, q.creado_en, m.numero as mesa
            from pagos_qr q left join mesas m on m.id = q.mesa_id where q.estado = 'pendiente' and q.metodo = 'transferencia' order by q.creado_en`,
+      ),
+      pool.query(
+        `select f.*, q.codigo, q.monto, q.propina, q.pagado_en, m.numero as mesa
+           from solicitudes_factura f join pagos_qr q on q.id = f.pago_id left join mesas m on m.id = q.mesa_id
+          where f.estado = 'pendiente' order by f.creada_en`,
       ),
     ]);
     const ids = [...new Set(solicitudes.rows.flatMap((s) => s.items.map((i) => i.productoId)))];
@@ -50,6 +55,10 @@ router.get("/", async (req, res) => {
         items: s.items.map((i) => ({ productoId: i.productoId, nombre: nombres.get(i.productoId) ?? "Plato", cantidad: i.cantidad, notas: i.notas ?? "" })),
       })),
       pagos: pagos.rows.map((p) => ({ id: p.id, codigo: p.codigo, metodo: p.metodo, mesa: p.mesa, monto: Number(p.monto), propina: Number(p.propina), total: Math.round((Number(p.monto) + Number(p.propina)) * 100) / 100, creadoEn: p.creado_en })),
+      facturas: facturas.rows.map((f) => ({
+        id: f.id, codigo: f.codigo, mesa: f.mesa, tipo: f.tipo_comprobante, condicionIva: f.condicion_iva, docTipo: f.doc_tipo, docNumero: f.doc_numero,
+        nombre: f.nombre, email: f.email ?? "", domicilio: f.domicilio ?? "", importe: Math.round((Number(f.monto) + Number(f.propina)) * 100) / 100, importeNeto: Number(f.monto), creadaEn: f.creada_en,
+      })),
     });
   } catch (error) {
     responderError(res, error, "No se pudieron cargar los avisos");
@@ -133,6 +142,35 @@ router.post("/pagos/:id/rechazar", async (req, res) => {
     res.json({ ok: true });
   } catch (error) {
     responderError(res, error, "No se pudo rechazar el pago");
+  }
+});
+
+/** El local ya emitió la factura en ARCA: deja constancia del número real que le dio (nunca se inventa uno). */
+router.post("/facturas/:id/emitida", async (req, res) => {
+  try {
+    const usuario = exigirPersonal(req);
+    const numero = String(req.body?.numero ?? "").trim().slice(0, 30);
+    if (!/^\d{1,5}-\d{1,8}$/.test(numero)) throw new ErrorHttp(400, "Escribí el número como lo emitió ARCA, por ejemplo 0001-00000123");
+    const r = await pool.query(
+      "update solicitudes_factura set estado = 'emitida', numero_factura = $2, emitida_en = now(), emitida_por = $3 where id = $1 and estado = 'pendiente' returning id",
+      [idValido(req.params.id), numero, usuario.nombre || usuario.rol],
+    );
+    if (!r.rowCount) throw new ErrorHttp(409, "Esa factura ya fue atendida");
+    res.json({ ok: true });
+  } catch (error) {
+    responderError(res, error, "No se pudo marcar la factura");
+  }
+});
+
+router.post("/facturas/:id/rechazar", async (req, res) => {
+  try {
+    exigirPersonal(req);
+    const motivo = String(req.body?.motivo ?? "").trim().slice(0, 200);
+    const r = await pool.query("update solicitudes_factura set estado = 'rechazada', nota_local = $2 where id = $1 and estado = 'pendiente' returning id", [idValido(req.params.id), motivo || "Revisá tus datos y volvé a pedirla."]);
+    if (!r.rowCount) throw new ErrorHttp(409, "Esa factura ya fue atendida");
+    res.json({ ok: true });
+  } catch (error) {
+    responderError(res, error, "No se pudo rechazar el pedido");
   }
 });
 

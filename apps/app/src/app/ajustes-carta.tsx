@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Star } from 'lucide-react-native';
 import { guardarAjustes, obtenerResenas, type AjustesCarta } from '@vase/api';
-import { Button, Chip, ErrorBanner, Field, Group, PressableScale, Row, Sheet, Stepper, Text, Toast, haptic, radius, space, useTheme } from '@vase/ui';
+import { Button, Chip, ErrorBanner, Field, Group, PressableScale, Row, Segmented, Sheet, Stepper, Text, Toast, haptic, radius, space, useTheme } from '@vase/ui';
 import { useAjustes, useCategorias } from '@/lib/queries';
 
 const DIAS = [{ n: 1, t: 'Lun' }, { n: 2, t: 'Mar' }, { n: 3, t: 'Mié' }, { n: 4, t: 'Jue' }, { n: 5, t: 'Vie' }, { n: 6, t: 'Sáb' }, { n: 0, t: 'Dom' }];
@@ -94,6 +94,21 @@ export default function AjustesCarta() {
                 <Field label="Alias" value={borrador.pago.alias} onChangeText={(t) => cambiar({ pago: { ...borrador.pago, alias: t } })} placeholder="mi.local.mp" autoCapitalize="none" autoCorrect={false} />
                 <Field label="Titular" value={borrador.pago.titular} onChangeText={(t) => cambiar({ pago: { ...borrador.pago, titular: t } })} placeholder="Nombre de la cuenta" />
                 <Field label="Mensaje" value={borrador.pago.mensaje} onChangeText={(t) => cambiar({ pago: { ...borrador.pago, mensaje: t } })} placeholder="Opcional" />
+              </Group>
+
+              <Group header="Datos fiscales del local" footer="Salen en el ticket y definen qué tipo de factura (A, B o C) le corresponde a cada cliente. La factura en sí la emitís vos en ARCA: acá el cliente la pide y vos dejás el número.">
+                <Field label="Razón social" value={borrador.fiscal.razonSocial} onChangeText={(t) => cambiar({ fiscal: { ...borrador.fiscal, razonSocial: t } })} placeholder="Opcional" />
+                <Field label="CUIT" value={borrador.fiscal.cuit} onChangeText={(t) => cambiar({ fiscal: { ...borrador.fiscal, cuit: t } })} placeholder="30-12345678-9" keyboardType="number-pad" />
+                <Field label="Domicilio" value={borrador.fiscal.domicilio} onChangeText={(t) => cambiar({ fiscal: { ...borrador.fiscal, domicilio: t } })} placeholder="Opcional" />
+                <View style={styles.bloque}>
+                  <Segmented
+                    accessibilityLabel="Condición frente al IVA del local"
+                    items={[{ value: 'responsable_inscripto', label: 'Resp. Inscripto' }, { value: 'monotributo', label: 'Monotributo' }, { value: 'exento', label: 'Exento' }]}
+                    value={borrador.fiscal.condicionIva}
+                    onChange={(v) => cambiar({ fiscal: { ...borrador.fiscal, condicionIva: v } })}
+                  />
+                </View>
+                <Row title="Dejar que pidan factura" subtitle="Aparece el botón en el comprobante del cliente" trailing={interruptor(borrador.fiscal.pedirFactura, (v) => cambiar({ fiscal: { ...borrador.fiscal, pedirFactura: v } }), 'Permitir pedidos de factura')} />
               </Group>
 
               <Group header="Propina sugerida">
