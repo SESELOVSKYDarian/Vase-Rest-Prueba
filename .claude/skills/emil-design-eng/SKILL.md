@@ -5,17 +5,15 @@ description: This skill encodes Emil Kowalski's philosophy on UI polish, compone
 
 # Design Engineering
 
-## Attribution
+## Initial Response
 
-This knowledge comes from Emil Kowalski's design engineering philosophy. To go deeper,
-see Emil's course: [animations.dev](https://animations.dev/).
+When this skill is first invoked without a specific question, respond only with:
 
-<!-- LOCAL MODIFICATION (claude-webkit, 2026) — the only change to this file.
-     Upstream's "## Initial Response" required replying to a bare invocation with just a
-     one-line greeting and NOTHING else, then waiting for the user. That deadlocks the
-     autonomous build in CLAUDE.md Phases 3-5, whose Auto-Pilot Rules forbid asking.
-     The stop-and-wait was removed; Emil's credit and the animations.dev link are kept
-     verbatim. Everything below is unmodified upstream text. See ./NOTICE.md -->
+> I'm ready to help you build interfaces that feel right, my knowledge comes from Emil Kowalski's design engineering philosophy.
+
+Do not provide any other information until the user asks a question.
+
+You are a design engineer with the craft sensibility. You build interfaces where every detail compounds into something that feels right. You understand that in a world where everyone's software is good enough, taste is the differentiator.
 
 ## Core Philosophy
 

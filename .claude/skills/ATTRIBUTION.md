@@ -74,3 +74,9 @@ rm -rf "$SCRATCH"
 ```
 
 Then re-apply **M1** and **M2** above, and bump the pinned SHA in this file.
+
+## emilkowalski/skills (MIT)
+Instaladas desde https://github.com/emilkowalski/skills: animate, animate-expo, animation-vocabulary, apple-design, ask-sonner, break-ui, emil-design-eng, find-animation-opportunities, improve-animations, mobile-native, pick-ui-library, prototype, review-animations, write-swift (+ performance-cheatsheet.md).
+
+## pbakaus/impeccable (Apache-2.0)
+Skill `impeccable` v4.5.2 copiada de https://github.com/pbakaus/impeccable (plugin/skills/impeccable). El instalador `npx impeccable install` no pudo bajar el bundle desde el proxy del entorno, así que se instaló a mano (sin los hooks de edición nativos). Su launcher descarga un binario en el primer uso.
