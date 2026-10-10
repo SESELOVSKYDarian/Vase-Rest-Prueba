@@ -80,3 +80,6 @@ Instaladas desde https://github.com/emilkowalski/skills: animate, animate-expo, 
 
 ## pbakaus/impeccable (Apache-2.0)
 Skill `impeccable` v4.5.2 copiada de https://github.com/pbakaus/impeccable (plugin/skills/impeccable). El instalador `npx impeccable install` no pudo bajar el bundle desde el proxy del entorno, así que se instaló a mano (sin los hooks de edición nativos). Su launcher descarga un binario en el primer uso.
+
+## tuzhechen2005/opus-video-skills (MIT)
+Skills `kinetic-reel` y `painted-animation` copiadas de https://github.com/tuzhechen2005/opus-video-skills en el commit `59744a69c7b916cfbe4c4ec84006b0c2f5e2fde1` (sin las imágenes de `docs/` ni los README en chino). Revisadas antes de instalar: sin hooks, sin `allowed-tools`, sin llamadas de red ni lectura de credenciales; los scripts solo copian la plantilla, corren `npm install` (puppeteer-core, three, p5, p5.brush) y renderizan localmente con Chrome y ffmpeg. `painted-animation` deriva de JohnHeibel/ClaudeAnimationBase (MIT).
