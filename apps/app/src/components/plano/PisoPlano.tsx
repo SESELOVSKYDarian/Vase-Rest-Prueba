@@ -18,7 +18,7 @@ export function PisoPlano({ plano, material: m, fondoUrl }: { plano: Plano; mate
 
   if (!m.arquitectonico) {
     return (
-      <Svg width={ancho} height={alto} style={StyleSheet.absoluteFill}>
+      <Svg width={ancho} height={alto} style={StyleSheet.absoluteFill} pointerEvents="none">
         <Defs>
           <Pattern id="grilla" x={0} y={0} width={50} height={50} patternUnits="userSpaceOnUse">
             <Circle cx={25} cy={25} r={1.8} fill={m.grilla} />
@@ -41,7 +41,7 @@ export function PisoPlano({ plano, material: m, fondoUrl }: { plano: Plano; mate
   plano.zonas.forEach((z) => { ejesX.add(z.x); ejesX.add(z.x + z.w); ejesY.add(z.y); ejesY.add(z.y + z.h); });
 
   return (
-    <Svg width={W} height={H} viewBox={`${-M} ${-M} ${W} ${H}`} style={{ position: 'absolute', left: -M, top: -M }}>
+    <Svg width={W} height={H} viewBox={`${-M} ${-M} ${W} ${H}`} style={{ position: 'absolute', left: -M, top: -M }} pointerEvents="none">
       <Defs>
         <Pattern id="fina" x={0} y={0} width={50} height={50} patternUnits="userSpaceOnUse">
           <Path d="M 50 0 L 0 0 0 50" fill="none" stroke={m.grilla} strokeWidth={1.2} />

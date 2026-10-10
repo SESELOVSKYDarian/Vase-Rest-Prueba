@@ -146,6 +146,8 @@ export const PlanoCanvas = forwardRef<PlanoCanvasHandle, Props>(function PlanoCa
     <View style={[styles.vista, { backgroundColor: material.fondo }]} onLayout={onLayout}>
       <GestureDetector gesture={gestoLienzo}>
         <View style={StyleSheet.absoluteFill}>
+          {/* Tocar fuera del local también quita la selección. */}
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => onSeleccionar?.(null)} accessible={false} />
           <Animated.View style={[{ width: plano.ancho, height: plano.alto }, lienzo]}>
             <PisoPlano plano={plano} material={material} fondoUrl={fondoUrl} />
             {/* Tocar el piso vacío quita la selección. */}
