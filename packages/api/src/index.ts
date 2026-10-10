@@ -7,3 +7,7 @@ export * from './pedidos';
 export * from './servidor';
 export * from './plano';
 export * from './archivos';
+export * from './carta';
+export * from './qr';
+export * from './avisos';
+export * from './asistente';

@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import type { Tabs } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BookOpen, LayoutGrid, LogOut, NotebookPen, Receipt, type LucideIcon } from 'lucide-react-native';
+import { BookOpen, DoorOpen, LayoutGrid, LogOut, NotebookPen, Receipt, type LucideIcon } from 'lucide-react-native';
 import { PressableScale, Text, haptic, minTarget, radius, space, useTheme } from '@vase/ui';
 import { useSession } from '@/lib/session';
 
@@ -13,6 +13,8 @@ const ICONOS: Record<string, { Icono: LucideIcon; titulo: string; roles?: readon
   cobro: { Icono: Receipt, titulo: 'Cobro' },
   // La carta la editan quienes manejan el local.
   menu: { Icono: BookOpen, titulo: 'Carta', roles: ['admin', 'encargado'] },
+  // Control de salida: quien está en la puerta (o cualquiera del salón) verifica el comprobante.
+  salida: { Icono: DoorOpen, titulo: 'Salida', roles: ['admin', 'encargado', 'cajero', 'mozo'] },
 };
 
 /**

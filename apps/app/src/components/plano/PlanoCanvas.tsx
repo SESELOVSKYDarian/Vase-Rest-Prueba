@@ -7,6 +7,7 @@ import { ESTADOS_CON_PERSONAS, type EstadoMesa, type MesaEnPlano, type Plano } f
 import { urlArchivo } from '@vase/api';
 import { PressableScale, materialPlano, radius, space, useEstadoColor, useTheme, zonaColor } from '@vase/ui';
 import { ElementoSvg, MesaSvg, ZonaSvg, ladoElemento, ladoMesa } from './dibujos';
+import { ManijaTamano } from './ManijaTamano';
 import { NodoPlano } from './NodoPlano';
 import { PisoPlano } from './PisoPlano';
 
@@ -31,6 +32,8 @@ interface Props {
   seleccion?: Seleccion;
   onSeleccionar?: (seleccion: Seleccion) => void;
   onMover?: (tipo: 'mesa' | 'zona' | 'elemento', id: string, dx: number, dy: number) => void;
+  /** Estirar una zona u objeto desde su esquina (edición). */
+  onRedimensionar?: (tipo: 'zona' | 'elemento', id: string, dw: number, dh: number) => void;
   /** Mesas atenuadas por un filtro (servicio). */
   visibles?: ReadonlySet<string> | null;
   /** Contenido extra sobre el lienzo, fijo a la pantalla (barras, controles). */
@@ -46,7 +49,7 @@ const MAX = 3;
  * Pellizcar para zoom, arrastrar el fondo para moverse; en edición, arrastrar objetos.
  */
 export const PlanoCanvas = forwardRef<PlanoCanvasHandle, Props>(function PlanoCanvas(
-  { plano, info, modo, seleccion, onSeleccionar, onMover, visibles, superposicion },
+  { plano, info, modo, seleccion, onSeleccionar, onMover, onRedimensionar, visibles, superposicion },
   ref,
 ) {
   const { colors, dark } = useTheme();
@@ -195,6 +198,16 @@ export const PlanoCanvas = forwardRef<PlanoCanvasHandle, Props>(function PlanoCa
                 </NodoPlano>
               );
             })}
+
+            {editar && onRedimensionar && seleccion?.tipo === 'zona' ? (() => {
+              const z = plano.zonas.find((x) => x.id === seleccion.id);
+              return z ? <ManijaTamano key={z.id} left={z.x} top={z.y} w={z.w} h={z.h} escala={escala} lienzo={arrastre} onFin={(dw, dh) => onRedimensionar('zona', z.id, dw, dh)} /> : null;
+            })() : null}
+            {editar && onRedimensionar && seleccion?.tipo === 'elemento' ? (() => {
+              const e = plano.elementos.find((x) => x.id === seleccion.id);
+              // Con el objeto girado 90° la esquina cambia de lado: ahí se usan las medidas del panel.
+              return e && e.rot % 180 === 0 ? <ManijaTamano key={e.id} left={e.x - e.w / 2} top={e.y - e.h / 2} w={e.w} h={e.h} escala={escala} lienzo={arrastre} onFin={(dw, dh) => onRedimensionar('elemento', e.id, dw, dh)} /> : null;
+            })() : null}
 
             {mesasOrdenadas.map((m: MesaEnPlano) => {
               const L = ladoMesa(m);

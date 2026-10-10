@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { BookOpen, ExternalLink, Plus, QrCode, Search } from 'lucide-react-native';
+import { BookOpen, ExternalLink, Plus, QrCode, Search, Settings2, Sparkles } from 'lucide-react-native';
 import type { ProductoMenu } from '@vase/api';
 import { formatearARS } from '@vase/domain';
 import { Button, Chip, EmptyState, ErrorBanner, Group, PressableScale, Row, Screen, Skeleton, Text, Toast, fontFor, radius, space, useTheme } from '@vase/ui';
+import { AsistenteStaff } from '@/components/AsistenteStaff';
 import { EditarPlatoSheet } from '@/components/EditarPlatoSheet';
 import { FotoPlato } from '@/components/FotoPlato';
 import { useCategorias, useProductos } from '@/lib/queries';
@@ -22,6 +23,7 @@ export default function MenuPantalla() {
   const [categoria, setCategoria] = useState<string>('todas');
   const [editando, setEditando] = useState<ProductoMenu | 'nuevo' | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [asistente, setAsistente] = useState(false);
   const rol = useSession((st) => st.usuario?.rol);
 
   const productos = useMemo(() => productosQ.data ?? [], [productosQ.data]);
@@ -62,7 +64,12 @@ export default function MenuPantalla() {
         bottomInset={sizeClass === 'compact' ? 72 : 0}
         refreshing={productosQ.isRefetching}
         onRefresh={() => { void productosQ.refetch(); void categoriasQ.refetch(); }}
-        headerRight={<Button label="Nuevo plato" size="sm" icon={<Plus size={16} color={colors.onTint} />} onPress={() => setEditando('nuevo')} />}
+        headerRight={
+          <View style={styles.acciones}>
+            <Button label="Asistente" size="sm" variant="tinted" icon={<Sparkles size={16} color={colors.tint} />} onPress={() => setAsistente(true)} />
+            <Button label="Nuevo plato" size="sm" icon={<Plus size={16} color={colors.onTint} />} onPress={() => setEditando('nuevo')} />
+          </View>
+        }
       >
         <View style={styles.pila} onLayout={(e) => setAnchoGrilla(e.nativeEvent.layout.width)}>
           <Group footer={sinFoto ? `${sinFoto} ${sinFoto === 1 ? 'plato no tiene' : 'platos no tienen'} foto. Con foto se piden más desde el QR.` : undefined}>
@@ -72,6 +79,13 @@ export default function MenuPantalla() {
               leading={<View style={[styles.icono, { backgroundColor: colors.tintSoft }]}><QrCode size={20} color={colors.tint} /></View>}
               chevron
               onPress={() => router.push('/qr-mesas')}
+            />
+            <Row
+              title="Ajustes del QR y la carta"
+              subtitle="IVA, idiomas, happy hour, alias de cobro, propinas"
+              leading={<View style={[styles.icono, { backgroundColor: colors.fill }]}><Settings2 size={19} color={colors.label} /></View>}
+              chevron
+              onPress={() => router.push('/ajustes-carta')}
             />
             <Row
               title="Ver la carta como cliente"
@@ -136,6 +150,7 @@ export default function MenuPantalla() {
         </View>
       </Screen>
       <EditarPlatoSheet plato={editando} categorias={categorias} onClose={() => setEditando(null)} onGuardado={(m) => { setEditando(null); setAviso(m); }} />
+      <AsistenteStaff open={asistente} onClose={() => setAsistente(false)} onHecho={setAviso} />
       <Toast message={aviso} onHide={() => setAviso(null)} />
     </>
   );
@@ -171,6 +186,7 @@ function TarjetaPlato({ plato, ancho, onPress }: { plato: ProductoMenu; ancho?: 
 }
 
 const styles = StyleSheet.create({
+  acciones: { flexDirection: 'row', gap: space.sm },
   pila: { gap: space.xl },
   icono: { width: 34, height: 34, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
   buscador: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.md, borderRadius: radius.md, minHeight: 44 },

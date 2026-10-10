@@ -248,3 +248,15 @@ Se migran las pantallas existentes: Inicio, Mesas, Pedido, Cocina, Facturas, His
 - Publicar la versión web en una dirección fija (dominio del local) para que los QR impresos no cambien.
 - `ANTHROPIC_API_KEY` para el análisis de planos con IA.
 - Lint: la app todavía no tiene configuración de ESLint (la configuración automática de Expo no pudo descargarse en este entorno).
+
+## 14. Avance (QR de la mesa, carta que vende sola y asistente)
+
+Detalle completo, qué se necesita para activarlo y qué no se simula: **`docs/QR-Y-ASISTENTE.md`**.
+
+- **Circuito pedir → pagar → salir** funcionando: el cliente pide desde el QR (el mozo confirma), divide la cuenta (todo, partes, sus platos, otro importe), paga por transferencia (confirmada por el local) con propina, recibe un comprobante con código y QR, y quien está en la puerta lo verifica con la cámara en **Salida**. Reseña al pagar. Mercado Pago implementado y listo para activar con `MP_ACCESS_TOKEN` (**sin probar contra Mercado Pago real**).
+- **Carta que vende sola**: inglés y portugués, filtros sin TACC / vegano / vegetariano / sin lactosa, "lo más pedido", "va muy bien con", happy hour automático (se aplica también al cobrar) e IVA incluido o sumado (resuelve la pregunta pendiente del punto 12.2 como ajuste: hoy sigue sumando 21 %).
+- **Asistente**: recomienda según gustos (texto y voz, con lectura en voz alta); el encargado le da órdenes ("subí 8 % las bebidas") con confirmación; el mozo dicta pedidos ("dos milas napo, una sin jamón"). Motor propio sin claves + IA gratuita opcional (Gemini / Groq).
+- **Edición del plano**: estirar zonas y objetos con el dedo, medidas de mesa, duplicar, mover una zona con sus mesas, ajustar el local al contenido.
+- **Avisos del salón**: pedidos y llamados del QR y transferencias por confirmar, con vibración al llegar uno nuevo.
+
+**Pendiente:** factura fiscal ARCA de los cobros por QR (necesita credenciales), cobro en la caja con división por plato, offline, TV de pedidos listos y el resto de la lista de `docs/INVESTIGACION-COMPETENCIA.md`.

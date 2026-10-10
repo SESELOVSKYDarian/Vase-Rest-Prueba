@@ -16,6 +16,9 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - name: Pruebas del backend (comprensión de texto, happy hour, IVA)
+        run: npm ci && npm test
+        working-directory: backend-reservas
       - name: Export web (valida el bundle que usan web y escritorio)
         run: npx expo export --platform web
         working-directory: apps/app

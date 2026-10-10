@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { NotebookPen, Plus } from 'lucide-react-native';
+import { Mic, NotebookPen, Plus } from 'lucide-react-native';
 import { abrirPedido, agregarProducto, type ProductoMenu } from '@vase/api';
 import { formatearARS } from '@vase/domain';
 import { Button, Chip, EmptyState, ErrorBanner, Group, PressableScale, Row, Screen, Skeleton, Stepper, Text, Toast, haptic, minTarget, space, useTheme } from '@vase/ui';
 import { CartBar } from '@/components/CartBar';
+import { DictadoPedido } from '@/components/DictadoPedido';
 import { useCart } from '@/lib/cart';
 import { FotoPlato } from '@/components/FotoPlato';
 import { useCategorias, useMesas, usePedidosActivos, useProductos } from '@/lib/queries';
@@ -28,16 +29,18 @@ export default function Pedido() {
   const mesa = mesasQ.data?.find((m) => m.id === mesaId) ?? null;
   const pedido = pedidosQ.data?.find((p) => p.mesaId === mesaId) ?? null;
   const productos = productosQ.data ?? [];
-  const cantidades = cart.mesaId === mesaId ? cart.cantidades : {};
+  const lineasCarrito = cart.mesaId === mesaId ? cart.lineas : [];
+  // El stepper de cada plato mueve la línea sin aclaraciones; las dictadas con aclaraciones se ven en "Para enviar".
+  const cantidades = Object.fromEntries(lineasCarrito.filter((l) => !l.notas).map((l) => [l.productoId, l.cantidad]));
+  const [dictando, setDictando] = useState(false);
 
   const visibles = useMemo(
     () => productos.filter((p) => (categoria === 'todas' ? true : p.categoriaId === categoria)),
     [productos, categoria],
   );
   const porId = useMemo(() => new Map(productos.map((p) => [p.id, p])), [productos]);
-  const lineas = Object.entries(cantidades);
-  const unidades = lineas.reduce((suma, [, q]) => suma + q, 0);
-  const total = lineas.reduce((suma, [id, q]) => suma + (porId.get(id)?.precio ?? 0) * q, 0);
+  const unidades = lineasCarrito.reduce((suma, l) => suma + l.cantidad, 0);
+  const total = lineasCarrito.reduce((suma, l) => suma + (porId.get(l.productoId)?.precio ?? 0) * l.cantidad, 0);
 
   const fijar = (producto: ProductoMenu, cantidad: number) => {
     if (!mesaId) return;
@@ -52,13 +55,13 @@ export default function Pedido() {
       const abierto = await abrirPedido(mesaId, pedido ? undefined : comensales);
       const enviados: string[] = [];
       try {
-        for (const [productoId, cantidad] of lineas) {
-          await agregarProducto(abierto.id, productoId, cantidad);
-          enviados.push(productoId);
+        for (const l of lineasCarrito) {
+          await agregarProducto(abierto.id, l.productoId, l.cantidad, l.notas || undefined);
+          enviados.push(l.clave);
         }
       } catch (error) {
         // Lo que ya llegó a cocina sale del carrito; lo que falló queda para reintentar.
-        enviados.forEach((id) => cart.fijar(id, 0));
+        enviados.forEach((clave) => cart.quitar(clave));
         throw error;
       }
     },
@@ -96,7 +99,12 @@ export default function Pedido() {
       <Screen
         title={mesa ? `Mesa ${mesa.numero}` : 'Pedido'}
         subtitle={pedido ? `${pedido.items.length} ${pedido.items.length === 1 ? 'ítem pedido' : 'ítems pedidos'} · ${formatearARS(pedido.total, true)}` : 'Pedido nuevo'}
-        headerRight={<Button label="Cambiar mesa" size="sm" variant="tinted" onPress={() => router.setParams({ mesaId: '' })} />}
+        headerRight={
+          <View style={styles.acciones}>
+            <Button label="Dictar" size="sm" icon={<Mic size={16} color={colors.onTint} />} onPress={() => { cart.iniciar(mesaId); setDictando(true); }} />
+            <Button label="Cambiar mesa" size="sm" variant="tinted" onPress={() => router.setParams({ mesaId: '' })} />
+          </View>
+        }
         bottomInset={unidades > 0 ? 120 : sizeClass === 'compact' ? 72 : 0}
       >
         {enviar.isError ? <ErrorBanner message={enviar.error instanceof Error ? enviar.error.message : 'No se pudo enviar el pedido'} /> : null}
@@ -107,10 +115,23 @@ export default function Pedido() {
           </Group>
         ) : null}
 
+        {lineasCarrito.length > 0 ? (
+          <Group header="Para enviar">
+            {lineasCarrito.map((l) => (
+              <Row
+                key={l.clave}
+                title={porId.get(l.productoId)?.nombre ?? 'Plato'}
+                subtitle={l.notas || undefined}
+                trailing={<Stepper value={l.cantidad} min={0} max={30} onChange={(n) => cart.cambiarCantidad(l.clave, n)} label={porId.get(l.productoId)?.nombre ?? 'Plato'} />}
+              />
+            ))}
+          </Group>
+        ) : null}
+
         {pedido && pedido.items.length > 0 ? (
           <Group header="Ya pedido">
             {pedido.items.map((item) => (
-              <Row key={item.id} title={`${item.cantidad} × ${item.nombre}`} value={formatearARS(item.subtotal, true)} />
+              <Row key={item.id} title={`${item.cantidad} × ${item.nombre}`} subtitle={item.notas || undefined} value={formatearARS(item.subtotal, true)} />
             ))}
           </Group>
         ) : null}
@@ -158,6 +179,7 @@ export default function Pedido() {
           )}
         </View>
       </Screen>
+      <DictadoPedido open={dictando} onClose={() => setDictando(false)} onAgregar={(nuevas) => { cart.agregar(nuevas); setAviso(`${nuevas.reduce((s2, n) => s2 + n.cantidad, 0)} agregados: revisalos y enviá`); }} />
       <Toast message={aviso} onHide={() => setAviso(null)} />
       {unidades > 0 ? <CartBar unidades={unidades} total={total} enviando={enviar.isPending} onEnviar={() => enviar.mutate()} /> : null}
     </>
@@ -165,6 +187,7 @@ export default function Pedido() {
 }
 
 const styles = StyleSheet.create({
+  acciones: { flexDirection: 'row', gap: space.sm },
   menu: { gap: space.lg },
   chips: { gap: space.sm, paddingRight: space.xl },
   add: { width: minTarget - 4, height: minTarget - 4, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },

@@ -35,20 +35,20 @@ Prioridad P0 = sin esto no competimos; P1 = nos pone a la par de los mejores; P2
 - P0 · Modificadores (punto de cocción, sin cebolla, extras con precio) y combos.
 - P0 · **Agotado al instante** en todos los canales (salón, QR, delivery).
 - P1 · Horarios de carta (almuerzo/cena/happy hour) y precios por canal.
-- P2 · Asistente de IA que edita la carta en masa por texto (SpotOn, Toast IQ).
+- P2 · Asistente de IA que edita la carta en masa por texto (SpotOn, Toast IQ). → **hecho** (órdenes con confirmación, texto y voz).
 
 **Pedido y cocina**
 - P0 · Cursos ("disparar" entrada/principal/postre) y comandas por estación (Toast, TouchBistro).
 - P0 · Handheld del mozo con cobro en la mesa.
-- P1 · Pedido desde el QR de la mesa con confirmación del mozo.
+- P1 · Pedido desde el QR de la mesa con confirmación del mozo. → **hecho** (ver `docs/QR-Y-ASISTENTE.md`).
 - P1 · Pantalla de cocina con tiempos por plato y alertas.
 
 **Cobro**
-- P0 · Dividir de todas las formas: partes, monto libre, **por ítem** (sunday).
+- P0 · Dividir de todas las formas: partes, monto libre, **por ítem** (sunday). → **hecho** en el QR del cliente (no en la caja del personal todavía).
 - P0 · Propina, múltiples medios en una cuenta, Mercado Pago QR dinámico (Fudo) y MODO.
 - P0 · **Factura ARCA** A/B/C con CAE real.
-- P1 · Pagar desde el QR de la mesa + control de salida (nuestra idea; sunday hace pago, nadie hace el control de salida).
-- P1 · Reseña después de pagar (sunday).
+- P1 · Pagar desde el QR de la mesa + control de salida (nuestra idea; sunday hace pago, nadie hace el control de salida). → **hecho** con transferencia confirmada por el local; Mercado Pago listo para activar con credenciales.
+- P1 · Reseña después de pagar (sunday). → **hecho**.
 
 **Clientes y reservas**
 - P1 · Perfil del cliente: alergias, preferencias, ocasiones, gasto histórico (SevenRooms).
@@ -60,7 +60,7 @@ Prioridad P0 = sin esto no competimos; P1 = nos pone a la par de los mejores; P2
 - P1 · Costeo de recetas y margen por plato; ingeniería de carta (Estrella / Caballo / Rompecabezas / Perro).
 - P1 · Turnos del personal y costo laboral.
 - P2 · Pronóstico de demanda (clima, feriados, eventos) para compras y personal.
-- P2 · Asistente de IA que **actúa** (no solo responde): "marcá agotado el bife", "¿qué plato deja menos margen?" (Toast IQ).
+- P2 · Asistente de IA que **actúa** (no solo responde): "marcá agotado el bife", "¿qué plato deja menos margen?" (Toast IQ). → **parcial**: actúa sobre disponibilidad y precios; falta responder preguntas de margen (necesita costeo de recetas).
 
 **Plataforma**
 - P0 · Funcionar sin internet en el salón (Toast lo hace incluida la cocina; Square no).
@@ -92,7 +92,9 @@ Qué está haciendo lo nuevo del mercado y cómo lo bajamos a Vase Rest. Casi to
 | 9 | **Plano con inteligencia** | Gestión de mesas con rotación y asignación (SevenRooms, OpenTable) | Mapa de calor de ventas y rotación por mesa, mesa demorada que late, reparto justo de mesas entre mozos | Bajo-medio |
 | 10 | **Cliente reconocido** | Personalización en grandes cadenas: saludo por nombre, "lo de siempre" | Perfil por teléfono: alergias, ocasiones, gasto; tarjeta de fidelidad en Apple/Google Wallet | Medio |
 
-**Recomendación:** primero el **3** (cierra el ciclo pedir → pagar → salir y es nuestra diferencia; el QR ya está impreso), el **2** y el **1** (IA que se nota en el día a día, con la misma integración de Claude que ya usamos para el plano) y el **7** (rápido y visible para el cliente). El **4** después, cuando el salón y el cobro estén sólidos.
+**Estado:** hechas la **1** (parcial), **2**, **3** (transferencia; Mercado Pago listo para credenciales) y **7**. Quedan **4, 5, 6, 8, 9, 10**.
+
+**Recomendación original:** primero el **3** (cierra el ciclo pedir → pagar → salir y es nuestra diferencia; el QR ya está impreso), el **2** y el **1** (IA que se nota en el día a día, con la misma integración de Claude que ya usamos para el plano) y el **7** (rápido y visible para el cliente). El **4** después, cuando el salón y el cobro estén sólidos.
 
 Fuentes de esta sección: [NRN – nuevos agentes de Toast](https://www.nrn.com/restaurant-technology/toast-unveils-an-array-of-new-ai-agents-for-restaurants), [Toast IQ](https://pos.toasttab.com/blog/on-the-line/toast-iq), [Destination CRM – Toast IQ Grow](https://www.destinationcrm.com/Articles/CRM-News/CRM-Across-the-Wire/Toast-Debuts-Toast-IQ-Grow-174691.aspx), [Retail Systems – National Restaurant Show 2026](https://retailsystems.org/national-restauant-show-report/), [CloudKitchens – tendencias 2026](https://cloudkitchens.com/blog/restaurant-technology-trends), [NetSuite – tendencias 2026](https://www.netsuite.co.uk/portal/uk/resource/articles/business-strategy/restaurant-technology-trends.shtml), [Verdict Foodservice – CBS NorthStar](https://www.verdictfoodservice.com/newsletters/cbs-northstar-partners-with-qsr), [GORSPA – KDS](https://www.gorspa.org/commiq-beyond-the-display-how-a-kds-can-orchestrate-kitchen-efficiency/), [sunday – cuenta digital](https://sundayapp.com/?p=104510), [sunday – pago en la mesa](https://sundayapp.com/?p=40643), [BCRA – Transferencias 3.0](https://www.bcra.gob.ar/noticias/transferencia-con-qr/), [iProUP – récord de pagos QR 2026](https://www.iproup.com/finanzas/69308-pagos-qr-rompieron-record-cambiaron-como-usan-dinero-argentinos-junio-2026), [Product Hunt – WhatsApp en Latinoamérica](https://www.producthunt.com/posts/1212732), [Natural Bot](https://www.rankmyai.com/tools/c19ee3dd-f1a8-4fee-9e48-cadb0512d308/natural-bot), [Airship – Live Activities](https://www.airship.com/?p=29359), [Swiggy – seguimiento en pantalla bloqueada](https://www.thetechoutlook.com/new-release/software-apps/while-ordering-food-on-swiggy-we-came-across-this-new-feature-allowing-to-track-order-status-on-ios-lock-screen/), [fluuexqr – pedidos por QR 2026](https://fluuexqr.com/qr-ordering-restaurants-complete-guide-2026/).
 

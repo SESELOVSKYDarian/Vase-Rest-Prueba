@@ -41,9 +41,18 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#F2F2F7",
-          "dark": { "backgroundColor": "#0C0C0E" },
+          "dark": {
+            "backgroundColor": "#0C0C0E"
+          },
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Vase Rest usa el micrófono para dictar pedidos y órdenes.",
+          "speechRecognitionPermission": "Vase Rest usa el reconocimiento de voz para entender lo que dictás."
         }
       ]
     ],

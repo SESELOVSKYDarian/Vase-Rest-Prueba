@@ -1,7 +1,6 @@
 import type { Centavos } from '@vase/domain';
 import { aCentavos } from '@vase/domain';
 import { consultarDb } from './db';
-import { apiFetch } from './http';
 
 export interface CategoriaMenu {
   id: string;
@@ -18,7 +17,11 @@ export interface ProductoMenu {
   disponible: boolean;
   /** Ruta de la foto en el servidor (/uploads/...), o null. */
   imagenUrl: string | null;
+  etiquetas: Etiqueta[];
 }
+
+export type Etiqueta = 'sin_tacc' | 'vegano' | 'vegetariano' | 'sin_lactosa' | 'picante';
+export const ETIQUETAS: readonly Etiqueta[] = ['sin_tacc', 'vegano', 'vegetariano', 'sin_lactosa', 'picante'];
 
 interface ProductoFila {
   id: string;
@@ -29,6 +32,7 @@ interface ProductoFila {
   disponible: boolean;
   activo: boolean | null;
   imagen_url: string | null;
+  etiquetas: string[] | null;
 }
 
 export async function obtenerCategorias(): Promise<CategoriaMenu[]> {
@@ -43,7 +47,7 @@ export async function obtenerCategorias(): Promise<CategoriaMenu[]> {
 export async function obtenerProductos(): Promise<ProductoMenu[]> {
   const filas = await consultarDb<ProductoFila[]>({
     table: 'productos',
-    selection: 'id, categoria_id, nombre, descripcion, precio, disponible, activo, imagen_url',
+    selection: 'id, categoria_id, nombre, descripcion, precio, disponible, activo, imagen_url, etiquetas',
     orders: [{ column: 'nombre', ascending: true }],
   });
   return (filas ?? [])
@@ -57,6 +61,7 @@ export async function obtenerProductos(): Promise<ProductoMenu[]> {
       precio: aCentavos(Number(p.precio)),
       disponible: p.disponible,
       imagenUrl: p.imagen_url,
+      etiquetas: (p.etiquetas ?? []).filter((e): e is Etiqueta => (ETIQUETAS as readonly string[]).includes(e)),
     }));
 }
 
@@ -80,23 +85,14 @@ export async function actualizarProducto(id: string, cambios: CambiosProducto): 
   await consultarDb({ table: 'productos', operation: 'update', payload, filters: [{ method: 'eq', column: 'id', value: id }] });
 }
 
-export async function crearProducto(datos: { nombre: string; descripcion: string; precio: Centavos; categoriaId: string | null; imagenUrl: string | null }): Promise<void> {
-  await consultarDb({
+export async function crearProducto(datos: { nombre: string; descripcion: string; precio: Centavos; categoriaId: string | null; imagenUrl: string | null }): Promise<string | null> {
+  const filas = await consultarDb<Array<{ id: string }>>({
     table: 'productos',
     operation: 'insert',
     payload: { nombre: datos.nombre.trim(), descripcion: datos.descripcion.trim(), precio: datos.precio / 100, categoria_id: datos.categoriaId, imagen_url: datos.imagenUrl, disponible: true, activo: true, stock: 0, stock_actual: 0 },
+    selection: 'id',
   });
-}
-
-/** Carta pública (sin sesión) para el QR de la mesa. */
-export interface CartaPublica {
-  categorias: CategoriaMenu[];
-  productos: ProductoMenu[];
-}
-
-export async function obtenerCartaPublica(): Promise<CartaPublica> {
-  const r = await apiFetch<{ categorias: CategoriaMenu[]; productos: Array<Omit<ProductoMenu, 'precio'> & { precio: number }> }>('/public/carta');
-  return { categorias: r.categorias, productos: r.productos.map((p) => ({ ...p, precio: aCentavos(p.precio) })) };
+  return Array.isArray(filas) ? (filas[0]?.id ?? null) : ((filas as { id?: string } | null)?.id ?? null);
 }
 
 /** Saca un plato de la carta sin borrarlo (los pedidos y facturas viejos lo siguen nombrando). */

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { Camera, Trash2 } from 'lucide-react-native';
-import { actualizarProducto, archivarProducto, crearProducto, type CategoriaMenu, type ProductoMenu } from '@vase/api';
+import { actualizarProducto, archivarProducto, crearProducto, guardarEtiquetas, type CategoriaMenu, type Etiqueta, type ProductoMenu } from '@vase/api';
 import { parsearPesos } from '@vase/domain';
 import { Button, Chip, ErrorBanner, Field, Group, PressableScale, Row, Sheet, Text, haptic, radius, space, useTheme } from '@vase/ui';
 import { FotoPlato } from '@/components/FotoPlato';
@@ -18,6 +18,8 @@ interface Props {
 
 const formatoPrecio = new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 /** 1590000 → "15.900"; 1250050 → "12.500,5" (lo mismo que se escribe a mano). */
+const ETIQUETAS_EDITABLES: Array<[Etiqueta, string]> = [['sin_tacc', 'Sin TACC'], ['vegano', 'Vegano'], ['vegetariano', 'Vegetariano'], ['sin_lactosa', 'Sin lactosa'], ['picante', 'Picante']];
+
 const precioATexto = (centavos: number) => formatoPrecio.format(centavos / 100);
 
 export function EditarPlatoSheet({ plato, categorias, onClose, onGuardado }: Props) {
@@ -31,6 +33,7 @@ export function EditarPlatoSheet({ plato, categorias, onClose, onGuardado }: Pro
   const [precio, setPrecio] = useState('');
   const [categoriaId, setCategoriaId] = useState<string | null>(null);
   const [disponible, setDisponible] = useState(true);
+  const [etiquetas, setEtiquetas] = useState<Etiqueta[]>([]);
   const [foto, setFoto] = useState<string | null>(null);
   const [subiendo, setSubiendo] = useState(false);
   const [guardando, setGuardando] = useState(false);
@@ -45,6 +48,7 @@ export function EditarPlatoSheet({ plato, categorias, onClose, onGuardado }: Pro
     setPrecio(base ? precioATexto(base.precio) : '');
     setCategoriaId(base?.categoriaId ?? categorias[0]?.id ?? null);
     setDisponible(base?.disponible ?? true);
+    setEtiquetas(base?.etiquetas ?? []);
     setFoto(base?.imagenUrl ?? null);
     setConfirmarQuitar(false);
     setError(null);
@@ -83,8 +87,13 @@ export function EditarPlatoSheet({ plato, categorias, onClose, onGuardado }: Pro
     setError(null);
     try {
       const datos = { nombre, descripcion, precio: centavos, categoriaId, imagenUrl: foto };
-      if (base) await actualizarProducto(base.id, { ...datos, disponible });
-      else await crearProducto(datos);
+      if (base) {
+        await actualizarProducto(base.id, { ...datos, disponible });
+        await guardarEtiquetas(base.id, etiquetas);
+      } else {
+        const id = await crearProducto(datos);
+        if (id && etiquetas.length) await guardarEtiquetas(id, etiquetas);
+      }
       await terminar(base ? 'Plato actualizado' : 'Plato agregado a la carta');
     } catch (e) {
       haptic.error();
@@ -140,6 +149,13 @@ export function EditarPlatoSheet({ plato, categorias, onClose, onGuardado }: Pro
             </View>
           </View>
         ) : null}
+
+        <View style={styles.bloque}>
+          <Text variant="footnote" color="secondary" style={styles.rotulo}>Etiquetas (se muestran al cliente y sirven para filtrar)</Text>
+          <View style={styles.chips}>
+            {ETIQUETAS_EDITABLES.map(([e, n]) => <Chip key={e} label={n} selected={etiquetas.includes(e)} onPress={() => setEtiquetas(etiquetas.includes(e) ? etiquetas.filter((x) => x !== e) : [...etiquetas, e])} />)}
+          </View>
+        </View>
 
         {base ? (
           <Group footer="Un plato agotado sigue en la carta pero no se puede pedir, ni desde el salón ni desde el QR.">

@@ -1,13 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { LayoutGrid, PencilRuler } from 'lucide-react-native';
+import { BellRing, LayoutGrid, PencilRuler } from 'lucide-react-native';
 import { useWindowDimensions } from 'react-native';
 import { contarPorEstado, ESTADOS_MESA, ETIQUETA_ESTADO_MESA, ESTADOS_CON_PERSONAS, planoDesdeMesas, type EstadoMesa, type Mesa } from '@vase/domain';
-import { Button, Chip, EmptyState, ErrorBanner, Group, Row, Screen, Segmented, Skeleton, StatusPill, Text, space, useEstadoColor, useTheme } from '@vase/ui';
+import { Button, Chip, EmptyState, ErrorBanner, Group, Row, Screen, Segmented, Skeleton, StatusPill, Text, Toast, haptic, space, useEstadoColor, useTheme } from '@vase/ui';
+import { AvisosSheet } from '@/components/AvisosSheet';
 import { MesaSheet } from '@/components/MesaSheet';
 import { PlanoCanvas, type Seleccion } from '@/components/plano/PlanoCanvas';
-import { useMesas, usePedidosActivos, usePlano } from '@/lib/queries';
+import { useAvisos, useMesas, usePedidosActivos, usePlano } from '@/lib/queries';
 import { useSession } from '@/lib/session';
 
 type Vista = 'plano' | 'lista';
@@ -28,6 +29,17 @@ export default function Salon() {
   const planoQ = usePlano();
   const rol = useSession((st) => st.usuario?.rol);
   const puedeEditar = rol === 'admin' || rol === 'encargado';
+  const atiendeSalon = puedeEditar || rol === 'cajero' || rol === 'mozo';
+  const avisosQ = useAvisos(atiendeSalon);
+  const cantidadAvisos = (avisosQ.data?.solicitudes.length ?? 0) + (avisosQ.data?.pagos.length ?? 0);
+  const [verAvisos, setVerAvisos] = useState(false);
+  const [mensaje, setMensaje] = useState<string | null>(null);
+  const anteriores = useRef(0);
+  // Un aviso nuevo vibra y se anuncia: el mozo no tiene que estar mirando la pantalla.
+  useEffect(() => {
+    if (cantidadAvisos > anteriores.current) { haptic.exito(); setMensaje(`${cantidadAvisos - anteriores.current === 1 ? 'Hay un aviso nuevo' : 'Hay avisos nuevos'} de las mesas`); }
+    anteriores.current = cantidadAvisos;
+  }, [cantidadAvisos]);
   const { height } = useWindowDimensions();
   const [vista, setVista] = useState<Vista>('plano');
   const [filtro, setFiltro] = useState<EstadoMesa | 'todas'>('todas');
@@ -75,7 +87,14 @@ export default function Salon() {
       refreshing={mesasQ.isRefetching}
       onRefresh={() => { void mesasQ.refetch(); void pedidosQ.refetch(); }}
       bottomInset={sizeClass === 'compact' ? 72 : 0}
-      headerRight={puedeEditar ? <Button label="Editar plano" size="sm" variant="tinted" icon={<PencilRuler size={16} color={colors.tint} />} onPress={() => router.push('/editor-plano')} /> : undefined}
+      headerRight={
+        atiendeSalon ? (
+          <View style={styles.acciones}>
+            <Button label={cantidadAvisos ? `Avisos · ${cantidadAvisos}` : 'Avisos'} size="sm" variant={cantidadAvisos ? 'filled' : 'tinted'} icon={<BellRing size={16} color={cantidadAvisos ? colors.onTint : colors.tint} />} onPress={() => setVerAvisos(true)} />
+            {puedeEditar ? <Button label="Editar plano" size="sm" variant="tinted" icon={<PencilRuler size={16} color={colors.tint} />} onPress={() => router.push('/editor-plano')} /> : null}
+          </View>
+        ) : undefined
+      }
     >
       {mesasQ.isPending ? (
         <View style={styles.stack}>
@@ -136,11 +155,14 @@ export default function Salon() {
       )}
 
       <MesaSheet mesa={elegida} pedido={pedidoDe(elegida)} onClose={() => setElegida(null)} onTomarPedido={tomarPedido} onCobrar={cobrar} />
+      <AvisosSheet open={verAvisos} onClose={() => setVerAvisos(false)} avisos={avisosQ.data} onAviso={setMensaje} />
+      <Toast message={mensaje} onHide={() => setMensaje(null)} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  acciones: { flexDirection: 'row', gap: space.sm },
   stack: { gap: space.xl },
   controles: { gap: space.md },
   segmento: { maxWidth: 280 },

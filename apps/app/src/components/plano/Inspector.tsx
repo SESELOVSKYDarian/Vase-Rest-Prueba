@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { ImagePlus, Minus, Plus, RotateCcw, RotateCw, Sparkles, Trash2 } from 'lucide-react-native';
+import { Copy, ImagePlus, Maximize, Minus, Plus, RotateCcw, RotateCw, Sparkles, Trash2 } from 'lucide-react-native';
 import { COLORES_ZONA, ETIQUETA_ELEMENTO, type FormaMesa, type Mesa } from '@vase/domain';
 import { Button, Field, Group, PressableScale, Row, Segmented, Stepper, Text, haptic, radius, space, useTheme, zonaColor } from '@vase/ui';
 import type { EditorPlano } from './useEditorPlano';
@@ -74,6 +74,17 @@ export function Inspector({ editor, mesas, onSubirFondo, subiendoFondo, onAnaliz
           <Rotar onRotar={(d) => editor.cambiarMesa(m.mesaId, { rot: (m.rot + d + 360) % 360 })} />
         </Group>
         <Segmented items={FORMAS} value={m.forma} onChange={(forma) => editor.cambiarMesa(m.mesaId, { forma })} accessibilityLabel="Forma de la mesa" />
+        <Group header="Medidas de la mesa" footer="Se ajustan solas según la forma y los lugares; cambialas si tu mesa es distinta.">
+          {m.forma === 'circular' ? (
+            <Medida titulo="Diámetro" valor={m.ancho} paso={10} min={50} max={300} onCambiar={(d) => editor.cambiarMesa(m.mesaId, { ancho: d, alto: d })} />
+          ) : (
+            <>
+              <Medida titulo="Largo" valor={m.ancho} paso={10} min={50} max={400} onCambiar={(ancho) => editor.cambiarMesa(m.mesaId, { ancho })} />
+              <Medida titulo="Ancho" valor={m.alto} paso={10} min={50} max={300} onCambiar={(alto) => editor.cambiarMesa(m.mesaId, { alto })} />
+            </>
+          )}
+        </Group>
+        <Button label="Duplicar mesa" variant="tinted" icon={<Copy size={18} color={colors.tint} />} onPress={() => editor.duplicar(seleccion)} full />
         <Button label="Quitar del plano" variant="destructive" icon={<Trash2 size={18} color={colors.danger} />} onPress={() => editor.quitar(seleccion)} full />
       </View>
     );
@@ -98,6 +109,8 @@ export function Inspector({ editor, mesas, onSubirFondo, subiendoFondo, onAnaliz
             );
           })}
         </View>
+        <Text variant="footnote" color="secondary" align="center">Al mover la zona, se llevan sus mesas y objetos. Estirala desde la esquina inferior derecha.</Text>
+        <Button label="Duplicar zona" variant="tinted" icon={<Copy size={18} color={colors.tint} />} onPress={() => editor.duplicar(seleccion)} full />
         <Button label="Eliminar zona" variant="destructive" icon={<Trash2 size={18} color={colors.danger} />} onPress={() => editor.quitar(seleccion)} full />
       </View>
     );
@@ -115,6 +128,7 @@ export function Inspector({ editor, mesas, onSubirFondo, subiendoFondo, onAnaliz
           {e.tipo !== 'puerta' && e.tipo !== 'pared' && e.tipo !== 'ventana' && e.tipo !== 'pasillo' ? <Medida titulo="Ancho" valor={e.h} paso={10} min={10} max={plano.alto} onCambiar={(h) => editor.cambiarElemento(e.id, { h })} /> : null}
           <Rotar paso={e.tipo === 'pared' || e.tipo === 'puerta' || e.tipo === 'ventana' ? 90 : 45} onRotar={(d) => editor.cambiarElemento(e.id, { rot: (e.rot + d + 360) % 360 })} />
         </Group>
+        <Button label="Duplicar" variant="tinted" icon={<Copy size={18} color={colors.tint} />} onPress={() => editor.duplicar(seleccion)} full />
         <Button label="Eliminar" variant="destructive" icon={<Trash2 size={18} color={colors.danger} />} onPress={() => editor.quitar(seleccion)} full />
       </View>
     );
@@ -134,6 +148,7 @@ export function Inspector({ editor, mesas, onSubirFondo, subiendoFondo, onAnaliz
       <Group header="El local" footer="Medidas reales del espacio. El plano se dibuja a escala: una mesa de 4 mide unos 90 cm.">
         <Medida titulo="Ancho" valor={plano.ancho} paso={50} min={400} max={10000} onCambiar={(ancho) => editor.cambiarPlano({ ancho })} />
         <Medida titulo="Largo" valor={plano.alto} paso={50} min={300} max={10000} onCambiar={(alto) => editor.cambiarPlano({ alto })} />
+        <Row title="Ajustar al contenido" subtitle="Achica o agranda el local justo a lo dibujado" leading={<Maximize size={20} color={colors.tint} />} onPress={() => { haptic.ligero(); editor.ajustarAlContenido(); }} />
       </Group>
       <Group header="Plano o foto de fondo" footer="Subí el plano del arquitecto, un dibujo o una foto desde arriba y calcá las mesas encima.">
         <Row title={plano.fondo ? 'Cambiar imagen' : 'Subir imagen'} leading={<ImagePlus size={20} color={colors.tint} />} onPress={subiendoFondo ? undefined : onSubirFondo} value={subiendoFondo ? 'Subiendo…' : undefined} chevron />

@@ -137,6 +137,7 @@ function Editor({ inicial, mesas, provisorio }: { inicial: Plano; mesas: Mesa[];
             seleccion={editor.seleccion}
             onSeleccionar={editor.setSeleccion}
             onMover={editor.mover}
+            onRedimensionar={editor.redimensionar}
           />
 
           {/* Barra superior flotante */}
