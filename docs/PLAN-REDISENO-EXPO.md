@@ -1,6 +1,6 @@
 # Plan de rediseño total — Vase Rest en Expo
 
-Estado: **propuesta para aprobar** (no se escribió código de la app todavía).
+Estado: **fases 0 y 1 hechas** (monorepo, app Expo, sistema de diseño y 3 pantallas funcionales con datos reales). Falta tu aprobación del look para seguir con la fase 2.
 Decisiones ya tomadas por vos: una sola app Expo universal · dispositivos: celulares Android de mozos, PC de caja Windows, iPhone/iPad, tablet Android en cocina, TVs en el salón · el salón no se cae si se corta internet · estilo Apple · todo funcional, nada de maquetas.
 
 ---
@@ -80,7 +80,7 @@ vase-rest/
 ```
 
 **Stack propuesto** (a validar con el scaffold, versiones exactas se fijan al crear el proyecto):
-- Expo SDK actual (55 según [la guía de actualización de Expo](https://expo.dev/blog/upgrading-to-sdk-55.md): arquitectura nueva obligatoria), Expo Router, Reanimated 4 + Gesture Handler, `expo-haptics`, `expo-blur`, `expo-secure-store`, `expo-sqlite` para el offline.
+- Expo SDK 57 (React Native 0.86, arquitectura nueva obligatoria), Expo Router, Reanimated 4 + Gesture Handler, `expo-haptics`, `expo-blur`, `expo-secure-store`, `expo-sqlite` para el offline.
 - Estilos: tokens propios + `StyleSheet` (sin librería de utilidades): evita la fricción conocida entre NativeWind y Reanimated 4 y deja el diseño Apple bajo control.
 - Estado de servidor: TanStack Query. Estado de UI: Zustand (ya se usa hoy).
 - Tiempo real: **SSE/WebSocket desde el backend** en lugar del polling cada 5–20 s de hoy (cocina, mesas, TV, pagos).
@@ -203,3 +203,22 @@ Se migran las pantallas existentes: Inicio, Mesas, Pedido, Cocina, Facturas, His
 - Desde este entorno no puedo instalar la app en un teléfono ni probar impresoras/pagos reales; lo que sí hago es probar en web, emulador y pruebas automáticas, y dejarte los builds listos.
 - El empaquetado de escritorio con Tauri y la impresión térmica Bluetooth desde Android son los puntos de mayor incertidumbre técnica; los dos tienen un spike previo para no apostar a ciegas.
 - Datos de la investigación vienen de páginas comerciales; sirven de guía de funciones, no de medición de mercado.
+
+
+---
+
+## 12. Avance (fases 0 y 1)
+
+**Hecho y verificado**
+- Monorepo con npm workspaces: `apps/app` (Expo SDK 57 + Expo Router), `packages/domain` (tipos y reglas puras: dinero en centavos, cuenta, propina, división, tiempos — 9 pruebas), `packages/api` (cliente tipado del backend real — 5 pruebas), `packages/ui` (sistema de diseño).
+- La app arranca en **web, Android e iOS**: los tres bundles compilan (`expo export`: web 4,7 MB, Android Hermes 6,4 MB, iOS Hermes 6,2 MB). CI en `.github/workflows/ci.yml` (tipos, pruebas y export web/Android).
+- Login real contra el backend (token en llavero seguro en celular, `localStorage` en web), **selector de servidor** con prueba de conexión (base del modo "servidor en el local") y sesión que vence limpiamente.
+- Tres pantallas con datos reales: **Salón** (plano/lista, filtros por estado y zona, hoja de mesa), **Pedido** (carta real, cantidades, envío a cocina — probado end-to-end: el pedido llega a Postgres) y **Cobro** (cuenta, IVA, propina, división en partes iguales, medios de pago; el registro del cobro queda para la fase 4).
+- Navegación adaptativa: barra inferior en celular, riel en tablet, barra lateral en escritorio.
+
+**Hallazgos que cambian el plan**
+1. **Seguridad del backend (corregido en parte):** las rutas de pedidos, facturas y mesas **no exigían sesión** y tomaban el rol y el usuario de headers que cualquier cliente puede escribir. Se agregó `attachAuth` (la identidad ahora sale del JWT firmado cuando hay token). Falta **exigir sesión** en esas rutas: se activa cuando el panel Next envíe el token o se retire.
+2. **IVA:** el backend suma 21 % **encima** del precio de la carta (hoy un plato de $ 15.900 se factura a $ 19.239). En restaurantes de Argentina la carta suele ya incluir IVA. **Decisión tuya:** ¿los precios de tu carta incluyen IVA? Hasta que respondas la app muestra el IVA como lo calcula el servidor, por separado.
+3. **Plano en celular:** el plano con posiciones libres no entra en pantallas chicas con mesas tocables; se usa grilla de 3 columnas en celular y plano libre solo si entra con mesas de tamaño cómodo. Zoom y paneo del plano completo llegan con el editor de la fase 2.
+4. `expo install` consulta un servicio de Expo bloqueado en este entorno; las versiones se fijaron con la tabla oficial del SDK instalado.
+5. **Tauri (escritorio):** el spike no se pudo hacer acá (este entorno no tiene las bibliotecas gráficas de Windows/Linux para compilar un instalador). El export web que usará Tauri ya compila. Se hará en una PC con Windows o con CI en GitHub Actions.

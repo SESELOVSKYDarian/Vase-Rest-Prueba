@@ -5,6 +5,15 @@ const ROLES_PAGO_INTERNO_NO_FISCAL = new Set(["admin"]);
  * Extrae rol y usuario desde headers internos del dashboard.
  */
 export function obtenerUsuarioRequest(req) {
+  // La identidad firmada del JWT (requireAuth → req.auth) manda sobre cualquier header:
+  // los headers x-noctua-* los puede escribir cualquier cliente, el token no.
+  if (req.auth?.rol) {
+    return {
+      rol: String(req.auth.rol).trim().toLowerCase(),
+      nombre: String(req.auth.nombre || "").trim(),
+      id: String(req.auth.sub || "").trim(),
+    };
+  }
   return {
     rol: String(req.headers["x-noctua-role"] || req.headers["x-user-role"] || "")
       .trim()

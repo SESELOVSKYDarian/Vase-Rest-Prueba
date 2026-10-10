@@ -11,6 +11,7 @@ import categoriasRoutes from "./routes/categorias.routes.js";
 import { checkDatabase } from "./config/database.js";
 import dataRoutes from "./routes/data.routes.js";
 import authRoutes from "./routes/auth.routes.js";
+import { attachAuth } from "./controllers/auth.controller.js";
 import integracionesRoutes from "./routes/integraciones.routes.js";
 
 const app = express();
@@ -30,6 +31,7 @@ app.use(cors({
 // El plano de mesas (salon_layouts) embebe la imagen de fondo como data URL en el
 // payload JSON; el límite por defecto de express (100kb) la rechaza con 413.
 app.use(express.json({ limit: "12mb" }));
+app.use(attachAuth);
 
 app.get("/health", async (_req, res) => {
   try {

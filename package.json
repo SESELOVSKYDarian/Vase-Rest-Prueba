@@ -1,0 +1,17 @@
+{
+  "name": "vase-rest",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Vase Rest — app Expo universal (Android, iOS, web, escritorio) sobre el backend Express/PostgreSQL.",
+  "workspaces": [
+    "apps/app",
+    "packages/*"
+  ],
+  "scripts": {
+    "app": "npm run start -w @vase/app",
+    "app:web": "npm run web -w @vase/app",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  }
+}

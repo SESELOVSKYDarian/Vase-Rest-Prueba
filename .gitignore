@@ -10,3 +10,9 @@ dev.db
 certificados/
 *.key
 *.crt
+
+# Expo / monorepo
+.expo/
+apps/app/dist/
+apps/app/.expo/
+apps/app/expo-env.d.ts

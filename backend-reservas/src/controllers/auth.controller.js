@@ -53,6 +53,20 @@ export async function login(req, res) {
   res.json({ token, usuario: { id: user.id, nombre: user.nombre, username: user.username, email: user.email, rol: user.rol } });
 }
 
+/**
+ * Identidad "blanda": si llega un Bearer válido se deja en req.auth (rol/nombre/id firmados);
+ * si no, la request sigue sin identidad. Va montado globalmente para que los controladores
+ * (pedidos, facturas) lean la identidad del token y no de headers que escribe el cliente.
+ * Exigir sesión en cada ruta (requireAuth) se activa cuando el panel Next envíe el token.
+ */
+export function attachAuth(req, _res, next) {
+  const token = req.headers.authorization?.replace(/^Bearer\s+/i, "");
+  if (token) {
+    try { req.auth = jwt.verify(token, secret()); } catch { /* token inválido: sin identidad */ }
+  }
+  next();
+}
+
 export function requireAuth(req, res, next) {
   if (process.env.INTERNAL_API_KEY && req.headers["x-internal-key"] === process.env.INTERNAL_API_KEY) return next();
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, "");
