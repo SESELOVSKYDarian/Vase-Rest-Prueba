@@ -16,6 +16,7 @@ import archivosRoutes, { UPLOADS_DIR } from "./routes/archivos.routes.js";
 import publicoRoutes from "./routes/publico.routes.js";
 import planoRoutes from "./routes/plano.routes.js";
 import avisosRoutes from "./routes/avisos.routes.js";
+import inteligenciaRoutes from "./routes/inteligencia.routes.js";
 import cartaAdminRoutes from "./routes/cartaAdmin.routes.js";
 import integracionesRoutes from "./routes/integraciones.routes.js";
 
@@ -53,6 +54,7 @@ app.use("/api/archivos", archivosRoutes);
 app.use("/api/public", publicoRoutes);
 app.use("/api/plano", planoRoutes);
 app.use("/api/avisos", avisosRoutes);
+app.use("/api/inteligencia", inteligenciaRoutes);
 app.use("/api/carta-admin", cartaAdminRoutes);
 
 app.get("/health", async (_req, res) => {

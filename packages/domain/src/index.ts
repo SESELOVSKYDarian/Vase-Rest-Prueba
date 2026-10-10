@@ -3,3 +3,4 @@ export * from './dinero';
 export * from './cuenta';
 export * from './tiempo';
 export * from './plano';
+export * from './salon';

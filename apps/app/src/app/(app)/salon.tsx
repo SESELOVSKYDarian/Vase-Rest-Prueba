@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { BellRing, LayoutGrid, PencilRuler } from 'lucide-react-native';
+import { BellRing, Flame, LayoutGrid, PencilRuler, Users } from 'lucide-react-native';
 import { useWindowDimensions } from 'react-native';
-import { contarPorEstado, ESTADOS_MESA, ETIQUETA_ESTADO_MESA, ESTADOS_CON_PERSONAS, planoDesdeMesas, type EstadoMesa, type Mesa } from '@vase/domain';
+import { alertaMesa, contarPorEstado, ESTADOS_MESA, ETIQUETA_ESTADO_MESA, ESTADOS_CON_PERSONAS, formatearARS, iniciales, intensidadesCalor, planoDesdeMesas, valorCalor, type EstadoMesa, type MetricaCalor, type Mesa } from '@vase/domain';
 import { Button, Chip, EmptyState, ErrorBanner, Group, Row, Screen, Segmented, Skeleton, StatusPill, Text, Toast, haptic, space, useEstadoColor, useTheme } from '@vase/ui';
 import { AvisosSheet } from '@/components/AvisosSheet';
 import { MesaSheet } from '@/components/MesaSheet';
+import { RepartoSheet } from '@/components/RepartoSheet';
 import { PlanoCanvas, type Seleccion } from '@/components/plano/PlanoCanvas';
-import { useAvisos, useMesas, usePedidosActivos, usePlano } from '@/lib/queries';
+import { useAvisos, useCalor, useEstadoSalon, useMesas, usePedidosActivos, usePlano } from '@/lib/queries';
 import { useSession } from '@/lib/session';
 
 type Vista = 'plano' | 'lista';
+type Filtro = EstadoMesa | 'todas' | 'demoradas';
+
+const METRICAS: Array<{ id: MetricaCalor; titulo: string }> = [{ id: 'ventas', titulo: 'Ventas' }, { id: 'rotacion', titulo: 'Rotación' }, { id: 'permanencia', titulo: 'Permanencia' }];
 
 /** "12'", "1 h 05'", "3 d": entra dentro de la mesa. */
 function duracionCorta(min: number) {
@@ -42,7 +46,13 @@ export default function Salon() {
   }, [cantidadAvisos]);
   const { height } = useWindowDimensions();
   const [vista, setVista] = useState<Vista>('plano');
-  const [filtro, setFiltro] = useState<EstadoMesa | 'todas'>('todas');
+  const [filtro, setFiltro] = useState<Filtro>('todas');
+  const [metrica, setMetrica] = useState<MetricaCalor | null>(null);
+  const [repartoMesa, setRepartoMesa] = useState<Mesa | null>(null);
+  const [verReparto, setVerReparto] = useState(false);
+  const puedeVerCalor = puedeEditar || rol === 'cajero';
+  const estadoQ = useEstadoSalon(atiendeSalon);
+  const calorQ = useCalor(puedeVerCalor && metrica !== null);
   const [zona, setZona] = useState<string>('todas');
   const [elegida, setElegida] = useState<Mesa | null>(null);
 
@@ -50,7 +60,28 @@ export default function Salon() {
   const zonas = useMemo(() => [...new Set(mesas.map((m) => m.zona))], [mesas]);
   const delaZona = useMemo(() => (zona === 'todas' ? mesas : mesas.filter((m) => m.zona === zona)), [mesas, zona]);
   const conteo = useMemo(() => contarPorEstado(delaZona), [delaZona]);
-  const visibles = useMemo(() => (filtro === 'todas' ? null : new Set(delaZona.filter((m) => m.estado === filtro).map((m) => m.id))), [delaZona, filtro]);
+  const señales = useMemo(() => new Map((estadoQ.data?.mesas ?? []).map((x) => [x.mesaId, x])), [estadoQ.data]);
+  const alertas = useMemo(() => {
+    const r = new Map<string, ReturnType<typeof alertaMesa>>();
+    for (const m of mesas) {
+      const x = señales.get(m.id);
+      const a = alertaMesa({ estadoMesa: m.estado, estadoPedido: x?.pedidoEstado, minEnEstado: x?.minEnEstado, minOcupada: x?.minOcupada });
+      if (a.nivel !== 'ok') r.set(m.id, a);
+    }
+    return r;
+  }, [mesas, señales]);
+  const coincide = (m: Mesa) => (filtro === 'todas' ? true : filtro === 'demoradas' ? alertas.has(m.id) : m.estado === filtro);
+  const visibles = useMemo(() => (filtro === 'todas' ? null : new Set(delaZona.filter(coincide).map((m) => m.id))), [delaZona, filtro, alertas]); // eslint-disable-line react-hooks/exhaustive-deps
+  const demoradas = alertas.size;
+  const mozos = estadoQ.data?.mozos ?? [];
+  const intensidades = useMemo(() => (metrica && calorQ.data ? intensidadesCalor(calorQ.data.mesas, metrica) : null), [metrica, calorQ.data]);
+  const calorPorMesa = useMemo(() => new Map((calorQ.data?.mesas ?? []).map((c) => [c.mesaId, c])), [calorQ.data]);
+  const etiquetaCalor = (id: string) => {
+    const c = calorPorMesa.get(id);
+    const v = c && metrica ? valorCalor(c, metrica) : null;
+    if (v == null || !metrica) return null;
+    return metrica === 'ventas' ? (v >= 1000 ? `$ ${Math.round(v / 1000)} k` : formatearARS(c!.ventasCentavos)) : metrica === 'rotacion' ? `${v.toLocaleString('es-AR', { maximumFractionDigits: 1 })}/día` : `${v} min`;
+  };
   const pedidoDe = (mesa: Mesa | null) => (mesa ? pedidosQ.data?.find((p) => p.mesaId === mesa.id) ?? null : null);
 
   const plano = useMemo(() => planoQ.data ?? planoDesdeMesas(mesas), [planoQ.data, mesas]);
@@ -65,8 +96,8 @@ export default function Salon() {
   };
   const visiblesPlano = useMemo(() => {
     if (filtro === 'todas' && zona === 'todas') return null;
-    return new Set(mesas.filter((m) => (filtro === 'todas' || m.estado === filtro) && (zona === 'todas' || m.zona === zona)).map((m) => m.id));
-  }, [mesas, filtro, zona]);
+    return new Set(mesas.filter((m) => coincide(m) && (zona === 'todas' || m.zona === zona)).map((m) => m.id));
+  }, [mesas, filtro, zona, alertas]); // eslint-disable-line react-hooks/exhaustive-deps
   const seleccionar = (sel: Seleccion) => { if (sel?.tipo === 'mesa') { const m = porId.get(sel.id); if (m) setElegida(m); } };
   // El marco toma la proporción del local (sin franjas vacías), con un tope según la pantalla.
   const [anchoMarco, setAnchoMarco] = useState(0);
@@ -90,6 +121,7 @@ export default function Salon() {
       headerRight={
         atiendeSalon ? (
           <View style={styles.acciones}>
+            {mozos.length > 0 ? <Button label="Reparto" size="sm" variant="tinted" icon={<Users size={16} color={colors.tint} />} onPress={() => setVerReparto(true)} /> : null}
             <Button label={cantidadAvisos ? `Avisos · ${cantidadAvisos}` : 'Avisos'} size="sm" variant={cantidadAvisos ? 'filled' : 'tinted'} icon={<BellRing size={16} color={cantidadAvisos ? colors.onTint : colors.tint} />} onPress={() => setVerAvisos(true)} />
             {puedeEditar ? <Button label="Editar plano" size="sm" variant="tinted" icon={<PencilRuler size={16} color={colors.tint} />} onPress={() => router.push('/editor-plano')} /> : null}
           </View>
@@ -119,6 +151,7 @@ export default function Salon() {
             ) : null}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
               <Chip label="Todas" count={delaZona.length} selected={filtro === 'todas'} onPress={() => setFiltro('todas')} />
+              {demoradas > 0 ? <Chip label="Demoradas" count={demoradas} selected={filtro === 'demoradas'} onPress={() => setFiltro('demoradas')} /> : null}
               {presentes.map((estado) => (
                 <Chip key={estado} label={ETIQUETA_ESTADO_MESA[estado]} count={conteo[estado]} selected={filtro === estado} onPress={() => setFiltro(estado)} />
               ))}
@@ -128,8 +161,30 @@ export default function Salon() {
           {vista === 'plano' ? (
             <View style={styles.stack}>
               <View onLayout={(e) => setAnchoMarco(e.nativeEvent.layout.width)} style={[styles.marcoPlano, { height: altoPlano, backgroundColor: colors.surface }]}>
-                <PlanoCanvas plano={plano} info={infoMesa} modo="servicio" seleccion={elegida ? { tipo: 'mesa', id: elegida.id } : null} onSeleccionar={seleccionar} visibles={visiblesPlano} />
+                <PlanoCanvas
+                  plano={plano}
+                  info={infoMesa}
+                  modo="servicio"
+                  seleccion={elegida ? { tipo: 'mesa', id: elegida.id } : null}
+                  onSeleccionar={seleccionar}
+                  visibles={visiblesPlano}
+                  alerta={(id) => { const n = alertas.get(id)?.nivel; return n === 'urgente' || n === 'atencion' ? n : null; }}
+                  calor={metrica && intensidades ? (id) => { const i = intensidades.get(id); const e = etiquetaCalor(id); return i != null && e ? { intensidad: i, etiqueta: e } : null; } : null}
+                  colorCalor={colors.warning}
+                  insignia={(id) => { const n = mozos.length > 1 ? señales.get(id)?.mozoNombre : null; return n ? iniciales(n) : null; }}
+                />
               </View>
+              {puedeVerCalor ? (
+                <View style={styles.calor}>
+                  <View style={styles.calorTitulo}><Flame size={16} color={colors.labelSecondary} /><Text variant="footnote" color="secondary">Mapa de calor · últimos {calorQ.data?.dias ?? 30} días</Text></View>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+                    <Chip label="Apagado" selected={metrica === null} onPress={() => setMetrica(null)} />
+                    {METRICAS.map((x) => <Chip key={x.id} label={x.titulo} selected={metrica === x.id} onPress={() => setMetrica(x.id)} />)}
+                  </ScrollView>
+                  {metrica && calorQ.isSuccess && calorQ.data.mesas.length === 0 ? <Text variant="footnote" color="secondary">Todavía no hay cuentas cerradas en este período: el mapa se va llenando con cada mesa que se cobra.</Text> : null}
+                  {metrica && calorQ.isError ? <Text variant="footnote" color="danger">No se pudo calcular el mapa de calor.</Text> : null}
+                </View>
+              ) : null}
               {!planoQ.data && puedeEditar ? (
                 <Text variant="footnote" color="secondary">Este plano se armó con la ubicación actual de las mesas. Tocá “Editar plano” para dibujar tu local: zonas, barra, paredes y la foto del plano.</Text>
               ) : null}
@@ -154,7 +209,17 @@ export default function Salon() {
         </View>
       )}
 
-      <MesaSheet mesa={elegida} pedido={pedidoDe(elegida)} onClose={() => setElegida(null)} onTomarPedido={tomarPedido} onCobrar={cobrar} />
+      <MesaSheet
+        mesa={elegida}
+        pedido={pedidoDe(elegida)}
+        onClose={() => setElegida(null)}
+        onTomarPedido={tomarPedido}
+        onCobrar={cobrar}
+        alerta={elegida ? alertas.get(elegida.id) ?? null : null}
+        mozoNombre={elegida ? señales.get(elegida.id)?.mozoNombre ?? null : null}
+        onElegirMozo={atiendeSalon && mozos.length > 0 ? (m) => { setElegida(null); setRepartoMesa(m); } : undefined}
+      />
+      <RepartoSheet open={verReparto || !!repartoMesa} onClose={() => { setVerReparto(false); setRepartoMesa(null); }} mozos={mozos} mesa={repartoMesa} asignadoId={repartoMesa ? señales.get(repartoMesa.id)?.mozoId ?? null : null} onAviso={setMensaje} />
       <AvisosSheet open={verAvisos} onClose={() => setVerAvisos(false)} avisos={avisosQ.data} onAviso={setMensaje} />
       <Toast message={mensaje} onHide={() => setMensaje(null)} />
     </Screen>
@@ -163,6 +228,8 @@ export default function Salon() {
 
 const styles = StyleSheet.create({
   acciones: { flexDirection: 'row', gap: space.sm },
+  calor: { gap: space.sm },
+  calorTitulo: { flexDirection: 'row', alignItems: 'center', gap: space.xs, paddingHorizontal: space.xs },
   stack: { gap: space.xl },
   controles: { gap: space.md },
   segmento: { maxWidth: 280 },

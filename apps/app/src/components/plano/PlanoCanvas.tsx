@@ -3,11 +3,12 @@ import { Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-nativ
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Maximize2, Minus, Plus } from 'lucide-react-native';
-import { ESTADOS_CON_PERSONAS, type EstadoMesa, type MesaEnPlano, type Plano } from '@vase/domain';
+import { ESTADOS_CON_PERSONAS, type EstadoMesa, type MesaEnPlano, type NivelAlerta, type Plano } from '@vase/domain';
 import { urlArchivo } from '@vase/api';
 import { PressableScale, materialPlano, radius, space, useEstadoColor, useTheme, zonaColor } from '@vase/ui';
 import { ElementoSvg, MesaSvg, ZonaSvg, ladoElemento, ladoMesa } from './dibujos';
 import { ManijaTamano } from './ManijaTamano';
+import { CalorBajoMesa, InsigniaMozo, PulsoMesa } from './MarcasMesa';
 import { NodoPlano } from './NodoPlano';
 import { PisoPlano } from './PisoPlano';
 
@@ -36,6 +37,13 @@ interface Props {
   onRedimensionar?: (tipo: 'zona' | 'elemento', id: string, dw: number, dh: number) => void;
   /** Mesas atenuadas por un filtro (servicio). */
   visibles?: ReadonlySet<string> | null;
+  /** Mesa demorada: late en el plano (servicio). */
+  alerta?: (mesaId: string) => Exclude<NivelAlerta, 'ok'> | null;
+  /** Mapa de calor: intensidad 0..1 y valor a mostrar bajo cada mesa. */
+  calor?: ((mesaId: string) => { intensidad: number; etiqueta: string } | null) | null;
+  colorCalor?: string;
+  /** Iniciales del mozo que atiende cada mesa. */
+  insignia?: (mesaId: string) => string | null;
   /** Contenido extra sobre el lienzo, fijo a la pantalla (barras, controles). */
   superposicion?: ReactNode;
 }
@@ -49,7 +57,7 @@ const MAX = 3;
  * Pellizcar para zoom, arrastrar el fondo para moverse; en edición, arrastrar objetos.
  */
 export const PlanoCanvas = forwardRef<PlanoCanvasHandle, Props>(function PlanoCanvas(
-  { plano, info, modo, seleccion, onSeleccionar, onMover, onRedimensionar, visibles, superposicion },
+  { plano, info, modo, seleccion, onSeleccionar, onMover, onRedimensionar, visibles, alerta, calor, colorCalor, insignia, superposicion },
   ref,
 ) {
   const { colors, dark } = useTheme();
@@ -229,6 +237,8 @@ export const PlanoCanvas = forwardRef<PlanoCanvasHandle, Props>(function PlanoCa
                   accessibilityLabel={datos ? `Mesa ${datos.numero}, ${m.asientos} lugares` : 'Mesa'}
                 >
                   <View style={{ opacity: atenuada ? 0.25 : 1 }}>
+                    {!editar && !calor && alerta?.(m.mesaId) ? <PulsoMesa lado={L} diametro={L * 1.15} nivel={alerta(m.mesaId)!} /> : null}
+                    {!editar && calor ? (() => { const c = calor(m.mesaId); return c ? <CalorBajoMesa lado={L} intensidad={c.intensidad} etiqueta={c.etiqueta} color={colorCalor ?? colors.tint} /> : null; })() : null}
                     <MesaSvg
                       mesa={m}
                       material={material}
@@ -240,6 +250,7 @@ export const PlanoCanvas = forwardRef<PlanoCanvasHandle, Props>(function PlanoCa
                       seleccionada={seleccion?.tipo === 'mesa' && seleccion.id === m.mesaId}
                       colorSeleccion={colors.tint}
                     />
+                    {!editar && !calor && insignia?.(m.mesaId) ? <InsigniaMozo texto={insignia(m.mesaId)!} lado={L} /> : null}
                   </View>
                 </NodoPlano>
               );
