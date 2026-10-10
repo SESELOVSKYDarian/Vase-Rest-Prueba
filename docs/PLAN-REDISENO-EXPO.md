@@ -232,6 +232,8 @@ Se migran las pantallas existentes: Inicio, Mesas, Pedido, Cocina, Facturas, His
 - **Armar el plano con IA**: se sube una foto o imagen del plano (JPG, PNG o WebP; un PDF hay que exportarlo a imagen) y Claude (visión) propone mesas, sillas y zonas; se revisa antes de aplicar. Necesita `ANTHROPIC_API_KEY` en el servidor; sin ella, el botón explica qué falta (no se simula nada).
 - Arreglado: posiciones de mesa corruptas en la base (números gigantes de un error viejo de concatenación) se ignoran y se reacomodan; al guardar el plano quedan corregidas.
 
+- **Estilo "Arquitecto"** (por defecto, igual en modo claro y oscuro): hoja azul con grilla y líneas de construcción, muros claros, cada zona como un ambiente con piso propio, mesas crema con sillas terracota, barra con banquetas, cocina con hornallas, baños, escalera y pasillos marcados. Las mesas ocupadas llevan un anillo del color de su estado. El estilo "Claro" anterior sigue disponible en "El local".
+
 **Carta con fotos**
 - Pestaña **Carta** (admin y encargado): buscar, filtrar por categoría, cargar platos nuevos, editar nombre, precio (formato argentino: `12.500` o `12500,50`), descripción y categoría, marcar agotado, sacar de la carta (sin borrar historial) y **subir la foto** (se achica y comprime en el dispositivo antes de subirla; el servidor valida que sea JPG/PNG/WebP real, hasta 6 MB).
 - Las fotos se ven también en **Pedido**.

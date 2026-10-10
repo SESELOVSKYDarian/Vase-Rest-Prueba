@@ -27,6 +27,8 @@ function Icono({ tipo }: { tipo: string }) {
     case 'ventana': return <Svg {...s}><Rect x={4} y={18} width={48} height={8} fill={m.vidrio} fillOpacity={0.3} stroke={m.vidrio} strokeWidth={2} /></Svg>;
     case 'planta': return <Svg {...s}><Circle cx={28} cy={22} r={14} fill={m.plantaClara} /><Circle cx={22} cy={18} r={6} fill={m.planta} /><Circle cx={34} cy={20} r={6} fill={m.planta} /><Circle cx={27} cy={29} r={6} fill={m.planta} /></Svg>;
     case 'columna': return <Svg {...s}><Rect x={19} y={13} width={18} height={18} rx={2} fill={m.pared} /></Svg>;
+    case 'escalera': return <Svg {...s}><Rect x={16} y={4} width={24} height={36} fill={m.ambiente} stroke={m.pared} strokeWidth={2} />{[11, 18, 25, 32].map((y) => <Rect key={y} x={16} y={y} width={24} height={1.5} fill={m.pared} />)}</Svg>;
+    case 'pasillo': return <Svg {...s}><Path d="M 6 22 L 42 22" stroke={m.pared} strokeWidth={3} strokeDasharray="6 5" strokeLinecap="round" /><Path d="M 40 15 L 50 22 L 40 29" stroke={m.pared} strokeWidth={3} fill="none" strokeLinecap="round" strokeLinejoin="round" /></Svg>;
     default: return <Svg {...s}><Rect x={6} y={8} width={44} height={28} rx={6} fill={m.ambiente} stroke={m.borde} strokeWidth={2} /></Svg>;
   }
 }
@@ -41,7 +43,7 @@ function Opcion({ tipo, titulo, onPress }: { tipo: string; titulo: string; onPre
   );
 }
 
-const ELEMENTOS: TipoElemento[] = ['barra', 'pared', 'puerta', 'ventana', 'planta', 'columna', 'cocina', 'bano', 'caja'];
+const ELEMENTOS: TipoElemento[] = ['barra', 'caja', 'cocina', 'bano', 'pared', 'puerta', 'ventana', 'escalera', 'pasillo', 'planta', 'columna'];
 
 export function AgregarSheet({ open, onClose, sinUbicar, onMesa, onZona, onElemento }: Props) {
   return (

@@ -27,7 +27,7 @@ export interface ZonaPlano {
   h: number;
 }
 
-export type TipoElemento = 'barra' | 'pared' | 'puerta' | 'ventana' | 'planta' | 'columna' | 'cocina' | 'bano' | 'caja';
+export type TipoElemento = 'barra' | 'pared' | 'puerta' | 'ventana' | 'planta' | 'columna' | 'cocina' | 'bano' | 'caja' | 'escalera' | 'pasillo';
 
 export interface ElementoPlano {
   id: string;
@@ -40,8 +40,12 @@ export interface ElementoPlano {
   etiqueta?: string;
 }
 
+/** Cómo se dibuja: "azul" = plano de arquitecto (por defecto); "claro" = piso claro minimalista. */
+export type EstiloPlano = 'azul' | 'claro';
+
 export interface Plano {
   version: 2;
+  estilo?: EstiloPlano;
   ancho: number;
   alto: number;
   zonas: ZonaPlano[];
@@ -62,6 +66,8 @@ export const ETIQUETA_ELEMENTO: Record<TipoElemento, string> = {
   cocina: 'Cocina',
   bano: 'Baños',
   caja: 'Caja',
+  escalera: 'Escalera',
+  pasillo: 'Pasillo',
 };
 
 /** Medidas por defecto de cada elemento al agregarlo (cm). */
@@ -75,6 +81,8 @@ export const MEDIDA_ELEMENTO: Record<TipoElemento, { w: number; h: number }> = {
   cocina: { w: 300, h: 220 },
   bano: { w: 200, h: 160 },
   caja: { w: 140, h: 70 },
+  escalera: { w: 120, h: 240 },
+  pasillo: { w: 400, h: 30 },
 };
 
 export const MEDIDA_SILLA = { w: 44, h: 40, separacion: 10 } as const;
@@ -188,7 +196,8 @@ export function normalizarPlano(entrada: unknown): Plano | null {
     });
   const fondoRaw = p.fondo as Record<string, unknown> | null | undefined;
   const fondo = fondoRaw && typeof fondoRaw.url === 'string' ? { url: fondoRaw.url as string, opacidad: Math.min(1, Math.max(0.05, num(fondoRaw.opacidad, 0.5))) } : null;
-  return { version: 2, ancho, alto, zonas, mesas, elementos, fondo };
+  const estilo = p.estilo === 'claro' ? 'claro' : 'azul';
+  return { version: 2, estilo, ancho, alto, zonas, mesas, elementos, fondo };
 }
 
 /**

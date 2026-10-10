@@ -122,7 +122,7 @@ export function useEditorPlano(inicial: Plano, mesas: readonly Mesa[]) {
     setSeleccion(null);
   }, [aplicar]);
 
-  const cambiarPlano = useCallback((cambios: Partial<Pick<Plano, 'ancho' | 'alto' | 'fondo'>>) => {
+  const cambiarPlano = useCallback((cambios: Partial<Pick<Plano, 'ancho' | 'alto' | 'fondo' | 'estilo'>>) => {
     aplicar((p) => ({ ...p, ...cambios }));
   }, [aplicar]);
 

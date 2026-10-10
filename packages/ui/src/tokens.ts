@@ -161,34 +161,75 @@ export const zonaColor: Record<ColorZona, { light: string; dark: string }> = {
   grafito: { light: '#6E6E75', dark: '#A6A6AD' },
 };
 
-/** "Materiales" del plano: piso, grilla, sillas, mesa, barra, paredes. */
+/** "Materiales" del plano: fondo, piso, muros, mesas, sillas, barra y ambientes. */
 export interface PlanoMaterial {
-  piso: string;
+  /** Plano de arquitecto: muros rectos, grilla de líneas y ambientes con piso propio. */
+  arquitectonico: boolean;
+  fondo: string;        // alrededor del local
   grilla: string;
+  guia: string;         // líneas de construcción que siguen los muros
+  piso: string;
   borde: string;
+  muro: string;
+  muroLinea: string;    // filete interior del muro
   mesa: string;
+  mesaBorde: string;
   sombra: string;
   silla: string;
   sillaBorde: string;
   respaldo: string;
   barra: string;
   barraTexto: string;
+  banqueta: string;
   pared: string;
   vidrio: string;
   planta: string;
   plantaClara: string;
   ambiente: string;
+  cocina: string;
+  hornalla: string;
+  texto: string;        // rótulos sobre el piso
+  textoMesa: string;    // número sobre la mesa
+  textoMesaSec: string;
+  /** Piso de cada ambiente (zonas) en el estilo arquitectónico. */
+  zonaPiso: Record<ColorZona, string> | null;
 }
 
-export const planoMaterial: { light: PlanoMaterial; dark: PlanoMaterial } = {
-  light: {
-    piso: '#FAF9F6', grilla: 'rgba(60,60,67,0.13)', borde: 'rgba(60,60,67,0.22)', mesa: '#FFFFFF', sombra: 'rgba(28,28,30,0.10)',
-    silla: '#F4F3EF', sillaBorde: 'rgba(60,60,67,0.20)', respaldo: '#D9D5CC', barra: '#CBB79A', barraTexto: '#4A3D2C',
-    pared: '#48484A', vidrio: '#8FB3D9', planta: '#4F8E5E', plantaClara: '#7DB487', ambiente: '#EFEDE8',
-  },
-  dark: {
-    piso: '#161618', grilla: 'rgba(235,235,245,0.10)', borde: 'rgba(235,235,245,0.18)', mesa: '#2C2C2E', sombra: 'rgba(0,0,0,0.45)',
-    silla: '#242426', sillaBorde: 'rgba(235,235,245,0.16)', respaldo: '#3D3D40', barra: '#5E4E3B', barraTexto: '#F1E4D0',
-    pared: '#9A9AA0', vidrio: '#6F93B8', planta: '#3F7A4E', plantaClara: '#5F9C6D', ambiente: '#1F1F22',
-  },
+const claroLight: PlanoMaterial = {
+  arquitectonico: false,
+  fondo: '#FFFFFF', grilla: 'rgba(60,60,67,0.13)', guia: 'transparent', piso: '#FAF9F6', borde: 'rgba(60,60,67,0.22)',
+  muro: 'rgba(60,60,67,0.22)', muroLinea: 'transparent', mesa: '#FFFFFF', mesaBorde: 'rgba(60,60,67,0.22)', sombra: 'rgba(28,28,30,0.10)',
+  silla: '#F4F3EF', sillaBorde: 'rgba(60,60,67,0.20)', respaldo: '#D9D5CC', barra: '#CBB79A', barraTexto: '#4A3D2C', banqueta: '#D9D5CC',
+  pared: '#48484A', vidrio: '#8FB3D9', planta: '#4F8E5E', plantaClara: '#7DB487', ambiente: '#EFEDE8', cocina: '#EFEDE8', hornalla: '#C9C5BC',
+  texto: '#5C5C63', textoMesa: '#1C1C1E', textoMesaSec: '#5C5C63', zonaPiso: null,
 };
+
+const claroDark: PlanoMaterial = {
+  arquitectonico: false,
+  fondo: '#1C1C1E', grilla: 'rgba(235,235,245,0.10)', guia: 'transparent', piso: '#161618', borde: 'rgba(235,235,245,0.18)',
+  muro: 'rgba(235,235,245,0.18)', muroLinea: 'transparent', mesa: '#2C2C2E', mesaBorde: 'rgba(235,235,245,0.18)', sombra: 'rgba(0,0,0,0.45)',
+  silla: '#242426', sillaBorde: 'rgba(235,235,245,0.16)', respaldo: '#3D3D40', barra: '#5E4E3B', barraTexto: '#F1E4D0', banqueta: '#3D3D40',
+  pared: '#9A9AA0', vidrio: '#6F93B8', planta: '#3F7A4E', plantaClara: '#5F9C6D', ambiente: '#1F1F22', cocina: '#1F1F22', hornalla: '#3D3D40',
+  texto: '#A6A6AD', textoMesa: '#F5F5F7', textoMesaSec: '#A6A6AD', zonaPiso: null,
+};
+
+/**
+ * Plano de arquitecto: fondo azul noche con grilla, muros claros, ambientes con piso propio,
+ * mesas color crema y sillas terracota. Es igual en modo claro y oscuro (como un mapa).
+ */
+const azul: PlanoMaterial = {
+  arquitectonico: true,
+  fondo: '#1D2840', grilla: 'rgba(150,172,214,0.10)', guia: 'rgba(160,184,228,0.22)', piso: '#857F78', borde: 'rgba(255,255,255,0.18)',
+  muro: '#CDD0D8', muroLinea: 'rgba(29,40,64,0.55)', mesa: '#F4D3B3', mesaBorde: '#DDAA80', sombra: 'rgba(12,18,34,0.38)',
+  silla: '#D9663C', sillaBorde: 'rgba(80,30,10,0.25)', respaldo: '#A8472A', barra: '#F1C9A2', barraTexto: '#5A3A22', banqueta: '#D9663C',
+  pared: '#CDD0D8', vidrio: '#A9CBEA', planta: '#4E7F45', plantaClara: '#7EAE63', ambiente: '#5A6884', cocina: '#23304E', hornalla: '#E07848',
+  texto: '#F3EEE7', textoMesa: '#3A2818', textoMesaSec: '#7A5236',
+  zonaPiso: { salvia: '#6B7A67', arena: '#958C82', cielo: '#58668A', terracota: '#7A5040', lavanda: '#665E82', grafito: '#4A5163' },
+};
+
+export const planoMaterial = { light: claroLight, dark: claroDark, azul };
+
+/** Material según el estilo del plano y el modo de la app. */
+export function materialPlano(estilo: 'azul' | 'claro' | undefined, dark: boolean): PlanoMaterial {
+  return (estilo ?? 'azul') === 'azul' ? azul : dark ? claroDark : claroLight;
+}

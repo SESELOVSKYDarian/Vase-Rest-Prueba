@@ -1,14 +1,14 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
-import Svg, { Circle, Defs, Image as SvgImage, Pattern, Rect } from 'react-native-svg';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Maximize2, Minus, Plus } from 'lucide-react-native';
 import { ESTADOS_CON_PERSONAS, type EstadoMesa, type MesaEnPlano, type Plano } from '@vase/domain';
 import { urlArchivo } from '@vase/api';
-import { PressableScale, planoMaterial, radius, space, useEstadoColor, useTheme, zonaColor } from '@vase/ui';
+import { PressableScale, materialPlano, radius, space, useEstadoColor, useTheme, zonaColor } from '@vase/ui';
 import { ElementoSvg, MesaSvg, ZonaSvg, ladoElemento, ladoMesa } from './dibujos';
 import { NodoPlano } from './NodoPlano';
+import { PisoPlano } from './PisoPlano';
 
 export type Seleccion = { tipo: 'mesa' | 'zona' | 'elemento'; id: string } | null;
 
@@ -50,7 +50,7 @@ export const PlanoCanvas = forwardRef<PlanoCanvasHandle, Props>(function PlanoCa
   ref,
 ) {
   const { colors, dark } = useTheme();
-  const material = planoMaterial[dark ? 'dark' : 'light'];
+  const material = materialPlano(plano.estilo, dark);
   const colorEstado = useEstadoColor();
   const [vista, setVista] = useState({ w: 0, h: 0 });
 
@@ -143,21 +143,11 @@ export const PlanoCanvas = forwardRef<PlanoCanvasHandle, Props>(function PlanoCa
   const mesasOrdenadas = useMemo(() => plano.mesas, [plano.mesas]);
 
   return (
-    <View style={styles.vista} onLayout={onLayout}>
+    <View style={[styles.vista, { backgroundColor: material.fondo }]} onLayout={onLayout}>
       <GestureDetector gesture={gestoLienzo}>
         <View style={StyleSheet.absoluteFill}>
           <Animated.View style={[{ width: plano.ancho, height: plano.alto }, lienzo]}>
-            <Svg width={plano.ancho} height={plano.alto} style={StyleSheet.absoluteFill}>
-              <Defs>
-                <Pattern id="grilla" x={0} y={0} width={50} height={50} patternUnits="userSpaceOnUse">
-                  <Circle cx={25} cy={25} r={1.8} fill={material.grilla} />
-                </Pattern>
-              </Defs>
-              <Rect x={0} y={0} width={plano.ancho} height={plano.alto} rx={32} ry={32} fill={material.piso} />
-              <Rect x={0} y={0} width={plano.ancho} height={plano.alto} rx={32} ry={32} fill="url(#grilla)" />
-              {fondoUrl ? <SvgImage href={{ uri: fondoUrl }} x={0} y={0} width={plano.ancho} height={plano.alto} preserveAspectRatio="xMidYMid meet" opacity={plano.fondo?.opacidad ?? 0.5} /> : null}
-              <Rect x={3} y={3} width={plano.ancho - 6} height={plano.alto - 6} rx={30} ry={30} fill="none" stroke={material.borde} strokeWidth={6} />
-            </Svg>
+            <PisoPlano plano={plano} material={material} fondoUrl={fondoUrl} />
             {/* Tocar el piso vacío quita la selección. */}
             <Pressable style={StyleSheet.absoluteFill} onPress={() => onSeleccionar?.(null)} accessible={false} />
 
@@ -176,7 +166,7 @@ export const PlanoCanvas = forwardRef<PlanoCanvasHandle, Props>(function PlanoCa
                 accessibilityLabel={`Zona ${z.nombre}`}
               >
                 <View pointerEvents={editar ? 'auto' : 'none'} style={StyleSheet.absoluteFill}>
-                  <ZonaSvg zona={z} color={zonaColor[z.color][dark ? 'dark' : 'light']} dark={dark} seleccionada={seleccion?.tipo === 'zona' && seleccion.id === z.id} colorSeleccion={colors.tint} />
+                  <ZonaSvg zona={z} material={material} color={zonaColor[z.color][dark ? 'dark' : 'light']} dark={dark} seleccionada={seleccion?.tipo === 'zona' && seleccion.id === z.id} colorSeleccion={colors.tint} />
                 </View>
               </NodoPlano>
             ))}
@@ -198,7 +188,7 @@ export const PlanoCanvas = forwardRef<PlanoCanvasHandle, Props>(function PlanoCa
                   accessibilityLabel={e.etiqueta || e.tipo}
                 >
                   <View pointerEvents={editar ? 'auto' : 'none'} style={StyleSheet.absoluteFill}>
-                    <ElementoSvg elemento={e} material={material} colorTexto={colors.labelSecondary} seleccionado={seleccion?.tipo === 'elemento' && seleccion.id === e.id} colorSeleccion={colors.tint} />
+                    <ElementoSvg elemento={e} material={material} seleccionado={seleccion?.tipo === 'elemento' && seleccion.id === e.id} colorSeleccion={colors.tint} />
                   </View>
                 </NodoPlano>
               );
@@ -230,11 +220,10 @@ export const PlanoCanvas = forwardRef<PlanoCanvasHandle, Props>(function PlanoCa
                       numero={datos ? String(datos.numero) : '?'}
                       detalle={datos?.detalle}
                       colorEstado={color}
+                      resaltar={!!datos && datos.estado !== 'libre'}
                       ocupada={!!datos && ESTADOS_CON_PERSONAS.has(datos.estado) && !editar}
                       seleccionada={seleccion?.tipo === 'mesa' && seleccion.id === m.mesaId}
                       colorSeleccion={colors.tint}
-                      colorTexto={colors.label}
-                      colorTextoSecundario={colors.labelSecondary}
                     />
                   </View>
                 </NodoPlano>

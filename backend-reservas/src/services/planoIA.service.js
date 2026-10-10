@@ -59,7 +59,7 @@ const ESQUEMA = {
         additionalProperties: false,
         required: ["tipo", "x", "y", "w", "h", "rot", "etiqueta"],
         properties: {
-          tipo: { type: "string", enum: ["barra", "pared", "puerta", "ventana", "planta", "columna", "cocina", "bano", "caja"] },
+          tipo: { type: "string", enum: ["barra", "pared", "puerta", "ventana", "planta", "columna", "cocina", "bano", "caja", "escalera", "pasillo"] },
           x: { type: "number" }, y: { type: "number" }, w: { type: "number" }, h: { type: "number" },
           rot: { type: "number" },
           etiqueta: { type: ["string", "null"] },
@@ -76,7 +76,7 @@ Devolvé lo que realmente se ve en la imagen; no inventes mesas que no están.
 Coordenadas: normalizadas de 0 a 1000 sobre la imagen, origen arriba a la izquierda.
 - Mesas: x, y = centro de la mesa. "lugares" = sillas dibujadas alrededor (si no hay sillas, estimalo por el tamaño: una mesa de 2 ≈ 70 cm, de 4 ≈ 90 cm, rectangulares de 6 ≈ 180 × 80 cm). "numero" solo si está escrito.
 - Zonas (salón, terraza, patio, barra, VIP…): x, y = esquina superior izquierda; w, h = ancho y alto. Usá los nombres escritos en el plano; si no hay, nombres simples como "Salón" o "Terraza".
-- Elementos: x, y = centro; w = largo, h = espesor o ancho; rot en grados. Paredes interiores, puertas, ventanas, barra, columnas, plantas, cocina, baños y caja.
+- Elementos: x, y = centro; w = largo, h = espesor o ancho; rot en grados. Paredes interiores, puertas, ventanas, barra, columnas, plantas, cocina, baños, caja, escaleras y pasillos de circulación.
 Tamaño real: si el plano tiene cotas o escala, usalas; si no, estimalo con el tamaño típico de las mesas.
 Si la imagen no es un plano o vista de un salón, devolvé es_plano = false y listas vacías.`;
 

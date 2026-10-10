@@ -112,7 +112,7 @@ export function Inspector({ editor, mesas, onSubirFondo, subiendoFondo, onAnaliz
         <Group header={ETIQUETA_ELEMENTO[e.tipo]}>
           {conRotulo ? <Field label="Rótulo" value={e.etiqueta ?? ''} onChangeText={(etiqueta) => editor.cambiarElemento(e.id, { etiqueta: etiqueta.slice(0, 30) })} placeholder={ETIQUETA_ELEMENTO[e.tipo]} /> : null}
           <Medida titulo="Largo" valor={e.w} paso={e.tipo === 'pared' ? 50 : 10} min={10} max={plano.ancho} onCambiar={(w) => editor.cambiarElemento(e.id, { w })} />
-          {e.tipo !== 'puerta' && e.tipo !== 'pared' && e.tipo !== 'ventana' ? <Medida titulo="Ancho" valor={e.h} paso={10} min={10} max={plano.alto} onCambiar={(h) => editor.cambiarElemento(e.id, { h })} /> : null}
+          {e.tipo !== 'puerta' && e.tipo !== 'pared' && e.tipo !== 'ventana' && e.tipo !== 'pasillo' ? <Medida titulo="Ancho" valor={e.h} paso={10} min={10} max={plano.alto} onCambiar={(h) => editor.cambiarElemento(e.id, { h })} /> : null}
           <Rotar paso={e.tipo === 'pared' || e.tipo === 'puerta' || e.tipo === 'ventana' ? 90 : 45} onRotar={(d) => editor.cambiarElemento(e.id, { rot: (e.rot + d + 360) % 360 })} />
         </Group>
         <Button label="Eliminar" variant="destructive" icon={<Trash2 size={18} color={colors.danger} />} onPress={() => editor.quitar(seleccion)} full />
@@ -122,6 +122,15 @@ export function Inspector({ editor, mesas, onSubirFondo, subiendoFondo, onAnaliz
 
   return (
     <View style={styles.cuerpo}>
+      <View style={{ gap: space.sm }}>
+        <Text variant="footnote" color="secondary" style={{ paddingHorizontal: space.lg + space.xs }}>Estilo del plano</Text>
+        <Segmented
+          items={[{ value: 'azul', label: 'Arquitecto' }, { value: 'claro', label: 'Claro' }]}
+          value={plano.estilo ?? 'azul'}
+          onChange={(estilo) => editor.cambiarPlano({ estilo })}
+          accessibilityLabel="Estilo del plano"
+        />
+      </View>
       <Group header="El local" footer="Medidas reales del espacio. El plano se dibuja a escala: una mesa de 4 mide unos 90 cm.">
         <Medida titulo="Ancho" valor={plano.ancho} paso={50} min={400} max={10000} onCambiar={(ancho) => editor.cambiarPlano({ ancho })} />
         <Medida titulo="Largo" valor={plano.alto} paso={50} min={300} max={10000} onCambiar={(alto) => editor.cambiarPlano({ alto })} />
