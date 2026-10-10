@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-noctua}
       POSTGRES_USER: ${POSTGRES_USER:-noctua}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-noctua_local_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definí POSTGRES_PASSWORD en el archivo .env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,13 +22,13 @@ services:
         NEXT_PUBLIC_API_URL: /backend-api
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-noctua}:${POSTGRES_PASSWORD:-noctua_local_password}@postgres:5432/${POSTGRES_DB:-noctua}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-noctua}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-noctua}
       DATABASE_SSL: "false"
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
-      JWT_SECRET: ${JWT_SECRET:-cambiar-en-produccion}
-      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-noctua-internal-local}
-      INTEGRATION_ENCRYPTION_KEY: ${INTEGRATION_ENCRYPTION_KEY:-noctua-integration-local}
-      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:-1234}
+      JWT_SECRET: ${JWT_SECRET:?Definí JWT_SECRET (32+ caracteres al azar) en el archivo .env}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:?Definí INTERNAL_API_KEY en el archivo .env}
+      INTEGRATION_ENCRYPTION_KEY: ${INTEGRATION_ENCRYPTION_KEY:?Definí INTEGRATION_ENCRYPTION_KEY en el archivo .env}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:?Definí INITIAL_ADMIN_PASSWORD (10+ caracteres) en el archivo .env}
       ARCA_MODO: ${ARCA_MODO:-homologacion}
       ARCA_CUIT: ${ARCA_CUIT:-}
       ARCA_PUNTO_VENTA: ${ARCA_PUNTO_VENTA:-1}
@@ -44,6 +44,13 @@ services:
       MP_WEBHOOK_SECRET: ${MP_WEBHOOK_SECRET:-}
       PUBLIC_API_URL: ${PUBLIC_API_URL:-}
       PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-}
+      TRUST_PROXY: ${TRUST_PROXY:-}
+      TRUST_CLOUDFLARE: ${TRUST_CLOUDFLARE:-false}
+      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN:-}
+      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID:-}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN:-}
+      WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET:-}
+      EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN:-}
     volumes:
       - uploads_data:/app/backend-reservas/uploads
     depends_on:

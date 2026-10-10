@@ -104,9 +104,13 @@ export const obtenerUsuarios = async (req, res) => {
   }
 };
 
+const ROLES_VALIDOS = new Set(["admin", "encargado", "mozo", "cocina", "cajero", "soporte", "stock", "delivery", "desarrollador"]);
+
 export const administrarUsuario = async (req, res) => {
   try {
     const { accion } = req.body || {};
+    if (req.body?.rol !== undefined && !ROLES_VALIDOS.has(String(req.body.rol))) return res.status(400).json({ error: "Rol inválido" });
+    if (accion === "crear" && String(req.body?.password ?? "").length < 8) return res.status(400).json({ error: "La contraseña debe tener al menos 8 caracteres" });
     if (accion === "crear") {
       const { email, password, nombre, username, rol = "mozo", activo = true } = req.body;
       if (!email || !password) return res.status(400).json({ error: "Email y contrasena son requeridos" });

@@ -1,4 +1,7 @@
 import { env } from "./config/env.js";
+import { validarEntornoProduccion } from "./utils/seguridad.js";
+
+validarEntornoProduccion();
 import app from "./app.js";
 import { iniciarAvisosPush } from "./services/avisosPush.service.js";
 import { seedLocalAdmin } from "./controllers/auth.controller.js";

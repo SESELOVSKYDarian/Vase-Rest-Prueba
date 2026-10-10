@@ -14,12 +14,25 @@ function identidadHeaders(): Record<string, string> {
   };
 }
 
+
+/** El backend exige sesión: se manda el token guardado al iniciar sesión (igual que databaseClient). */
+function authHeaders(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  try {
+    const token = JSON.parse(localStorage.getItem("noctua-auth") || "{}")?.state?.token;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
+}
+
 async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   try {
     const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       headers: {
         "Content-Type": "application/json",
+        ...authHeaders(),
         ...(options.headers || {}),
       },
     });

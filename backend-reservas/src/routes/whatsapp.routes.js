@@ -33,7 +33,8 @@ const simulador = limitar({ nombre: "wa-simulador", ventanaMs: 60_000, max: 60 }
 
 /** Conversar con el asistente sin WhatsApp: devuelve lo que se habría respondido. Solo para desarrollo. */
 router.post("/simular", simulador, async (req, res) => {
-  if (process.env.NODE_ENV === "production" || whatsappConfigurado()) return res.sendStatus(404);
+  // Apagado por defecto: hay que pedirlo (WHATSAPP_SIMULADOR=true) y nunca con la cuenta real conectada.
+  if (process.env.WHATSAPP_SIMULADOR !== "true" || process.env.NODE_ENV === "production" || whatsappConfigurado()) return res.sendStatus(404);
   const telefono = normalizarTelefono(req.body?.telefono) || "5491100000000";
   const texto = String(req.body?.texto ?? "").slice(0, 600);
   const capturadas = [];
