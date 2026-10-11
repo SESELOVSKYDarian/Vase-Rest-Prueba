@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Vase Rest · reel vertical</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  html, body { margin: 0; background: #1a1a1a; color: #eee; font: 13px system-ui, sans-serif; }
+  main { padding: 12px; display: grid; gap: 8px; justify-items: start; }
+  #out { height: min(86vh, 1920px); aspect-ratio: 9 / 16; width: auto; background: #000; }
+  .bar { display: flex; gap: 10px; align-items: center; width: 420px; }
+  #scrub { flex: 1; } #tt { font-variant-numeric: tabular-nums; min-width: 120px; }
+</style>
+</head>
+<body>
+<main>
+  <canvas id="out" width="1080" height="1920"></canvas>
+  <div class="bar"><input id="scrub" type="range" min="0" max="15" step="0.0333" value="0"><span id="tt">cargando…</span></div>
+</main>
+<script src="cues.js"></script>
+<script src="reel.js"></script>
+</body>
+</html>
